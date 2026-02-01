@@ -77,6 +77,8 @@ Esta infraestructura está optimizada para **Zero-Config Deployment** en Coolify
     - Activar "Push to Registry" en Coolify.
     - El orquestador construirá la imagen usando el contexto raíz y la subirá a tu registro privado automáticamente antes de desplegar.
 
+> **Nota**: El archivo `docker-compose.yml` se encuentra en la raíz del proyecto para compatibilidad nativa con Coolify v4.
+
 ---
 
 ## 🛡️ Quality Gates & Compliance
