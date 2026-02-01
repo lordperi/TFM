@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: diabetics_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Database connection string pointing to the db service
+      - DATABASE_URL=postgresql+psycopg2://user:password@db:5432/diabeticsplatform
+    depends_on:
+      - db
+    networks:
+      - backend-network
+    # Security: Read-only root filesystem could be added here if stricter security needed
+    # read_only: true
+
+  db:
+    image: postgres:16
+    container_name: diabetics_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: diabeticsplatform
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    driver: bridge
+    internal: false # Set to true if complete isolation from outside is desired, but valid for inter-container communication
+
+volumes:
+  db_data:
