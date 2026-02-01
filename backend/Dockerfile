@@ -1,10 +1,9 @@
 # Stage 1: Builder
 FROM python:3.12-slim as builder
 
-WORKDIR /tmp
+WORKDIR /app
 
-# Upgrade pip and generate wheels
-# Cache Busting: Only invalidate this layer if requirements.txt changes
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
@@ -12,46 +11,44 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
+# Create virtual environment
+RUN python -m venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
+
+# Install dependencies directly
 COPY requirements.txt .
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /tmp/wheels -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Runtime
 FROM python:3.12-slim
 
-# Install runtime dependencies for Postgres and Cryptography
+WORKDIR /app
+
+# Install runtime libs
 RUN apt-get update && apt-get install -y \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user for security (DevSecOps requirement)
+# Create non-root user
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
-WORKDIR /app
+# Copy virtual environment from builder
+COPY --from=builder /app/venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
 
-# Install dependencies from builder
-# This layer is cached unless requirements.txt or builder changed
-COPY --from=builder /tmp/wheels /tmp/wheels
+# Copy files
 COPY requirements.txt .
-RUN pip install --no-cache-dir --no-index --find-links=/tmp/wheels -r requirements.txt \
-    && rm -rf /tmp/wheels
-
-# Copy application code
-# This is the most frequent change, so it comes last
-COPY src ./src
 COPY alembic.ini .
 COPY alembic ./alembic
 COPY entrypoint.sh .
+COPY src ./src
 
-# Ensure permissions
-RUN chown -R appuser:appgroup /app
-RUN chmod +x entrypoint.sh
+# Permissions
+RUN chown -R appuser:appgroup /app && chmod +x entrypoint.sh
 
-# Switch context to non-root user
 USER appuser
 
-# Expose API port
 EXPOSE 8000
 
-# Run commands via entrypoint
 CMD ["./entrypoint.sh"]
