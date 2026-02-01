@@ -27,9 +27,13 @@ RUN pip install --no-cache-dir --no-index --find-links=/tmp/wheels -r requiremen
 # Copy application code
 # This is the most frequent change, so it comes last
 COPY src ./src
+COPY alembic.ini .
+COPY alembic ./alembic
+COPY entrypoint.sh .
 
 # Ensure permissions
 RUN chown -R appuser:appgroup /app
+RUN chmod +x entrypoint.sh
 
 # Switch context to non-root user
 USER appuser
@@ -37,5 +41,5 @@ USER appuser
 # Expose API port
 EXPOSE 8000
 
-# Run commands
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run commands via entrypoint
+CMD ["./entrypoint.sh"]

@@ -14,6 +14,17 @@ Este proyecto está diseñado para funcionar con un registro de contenedores pri
     * Hace `docker pull` de la nueva imagen dentro del VPS.
     * Reinicia el servicio `api` sin tiempo de inactividad (Zero Downtime), esperando a que el Healthcheck `/health` responda OK antes de cambiar el tráfico.
 
+### Mantenibilidad y Migraciones
+
+* **Alembic**: Gestiona el esquema de la base de datos.
+  * `alembic upgrade head`: Se ejecuta automáticamente al iniciar el contenedor (ver `backend/entrypoint.sh`).
+  * Modelos definidos en `src/infrastructure/db/models.py`.
+
+### Seguridad
+
+* **Autenticación**: JWT (JSON Web Tokens) con expiración corta (30 min).
+* **Cifrado**: Datos sensibles (sensibilidad insulinica, ratios) cifrados en reposo (Fernet) y en tránsito (TLS).
+
 ### Aislamiento de Red
 
 El servicio utiliza dos redes:
