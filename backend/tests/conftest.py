@@ -2,41 +2,39 @@ import pytest
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
-
-# Assume main app is importable
 from src.main import app
+from src.infrastructure.db.database import Base, get_db
 
-# Configuration for Ephemeral Test DB
-# In a real pipeline, service containers (like in GitHub Actions or GitLab CI) provide the DB.
-TEST_DATABASE_URL = os.getenv(
-    "TEST_DATABASE_URL", 
-    "postgresql+psycopg2://postgres:postgres@localhost:5432/diabetics_test_db"
-)
+# Use SQLite in-memory for testing to avoid external dependencies
+TEST_DATABASE_URL = "sqlite:///:memory:"
 
 @pytest.fixture(scope="session")
 def engine():
     """
     Create a single engine for the test session.
-    Using NullPool to force a new connection for every request if needed, 
-    but mainly here to allow clean tearing down.
+    StaticPool is critical for in-memory SQLite to persist state across connections.
     """
-    engine = create_engine(TEST_DATABASE_URL, poolclass=NullPool)
+    engine = create_engine(
+        TEST_DATABASE_URL, 
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool
+    )
     
-    # Ideally: Create schemas/tables here if models existed
-    # Base.metadata.create_all(bind=engine)
+    # Create tables
+    Base.metadata.create_all(bind=engine)
     
     yield engine
     
-    # Base.metadata.drop_all(bind=engine)
+    Base.metadata.drop_all(bind=engine)
     engine.dispose()
 
 @pytest.fixture(scope="function")
 def db_session(engine):
     """
-    Yields a SQLAlchemy session with an automated rollback after each test.
-    This ensures test isolation.
+    Yields a SQLAlchemy session for each test function.
+    Mocks the get_db dependency.
     """
     connection = engine.connect()
     transaction = connection.begin()
@@ -50,7 +48,18 @@ def db_session(engine):
     transaction.rollback()
     connection.close()
 
-@pytest.fixture(scope="module")
-def client():
+@pytest.fixture(scope="function")
+def client(db_session):
+    """
+    Override the get_db dependency with the test session.
+    """
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass
+            
+    app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as c:
         yield c
+    app.dependency_overrides.clear()

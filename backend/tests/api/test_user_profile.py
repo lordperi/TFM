@@ -5,9 +5,9 @@ from src.main import app
 # Como estamos en fase TDD y el router aún no está montado en main,
 # este test fallará (Red). Es el comportamiento esperado.
 
-client = TestClient(app)
+# client = TestClient(app) # REMOVED: Use fixture instead
 
-def test_create_user_with_valid_health_profile():
+def test_create_user_with_valid_health_profile(client):
     payload = {
         "email": "test_patient@example.com",
         "password": "StrongPassword123!",
@@ -20,17 +20,16 @@ def test_create_user_with_valid_health_profile():
         }
     }
     
-    # Simular POST (Ruta aún no definida, daría 404, pero diseñamos la expectativa)
-    # response = client.post("/users/register", json=payload)
+    # Simular POST
+    response = client.post("/api/v1/users/register", json=payload)
     
-    # TODO: Descomentar cuando el endpoint exista.
-    # assert response.status_code == 201
-    # data = response.json()
-    # assert data["email"] == payload["email"]
-    # assert data["health_profile"]["diabetes_type"] == "type_1"
-    # assert "id" in data
+    assert response.status_code == 201
+    data = response.json()
+    assert data["email"] == payload["email"]
+    assert data["health_profile"]["diabetes_type"] == "type_1"
+    assert "id" in data
 
-def test_create_user_invlalid_sensitivity_rejects():
+def test_create_user_invlalid_sensitivity_rejects(client):
     """Valida reglas de negocio críticas de salud"""
     payload = {
         "email": "unsafe@example.com",
@@ -41,6 +40,5 @@ def test_create_user_invlalid_sensitivity_rejects():
             "carb_ratio": 10
         }
     }
-    # response = client.post("/users/register", json=payload)
-    # assert response.status_code == 422
-    pass
+    response = client.post("/api/v1/users/register", json=payload)
+    assert response.status_code == 422

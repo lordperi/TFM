@@ -27,18 +27,15 @@ class HealthMetric(BaseModel):
 # Usually this lives in infrastructure/db/models.py, but placing here for context validation
 # In real clean arch code, this would be separate.
 
-from sqlalchemy import Column, String, DateTime, Float, Index
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, String, DateTime, Float, Index, Uuid
 from src.infrastructure.db.types import EncryptedString
-
-Base = declarative_base()
+from src.infrastructure.db.database import Base
 
 class HealthMetricModel(Base):
     __tablename__ = "health_metrics"
 
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(PG_UUID(as_uuid=True), index=True, nullable=False)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id = Column(Uuid(as_uuid=True), index=True, nullable=False)
     type = Column(String, nullable=False, index=True) # Not encrypted, needed for filtering
     
     # --- SECURITY CRITICAL ---

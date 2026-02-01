@@ -1,15 +1,14 @@
-from sqlalchemy import Column, String, Boolean, ForeignKey, Index
+from sqlalchemy import Column, String, Boolean, ForeignKey, Index, Uuid
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from uuid import uuid4
 from datetime import datetime
 from src.infrastructure.db.types import EncryptedString
-from src.domain.health_models import Base
+from src.infrastructure.db.database import Base
 
 class UserModel(Base):
     __tablename__ = "users"
 
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=True)
@@ -21,8 +20,8 @@ class UserModel(Base):
 class HealthProfileModel(Base):
     __tablename__ = "health_profiles"
 
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(PG_UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False, index=True)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False, index=True)
     diabetes_type = Column(String, nullable=False)
     
     # Sensitive Data (Encrypted at rest)

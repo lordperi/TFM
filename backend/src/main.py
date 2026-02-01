@@ -25,7 +25,7 @@ app = FastAPI(
 # Prevent Host Header Injection
 app.add_middleware(
     TrustedHostMiddleware, 
-    allowed_hosts=["localhost", "127.0.0.1", "0.0.0.0", "api", "diabetics-api.jljimenez.es", "api.diabetics-platform.com"] 
+    allowed_hosts=["localhost", "127.0.0.1", "0.0.0.0", "api", "diabetics-api.jljimenez.es", "api.diabetics-platform.com", "testserver"] 
 )
 
 # CORS Configuration
