@@ -4,6 +4,7 @@ FROM python:3.12-slim as builder
 WORKDIR /tmp
 
 # Upgrade pip and generate wheels
+# Cache Busting: Only invalidate this layer if requirements.txt changes
 RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /tmp/wheels -r requirements.txt
@@ -17,12 +18,14 @@ RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 WORKDIR /app
 
 # Install dependencies from builder
+# This layer is cached unless requirements.txt or builder changed
 COPY --from=builder /tmp/wheels /tmp/wheels
 COPY requirements.txt .
 RUN pip install --no-cache-dir --no-index --find-links=/tmp/wheels -r requirements.txt \
     && rm -rf /tmp/wheels
 
 # Copy application code
+# This is the most frequent change, so it comes last
 COPY src ./src
 
 # Ensure permissions

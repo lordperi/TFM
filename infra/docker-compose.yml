@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
   api:
-    image: ${DOCKER_REGISTRY}/diabetics-backend:${IMAGE_TAG:-latest}
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    # Use generic variable supplied by Coolify or .env
+    # Example value: registry.jljimenez.es/user/backend:latest
+    image: ${DOCKER_IMAGE:-backend:latest}
+    # build: ... (Commented out effectively for registry deployment flow)
     container_name: diabetics_api
     restart: always
     environment:
@@ -13,22 +13,30 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - CORS_ORIGINS=${CORS_ORIGINS}
-    ports:
-      - "8000:8000"
     networks:
-      - app_network
+      - coolify_network
+      - internal_db_network
     depends_on:
       db:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 20s
-    # Coolify Specific Labels (Optional but recommended for routing)
-    # labels:
-    #   - "coolify.managed=true"
+    labels:
+      - "coolify.managed=true"
+      # Tells Coolify/Traefik where to route traffic
+      - "coolify.proxy.port=8000"
 
   db:
     image: postgres:16-alpine
@@ -41,7 +49,12 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
-      - app_network
+      - internal_db_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 10s
@@ -49,10 +62,15 @@ services:
       retries: 5
 
 networks:
-  app_network:
+  # Internal network for DB isolation (Not exposed to Traefik/Public)
+  internal_db_network:
     driver: bridge
-    # internal: true # Uncomment in production if using a reverse proxy in the same network
-    # For Coolify, the proxy usually attaches to this network, so standard bridge is often safest for start.
+    internal: true
+
+  # Network for Coolify/Traefik communication
+  coolify_network:
+    driver: bridge
+    external: true # Assumes Coolify creates this
 
 volumes:
   db_data:
