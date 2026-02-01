@@ -5,12 +5,24 @@ WORKDIR /tmp
 
 # Upgrade pip and generate wheels
 # Cache Busting: Only invalidate this layer if requirements.txt changes
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    gcc \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /tmp/wheels -r requirements.txt
 
 # Stage 2: Runtime
 FROM python:3.12-slim
+
+# Install runtime dependencies for Postgres and Cryptography
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user for security (DevSecOps requirement)
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
