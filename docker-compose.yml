@@ -19,7 +19,7 @@ services:
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - CORS_ORIGINS=${CORS_ORIGINS}
     networks:
-      - coolify_network
+      - coolify
       - internal_db_network
     depends_on:
       db:
@@ -73,9 +73,8 @@ networks:
     internal: true
 
   # Network for Coolify/Traefik communication
-  coolify_network:
-    driver: bridge
-    external: true # Assumes Coolify creates this
+  coolify:
+    external: true # Assumes Coolify creates this (Standard name is 'coolify')
 
 volumes:
   db_data:
