@@ -2,10 +2,15 @@ version: '3.8'
 
 services:
   api:
-    # Use generic variable supplied by Coolify or .env
-    # Example value: registry.jljimenez.es/user/backend:latest
+    # Coolify v4 Logic:
+    # 1. Build from 'context' using 'dockerfile'
+    # 2. Tag image as ${DOCKER_IMAGE}
+    # 3. Push to configured Registry
+    # 4. Deploy container using that image
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
     image: ${DOCKER_IMAGE:-backend:latest}
-    # build: ... (Commented out effectively for registry deployment flow)
     container_name: diabetics_api
     restart: always
     environment:
