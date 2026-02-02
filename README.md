@@ -1,53 +1,100 @@
-# 🧬 DiaBeaty: Inteligencia Nutricional para el Siglo XXI
+# � DiaBeaty (TFM - Advanced Agentic Project)
 
-> **Plataforma de Salud de Precisión.**
-> Redefiniendo la interacción entre el paciente diabético y la comida mediante IA, Arquitectura Hexagonal y Diseño Dual-UX.
+> **Plataforma de Nutrición de Precisión y Monitorización de Salud** para Pacientes Diabéticos.
+> *Empoderando familias con cálculos nutricionales asistidos por IA y una interfaz Dual-UX (Adulto/Niño).*
 
-![Status](https://img.shields.io/badge/Status-MVP_Core_Ready-success?style=for-the-badge)
-![AI-Ready](https://img.shields.io/badge/AI-Metabolic_Wizard_Active-purple?style=for-the-badge)
-![Infrastructure](https://img.shields.io/badge/Deploy-Coolify_v4-blue?style=for-the-badge&logo=docker)
-
----
-
-## 🚀 La Visión: Empoderamiento mediante Datos
-
-**DiaBeaty** no es un simple diario de glucosa. Es un ecosistema diseñado para cerrar la brecha entre la ingesta y la dosis de insulina, ofreciendo dos experiencias radicalmente distintas:
-
-- **Modo Adulto**: Análisis técnico, ratios de sensibilidad y gestión de bolus de precisión.
-- **Modo Niño**: El "Hero's Path", donde el cuidado de la salud se traduce en mecánicas de RPG y gamificación terapéutica.
+![Status](https://img.shields.io/badge/Status-Access_Early_Access-success?style=for-the-badge&logo=statuspage)
+![Backend](https://img.shields.io/badge/Backend-Python_3.12_%7C_FastAPI-blue?style=for-the-badge&logo=python)
+![Frontend](https://img.shields.io/badge/Frontend-Flutter_3.19-02569B?style=for-the-badge&logo=flutter)
+![Infra](https://img.shields.io/badge/Infra-Coolify_v4_%7C_Docker-336791?style=for-the-badge&logo=docker)
+![Coverage](https://img.shields.io/badge/Testing-Pytest_%7C_Coverage_High-green?style=for-the-badge&logo=pytest)
+![Security](https://img.shields.io/badge/Security-AES_256_%7C_OWASP-red?style=for-the-badge&logo=lock)
 
 ---
 
-## 🗺️ Roadmap de Innovación y Milestones
+## 📖 Resumen Ejecutivo
 
-### 🏗️ Fase 1: The Metabolic Foundation (MVP) - `[███████████░░░] 70%`
+**El Problema**: La gestión de la Diabetes Tipo 1 (T1D) es una carga cognitiva inmensa. Pacientes y cuidadores deben realizar cálculos complejos (ratios de insulina, carga glucémica) múltiples veces al día. Un error de cálculo puede resultar en hipoglucemia severa.
 
-*Enfoque: Estabilidad, Seguridad e Infraestructura.*
+**Nuestra Solución**: *DiaBeaty* actúa como un **Páncreas Digital Auxiliar**. No solo registra datos; procesa información nutricional para sugerir dosis precisas, adaptando la interfaz al usuario:
 
-- ✅ **Infrastructure 1.0**: Despliegue atómico en **Coolify v4 (Beta)** con Registro Docker Privado (`registry.jljimenez.es`).
-- ✅ **Security Core**: Cifrado simétrico AES-256 de PHI (Personal Health Information) y Auth JWT (HS256).
-- ✅ **Metabolic Logic (TDD)**: Implementación del **Bolus Wizard**, cálculo de Carga Glucémica (CG) y Tests de Integración.
-- 🔄 **Data Population**: Semillado de base de datos con índices glucémicos estándar.
-- ⏳ **Mobile Bridge**: Inicialización del esqueleto Flutter (Dual UX).
-
-### 🤖 Fase 2: AI Vision & Perception (Milestone)
-
-- **OCR Menu Scanner**: Extracción de platos desde cartas de restaurantes con filtrado de seguridad glucémica.
-- **Food Lens**: Estimación de macros y porciones mediante reconocimiento visual de imágenes.
-
-### 🎬 Fase 3: AI Video Integration (Milestone)
-
-- **Recipe-to-Data**: Pipeline de IA para transformar vídeos de cocina (Reels/TikTok) en recetas estructuradas con cálculo de CG automático.
+1. **Modo Tutor (Adulto)**: Dashboard técnico, gestión de ratios y métricas avanzadas.
+2. **Modo Héroe (Niño)**: Gamificación terapéutica donde el control glucémico se traduce en la salud de un avatar virtual.
 
 ---
 
-## 🏗️ Arquitectura y Metodología de Desarrollo
+## 📶 Milestone Tracking (MVP Status)
+
+`[██████░░░░] 60% Completado`
+
+| Hito | Estado | Detalles Técnicos |
+| :--- | :--- | :--- |
+| **I. Infraestructura** | ✅ 100% | VPS propio, Coolify v4, Registro Privado, HTTPS Strict. |
+| **II. Database Core** | ✅ 100% | PostgreSQL 16, Migraciones Alembic, Modelado Relacional. |
+| **III. Seguridad** | ✅ 100% | Auth JWT (HS256), Hash Bcrypt, Cifrado AES-256 (PHI). |
+| **IV. Motor Metabólico** | 🔄 10% | *[En curso]* Modelado de Alimentos y Algoritmo de Carga Glucémica. |
+| **V. Mobile App** | ⏳ 0% | Desarrollo Flutter pendiente (Fase Dual-UX). |
+
+---
+
+## �️ Roadmap Estratégico
+
+### 🏛️ Fase 1: The Foundation (Semanas 1-3) - *En Desarrollo*
+
+El objetivo es establecer un núcleo seguro y operativo.
+
+- [x] **Arquitectura Hexagonal**: Desacoplamiento total de lógica de negocio y frameworks.
+- [x] **Zero-Trust Security**: Cifrado de datos sensibles (Ratios, Notas médicas) en reposo.
+- [ ] **Motor Nutricional**: Base de datos de ingredientes con IG (Índice Glucémico) y Fibra.
+
+### 👁️ Fase 2: AI Vision (Milestone Post-TFM)
+
+Eliminar la fricción de la entrada manual de datos.
+
+- [ ] **OCR de Menús**: Extracción de platos y precios desde fotos de cartas de restaurantes.
+- [ ] **Estimación Visual**: Deep Learning para estimar gramos de carbohidratos por foto del plato.
+
+### 🎥 Fase 3: Social & Video AI
+
+- [ ] **Video-to-Recipe**: Pipeline que transforma TikToks de cocina en recetas estructuradas y calculadas para diabéticos.
+
+### 🌐 Fase 4: Ecosistema IoT
+
+- [ ] **CGM Direct Link**: Conexión con sensores Dexcom/Libre en tiempo real.
 
 El proyecto sigue una **Arquitectura Hexagonal (Clean Architecture)**, asegurando que la lógica nutricional sea independiente de la base de datos o el framework web.
 
-### 🔄 Flujo de Trabajo Senior (GitFlow)
+## 🛠️ Stack Tecnológico
 
-Cada funcionalidad se desarrolla en aislamiento:
+| Area | Tenologías | Justificación Arquitectónica (ADR) |
+| :--- | :--- | :--- |
+| **Lenguaje Core** | **Python 3.12** | Tipado fuerte, rendimiento asíncrono y ecosistema nativo de IA. |
+| **API Framework** | **FastAPI** | Validación automática Pydantic v2 y documentación OpenAPI. |
+| **Datos** | **PostgreSQL 16** | Integridad ACID robusta y soporte JSONB para flexibilidad. |
+| **ORM / Migraciones** | **SQLAlchemy 2.0 / Alembic** | Abstracción de DB y control de versiones del esquema. |
+| **Mobile** | **Flutter 3.19** | Código único (Dart) para iOS/Android y motor gráfico Skia para gamificación. |
+| **CD / Orquestación** | **Coolify v4** | Deployments automáticos (Push-to-Deploy) y soberanía de datos. |
+
+---
+
+## 🔌 Catálogo de Endpoints (API V1)
+
+Actualmente documentados en `/docs` (Swagger UI) al desplegar.
+
+### Authentication (`/api/v1/auth`)
+
+* `POST /login`: Intercambia credenciales por **Access Token** (JWT Bearer).
+- `POST /refresh`: (Planeado) Rotación de tokens de sesión.
+
+### Users & Health (`/api/v1/users`)
+
+* `POST /register`: Creación de cuenta y **Perfil de Salud Inicial** (Ratios, Tipo Diabetes).
+- `GET /me`: Obtiene datos del usuario descifrados en tiempo real (requiere Auth).
+
+### Nutrition (`/api/v1/nutrition`) - *Coming Soon*
+
+* `GET /ingredients/search`: Búsqueda full-text de alimentos.
+- `POST /bolus/calculate`: Algoritmo complejo: $Bolus = \frac{Carbs}{ICR} + \frac{Gluc_{actual} - Gluc_{target}}{ISF}$.
 
 1. `feature/XXX` -> 2. Atomic Commits -> 3. PR Review -> 4. Automated Tests -> 5. Merge -> 6. Auto-Deploy.
 
@@ -77,6 +124,32 @@ Cada funcionalidad se desarrolla en aislamiento:
 - **CG (Carga Glucémica)**: Impacto real basado en el IG y la cantidad de carbohidratos netos.
 - **ICR (Carb Ratio)**: Gramos de carbohidratos cubiertos por 1 unidad de insulina.
 - **ISF (Sensitivity Factor)**: Cuánto baja la glucosa 1 unidad de insulina.
+## ⚙️ Metodología de Desarrollo & CI/CD
+
+El equipo sigue un flujo estricto de **Trunk-Based Development** adaptado.
+
+1. **Feature Branches**: Todo desarrollo ocurre en `feature/nombre-tarea`.
+2. **Pull Requests**: Revisión de código obligatoria.
+3. **Pipeline Gates (Manual/Automated)**:
+    - Linting (Ruff/Black).
+    - **Testing Coverage > 80%** (Pytest).
+    - Validación de Seguridad (OWASP).
+4. **Despliegue Automático**: Al hacer merge a `main`, el webhook de Coolify:
+    - Construye la imagen Docker.
+    - Ejecuta Migraciones de DB (`alembic upgrade head`).
+    - Despliega en Producción sin downtime.
+
+**Gestión de Secretos**: Las variables (`ENCRYPTION_KEY`, `SECRET_KEY`, `DB_URL`) se inyectan exclusivamente a través de la UI de Coolify, nunca en el repositorio.
+
+---
+
+## � Glosario Médico (TFM Context)
+
+- **IG (Índice Glucémico)**: Velocidad a la que un alimento eleva la glucosa (0-100).
+- **CG (Carga Glucémica)**: Impacto real en sangre. $CG = (IG \times Carbos_{netos}) / 100$.
+- **ICR (Insulin-to-Carb Ratio)**: Cuántos gramos de carbohidratos cubre 1 unidad de insulina.
+- **ISF (Insulin Sensitivity Factor)**: Cuánto baja la glucosa 1 unidad de insulina.
+- **PHI (Protected Health Information)**: Datos médicos sensibles que deben ser cifrados por ley (GDPR/HIPAA).
 
 ---
 *DiaBeaty TFM - Ingeniería y Arquitectura de Software con IA*
