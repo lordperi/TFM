@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from src.domain.user_models import UserCreate, UserPublic
-from src.application import services
+from src.application.services.user_service import create_user
 from src.infrastructure.db.database import get_db
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -13,5 +13,5 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     Passwords are hashed (Bcrypt).
     Sensitive Health Data is encrypted (Fernet).
     """
-    created_user = services.create_user(db, user)
+    created_user = create_user(db, user)
     return created_user

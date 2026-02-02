@@ -1,0 +1,75 @@
+from sqlalchemy.orm import Session
+from fastapi import HTTPException
+
+# Domain
+from src.domain.nutrition import calculate_daily_bolus
+# Infra (Repository would be cleaner, but we'll use DB models here carefully for MVP speed, 
+# ideally we should have a UserRepository interface)
+from src.infrastructure.db.models import UserModel, IngredientModel
+
+class NutritionService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def calculate_bolus(self, user_id: str, carbs: float, glucose: float, 
+                       icr_override: float = None, isf_override: float = None, target_override: float = None):
+        """
+        Orchestrates the Bolus Calculation Use Case.
+        1. Fetches User Profile
+        2. Decrypts Data
+        3. Applies Domain Logic
+        """
+        user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        if not user.health_profile:
+            raise HTTPException(status_code=400, detail="Health profile missing")
+
+        # Decryption Logic (Application Layer handles sensitive data orchestration)
+        try:
+            profile_icr = float(user.health_profile.carb_ratio)
+            profile_isf = float(user.health_profile.insulin_sensitivity)
+            profile_target = float(user.health_profile.target_glucose)
+        except Exception:
+            raise HTTPException(status_code=500, detail="Data corruption in health profile")
+
+        # Priority: Override > Profile
+        final_icr = icr_override if icr_override else profile_icr
+        final_isf = isf_override if isf_override else profile_isf
+        final_target = target_override if target_override else profile_target
+
+        # Call Pure Domain
+        units = calculate_daily_bolus(
+            total_carbs=carbs,
+            icr=final_icr,
+            current_glucose=glucose,
+            target_glucose=final_target,
+            isf=final_isf
+        )
+
+        # Breakdowns
+        carb_insulin = carbs / final_icr
+        correction_insulin = (glucose - final_target) / final_isf
+
+        return {
+            "units": round(units, 2),
+            "breakdown": {
+                "carb_insulin": round(carb_insulin, 2),
+                "correction_insulin": round(max(0, correction_insulin), 2)
+            }
+        }
+
+    def search_ingredients(self, query: str, skip: int, limit: int):
+        q = self.db.query(IngredientModel)
+        if query:
+            q = q.filter(IngredientModel.name.ilike(f"%{query}%"))
+        return q.offset(skip).limit(limit).all()
+
+    def create_ingredient(self, data: dict):
+        # En Clean Arch puro, 'data' sería un DTO de entrada, no un dict
+        item = IngredientModel(**data)
+        self.db.add(item)
+        self.db.commit()
+        self.db.refresh(item)
+        return item
