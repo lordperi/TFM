@@ -1,0 +1,489 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Diabetics Platform API",
+        "version": "0.1.0",
+        "description": "API para gestión de diabetes con cálculo de bolus, registro de comidas y análisis nutricional."
+    },
+    "servers": [
+        {
+            "url": "https://diabetics-api.jljimenez.es",
+            "description": "Production Server"
+        },
+        {
+            "url": "http://localhost:8000",
+            "description": "Local Development"
+        }
+    ],
+    "paths": {
+        "/health": {
+            "get": {
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Health Check",
+                "description": "Verifica el estado del sistema y la conexión a la base de datos",
+                "operationId": "health_check",
+                "responses": {
+                    "200": {
+                        "description": "Sistema operativo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "database": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/register": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Register User",
+                "description": "Registra un nuevo usuario con su perfil de salud cifrado",
+                "operationId": "register_user",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserPublic"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Email ya registrado"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login",
+                "description": "Autenticación de usuario y obtención de token JWT",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "required": [
+                                    "username",
+                                    "password"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciales incorrectas"
+                    }
+                }
+            }
+        },
+        "/api/v1/nutrition/calculate-bolus": {
+            "post": {
+                "tags": [
+                    "Nutrition"
+                ],
+                "summary": "Calculate Bolus",
+                "description": "Calcula la dosis de insulina recomendada basada en carbohidratos y glucosa actual",
+                "operationId": "calculate_bolus",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BolusRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cálculo exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BolusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/v1/nutrition/ingredients": {
+            "post": {
+                "tags": [
+                    "Nutrition"
+                ],
+                "summary": "Create Ingredient",
+                "description": "Añade un nuevo ingrediente a la base de datos nutricional",
+                "operationId": "create_ingredient",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IngredientCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ingrediente creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IngredientResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Nutrition"
+                ],
+                "summary": "Search Ingredients",
+                "description": "Busca ingredientes por nombre",
+                "operationId": "search_ingredients",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Término de búsqueda"
+                    },
+                    {
+                        "name": "skip",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de ingredientes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IngredientResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "UserCreate": {
+                "type": "object",
+                "required": [
+                    "email",
+                    "password",
+                    "health_profile"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 8
+                    },
+                    "full_name": {
+                        "type": "string"
+                    },
+                    "health_profile": {
+                        "$ref": "#/components/schemas/HealthProfileCreate"
+                    }
+                }
+            },
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "full_name": {
+                        "type": "string"
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "health_profile": {
+                        "$ref": "#/components/schemas/HealthProfile"
+                    }
+                }
+            },
+            "HealthProfileCreate": {
+                "type": "object",
+                "required": [
+                    "diabetes_type",
+                    "insulin_sensitivity",
+                    "carb_ratio"
+                ],
+                "properties": {
+                    "diabetes_type": {
+                        "type": "string",
+                        "enum": [
+                            "type_1",
+                            "type_2",
+                            "gestational",
+                            "lada",
+                            "mody"
+                        ]
+                    },
+                    "insulin_sensitivity": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 500,
+                        "description": "Caída de glucosa (mg/dL) por 1 unidad de insulina"
+                    },
+                    "carb_ratio": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 150,
+                        "description": "Gramos de carbohidratos cubiertos por 1 unidad"
+                    },
+                    "target_glucose": {
+                        "type": "integer",
+                        "minimum": 70,
+                        "maximum": 180,
+                        "default": 100,
+                        "description": "Objetivo glucémico (mg/dL)"
+                    }
+                }
+            },
+            "HealthProfile": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/HealthProfileCreate"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "format": "uuid"
+                            }
+                        }
+                    }
+                ]
+            },
+            "BolusRequest": {
+                "type": "object",
+                "required": [
+                    "total_carbs",
+                    "current_glucose"
+                ],
+                "properties": {
+                    "total_carbs": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Total de carbohidratos en gramos"
+                    },
+                    "current_glucose": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Glucosa actual en mg/dL"
+                    },
+                    "target_glucose": {
+                        "type": "number",
+                        "minimum": 70,
+                        "default": 100,
+                        "description": "Objetivo de glucosa (override)"
+                    },
+                    "icr": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Insulin-to-Carb Ratio (override)"
+                    },
+                    "isf": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Insulin Sensitivity Factor (override)"
+                    }
+                }
+            },
+            "BolusResponse": {
+                "type": "object",
+                "properties": {
+                    "units": {
+                        "type": "number",
+                        "description": "Unidades totales de insulina recomendadas"
+                    },
+                    "breakdown": {
+                        "type": "object",
+                        "properties": {
+                            "carb_insulin": {
+                                "type": "number"
+                            },
+                            "correction_insulin": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                }
+            },
+            "IngredientCreate": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "glycemic_index",
+                    "carbs_per_100g"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "glycemic_index": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "carbs_per_100g": {
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    "fiber_per_100g": {
+                        "type": "number",
+                        "minimum": 0,
+                        "default": 0
+                    },
+                    "barcode": {
+                        "type": "string"
+                    }
+                }
+            },
+            "IngredientResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/IngredientCreate"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}
