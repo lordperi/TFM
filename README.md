@@ -20,13 +20,13 @@
 
 ## 🗺️ Roadmap de Innovación y Milestones
 
-### 🏗️ Fase 1: The Metabolic Foundation (MVP) - `[████████░░░░░░] 65%`
+### 🏗️ Fase 1: The Metabolic Foundation (MVP) - `[███████████░░░] 70%`
 
 *Enfoque: Estabilidad, Seguridad e Infraestructura.*
 
 - ✅ **Infrastructure 1.0**: Despliegue atómico en **Coolify v4 (Beta)** con Registro Docker Privado (`registry.jljimenez.es`).
 - ✅ **Security Core**: Cifrado simétrico AES-256 de PHI (Personal Health Information) y Auth JWT (HS256).
-- ✅ **Metabolic Logic**: Implementación del **Bolus Wizard** y cálculo de Carga Glucémica (CG).
+- ✅ **Metabolic Logic (TDD)**: Implementación del **Bolus Wizard**, cálculo de Carga Glucémica (CG) y Tests de Integración.
 - 🔄 **Data Population**: Semillado de base de datos con índices glucémicos estándar.
 - ⏳ **Mobile Bridge**: Inicialización del esqueleto Flutter (Dual UX).
 
@@ -56,8 +56,8 @@ Cada funcionalidad se desarrolla en aislamiento:
 | Método | Ruta | Descripción | Estado |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/auth/login` | Intercambio de credenciales por Token JWT | ✅ |
-| `POST` | `/users/register`| Registro de usuario y perfil médico cifrado | ✅ |
-| `POST` | `/nutrition/calc`| Cálculo de Bolus e Insulina (Wizard) | ✅ |
+| `POST` | `/users/register` | Registro de usuario y perfil médico cifrado | ✅ |
+| `POST` | `/nutrition/calc` | Cálculo de Bolus e Insulina (Wizard) | ✅ |
 | `GET` | `/health` | Heartbeat del sistema y la base de datos | ✅ |
 
 ---

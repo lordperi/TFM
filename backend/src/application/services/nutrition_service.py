@@ -28,10 +28,13 @@ class NutritionService:
 
         # Decryption Logic (Application Layer handles sensitive data orchestration)
         try:
+            print(f"DEBUG: Health Profile Raw: ICR={type(user.health_profile.carb_ratio)}/{user.health_profile.carb_ratio}")
+            
             profile_icr = float(user.health_profile.carb_ratio)
             profile_isf = float(user.health_profile.insulin_sensitivity)
             profile_target = float(user.health_profile.target_glucose)
-        except Exception:
+        except Exception as e:
+            print(f"CRITICAL ERROR loading profile: {e}")
             raise HTTPException(status_code=500, detail="Data corruption in health profile")
 
         # Priority: Override > Profile

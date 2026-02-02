@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 
 def test_full_bolus_calculation_flow(client):
     """
-    Integration Test:
+    Integration Test (End-to-End Flow):
     1. Register User & Set Health Profile
     2. Login to get Token
     3. Create Ingredient (Apple)
@@ -10,19 +10,21 @@ def test_full_bolus_calculation_flow(client):
     """
     
     # 1. Register
-    email = "nutrition_tester@example.com"
+    email = "integration_test@example.com"
     password = "SecurePass123!"
-    client.post("/api/v1/users/register", json={
+    reg_resp = client.post("/api/v1/users/register", json={
         "email": email,
         "password": password,
-        "full_name": "Nutrition Tester",
+        "full_name": "Integration Tester",
         "health_profile": {
             "diabetes_type": "type_1",
-            "insulin_sensitivity": 50.0, # 1u baja 50mg/dL
-            "carb_ratio": 10.0,          # 1u cubre 10g carbs
+            "insulin_sensitivity": 50.0,
+            "carb_ratio": 10.0,
             "target_glucose": 100
         }
     })
+    # Fail fast if register fails
+    assert reg_resp.status_code == 201, f"Register failed: {reg_resp.text}"
 
     # 2. Login
     login_resp = client.post("/api/v1/auth/login", data={"username": email, "password": password})
@@ -30,25 +32,25 @@ def test_full_bolus_calculation_flow(client):
     token = login_resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    # 3. Create Ingredient 'Manzana Golden' (15g carbs / 100g)
-    client.post("/api/v1/nutrition/ingredients", json={
-        "name": "Manzana Golden",
+    # 3. Create Ingredient 'Manzana Golden'
+    ing_resp = client.post("/api/v1/nutrition/ingredients", json={
+        "name": "Manzana Golden Integration",
         "glycemic_index": 38,
         "carbs_per_100g": 15.0,
         "fiber_per_100g": 2.4
     }, headers=headers)
+    assert ing_resp.status_code == 201
 
-    # 4. Search Ingredient (Verify it was created)
+    # 4. Search Ingredient (Verify create)
     search_resp = client.get("/api/v1/nutrition/ingredients?q=Manzana", headers=headers)
     assert search_resp.status_code == 200
     results = search_resp.json()
-    assert len(results) > 0
-    assert results[0]["name"] == "Manzana Golden"
+    assert any(r["name"] == "Manzana Golden Integration" for r in results)
 
     # 5. Calculate Bolus
     # Scenario: Eating 200g of Apple (30g Carbs)
     # Glucose: 250 (Needs correction)
-    # Target: 100
+    # Target: 100 (Default)
     # Expected:
     # - Meal: 30g / 10 ICR = 3.0u
     # - Correction: (250 - 100) / 50 ISF = 3.0u
@@ -65,8 +67,3 @@ def test_full_bolus_calculation_flow(client):
     assert data["units"] == 6.0
     assert data["breakdown"]["carb_insulin"] == 3.0
     assert data["breakdown"]["correction_insulin"] == 3.0
-
-def test_bolus_calculation_without_profile_fails(client):
-    # Register user without profile (if possible, or mock it)
-    # For now, our register endpoint enforces profile, so this might need a direct DB insertion if tested strictly
-    pass 
