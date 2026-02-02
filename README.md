@@ -62,7 +62,7 @@ Eliminar la fricción de la entrada manual de datos.
 
 - [ ] **CGM Direct Link**: Conexión con sensores Dexcom/Libre en tiempo real.
 
----
+El proyecto sigue una **Arquitectura Hexagonal (Clean Architecture)**, asegurando que la lógica nutricional sea independiente de la base de datos o el framework web.
 
 ## 🛠️ Stack Tecnológico
 
@@ -96,8 +96,34 @@ Actualmente documentados en `/docs` (Swagger UI) al desplegar.
 * `GET /ingredients/search`: Búsqueda full-text de alimentos.
 - `POST /bolus/calculate`: Algoritmo complejo: $Bolus = \frac{Carbs}{ICR} + \frac{Gluc_{actual} - Gluc_{target}}{ISF}$.
 
+1. `feature/XXX` -> 2. Atomic Commits -> 3. PR Review -> 4. Automated Tests -> 5. Merge -> 6. Auto-Deploy.
+
+### 🔌 Catálogo de Endpoints (v1.0)
+
+| Método | Ruta | Descripción | Estado |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/auth/login` | Intercambio de credenciales por Token JWT | ✅ |
+| `POST` | `/users/register` | Registro de usuario y perfil médico cifrado | ✅ |
+| `POST` | `/nutrition/calc` | Cálculo de Bolus e Insulina (Wizard) | ✅ |
+| `GET` | `/health` | Heartbeat del sistema y la base de datos | ✅ |
+
 ---
 
+## 🛡️ Stack Tecnológico de Élite
+
+- **Backend**: Python 3.12 + FastAPI (Asíncrono y optimizado para IA).
+- **Data**: PostgreSQL 16 + Alembic (Gestión de migraciones de grado de producción).
+- **Seguridad**: Fernet (Cifrado de datos de salud) + Bcrypt (Hashing).
+- **Infra**: Docker + Coolify v4 + Cloudflare (Proxy SSL Full Strict).
+
+---
+
+## 📖 Glosario Metabólico (Reference)
+
+- **IG (Índice Glucémico)**: Velocidad con la que un alimento aumenta la glucosa.
+- **CG (Carga Glucémica)**: Impacto real basado en el IG y la cantidad de carbohidratos netos.
+- **ICR (Carb Ratio)**: Gramos de carbohidratos cubiertos por 1 unidad de insulina.
+- **ISF (Sensitivity Factor)**: Cuánto baja la glucosa 1 unidad de insulina.
 ## ⚙️ Metodología de Desarrollo & CI/CD
 
 El equipo sigue un flujo estricto de **Trunk-Based Development** adaptado.
@@ -126,4 +152,4 @@ El equipo sigue un flujo estricto de **Trunk-Based Development** adaptado.
 - **PHI (Protected Health Information)**: Datos médicos sensibles que deben ser cifrados por ley (GDPR/HIPAA).
 
 ---
-*Máster de Desarrollo con Inteligencia Artificial - 2026*
+*DiaBeaty TFM - Ingeniería y Arquitectura de Software con IA*

@@ -25,6 +25,10 @@ def test_login_successful_flow(client):
     }
     response = client.post("/api/v1/auth/login", data=login_data)
     
+    # Debug si falla
+    if response.status_code != 200:
+        print(response.json())
+
     assert response.status_code == 200
     token_resp = response.json()
     assert "access_token" in token_resp

@@ -13,11 +13,6 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """
-    Autentica un usuario y devuelve un token JWT (Bearer).
-    - **username**: Debe ser el email registrado.
-    - **password**: Contraseña en texto plano.
-    """
     # 1. Buscar usuario
     # NOTA: En Clean Arch estricto, esto iría en un AuthUseCase en la capa de Aplicación.
     # Dado el MVP, accedemos al repository/modelo directamente aquí por pragmatismo.
@@ -36,5 +31,4 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = create_access_token(
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
-    
     return {"access_token": access_token, "token_type": "bearer"}
