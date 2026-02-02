@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
+from uuid import UUID
 
 # Domain
 from src.domain.nutrition import calculate_daily_bolus
@@ -19,7 +20,13 @@ class NutritionService:
         2. Decrypts Data
         3. Applies Domain Logic
         """
-        user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
+        # Fix: Cast string user_id to UUID object for SQLAlchemy strict typing
+        try:
+            uid = UUID(user_id)
+        except ValueError:
+             raise HTTPException(status_code=400, detail="Invalid User ID format")
+
+        user = self.db.query(UserModel).filter(UserModel.id == uid).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
