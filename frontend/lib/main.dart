@@ -8,6 +8,8 @@ import 'core/constants/app_constants.dart';
 import 'data/datasources/auth_api_client.dart';
 import 'presentation/bloc/auth/auth_bloc.dart';
 import 'presentation/bloc/theme/theme_bloc.dart';
+import 'data/datasources/nutrition_api_client.dart';
+import 'presentation/bloc/nutrition/nutrition_bloc.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
 
@@ -21,8 +23,13 @@ void main() async {
   // Initialize dependencies
   final secureStorage = const FlutterSecureStorage();
   final sharedPreferences = await SharedPreferences.getInstance();
+  // Dependencies
   final dioClient = DioClient(secureStorage);
   final authApiClient = AuthApiClient(
+    dioClient.dio,
+    baseUrl: ApiConstants.baseUrl,
+  );
+  final nutritionApiClient = NutritionApiClient(
     dioClient.dio,
     baseUrl: ApiConstants.baseUrl,
   );
@@ -32,6 +39,7 @@ void main() async {
       secureStorage: secureStorage,
       sharedPreferences: sharedPreferences,
       authApiClient: authApiClient,
+      nutritionApiClient: nutritionApiClient,
     ),
   );
 }
@@ -40,12 +48,14 @@ class DiaBetyApp extends StatelessWidget {
   final FlutterSecureStorage secureStorage;
   final SharedPreferences sharedPreferences;
   final AuthApiClient authApiClient;
+  final NutritionApiClient nutritionApiClient;
 
   const DiaBetyApp({
     super.key,
     required this.secureStorage,
     required this.sharedPreferences,
     required this.authApiClient,
+    required this.nutritionApiClient,
   });
 
   @override
@@ -63,6 +73,12 @@ class DiaBetyApp extends StatelessWidget {
             authApiClient: authApiClient,
             secureStorage: secureStorage,
           )..add(const CheckAuthStatus()),
+        ),
+        // Nutrition BLoC (Global access for now)
+        BlocProvider(
+          create: (context) => NutritionBloc(
+            apiClient: nutritionApiClient,
+          ),
         ),
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
