@@ -19,9 +19,9 @@ dependencies:
   injectable: ^2.3.2
   
   # HTTP Client & API
-  dio: ^5.4.0
-  retrofit: ^4.0.3
-  json_annotation: ^4.8.1
+  dio: ^5.7.0
+  retrofit: 4.0.1
+  json_annotation: ^4.8.0
   
   # Secure Storage
   flutter_secure_storage: ^9.0.0
@@ -42,10 +42,10 @@ dev_dependencies:
   flutter_lints: ^3.0.1
   
   # Code Generation
-  build_runner: ^2.4.7
+  build_runner: ^2.4.8
   injectable_generator: ^2.4.1
-  retrofit_generator: ^8.0.6
-  json_serializable: ^6.7.1
+  retrofit_generator: 7.0.8
+  json_serializable: ^6.6.0
   
   # Testing
   mockito: ^5.4.4
@@ -54,18 +54,18 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
-  assets:
-    - assets/images/
-    - assets/animations/
-    - assets/icons/
+  # assets: (Desactivado temporalmente para arranque)
+  #   - assets/images/
+  #   - assets/animations/
+  #   - assets/icons/
   
-  fonts:
-    - family: Poppins
-      fonts:
-        - asset: assets/fonts/Poppins-Regular.ttf
-        - asset: assets/fonts/Poppins-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Poppins-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Poppins-Bold.ttf
-          weight: 700
+  # fonts: (Desactivado temporalmente para arranque)
+  #   - family: Poppins
+  #     fonts:
+  #       - asset: assets/fonts/Poppins-Regular.ttf
+  #       - asset: assets/fonts/Poppins-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Poppins-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Poppins-Bold.ttf
+  #         weight: 700
