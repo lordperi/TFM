@@ -21,6 +21,13 @@ app = FastAPI(
 )
 
 # ... (Middlewares)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for Flutter Web/Localhost dev
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- Routes ---
 app.include_router(health.router)
