@@ -9,6 +9,7 @@ import 'data/datasources/auth_api_client.dart';
 import 'presentation/bloc/auth/auth_bloc.dart';
 import 'presentation/bloc/theme/theme_bloc.dart';
 import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/dashboard/dashboard_screen.dart';
 
 // ==========================================
 // MAIN APPLICATION
@@ -76,11 +77,12 @@ class DiaBetyApp extends StatelessWidget {
               builder: (context, authState) {
                 if (authState is AuthAuthenticated) {
                   // TODO: Navigate to Home Screen
-                  return const Scaffold(
-                    body: Center(
-                      child: Text('¡Bienvenido! (Home Screen próximamente)'),
-                    ),
-                  );
+                  // Navegación basada en estado
+                  if (authState is AuthAuthenticated) {
+                    return const DashboardScreen();
+                  }
+                  // Si no está autenticado o hubo error, volver al login
+                  return const LoginScreen();
                 }
                 return const LoginScreen();
               },
