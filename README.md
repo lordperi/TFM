@@ -115,9 +115,18 @@ Actualmente documentados en `/docs` (Swagger UI) al desplegar.
 ## 🛡️ Stack Tecnológico de Élite
 
 - **Backend**: Python 3.12 + FastAPI (Asíncrono y optimizado para IA).
+- **Frontend**: Flutter Web (WASM/JS) + Nginx Alpine (SPA Routing & Security Hardening).
 - **Data**: PostgreSQL 16 + Alembic (Gestión de migraciones de grado de producción).
-- **Seguridad**: Fernet (Cifrado de datos de salud) + Bcrypt (Hashing).
+- **Seguridad**: Fernet (Cifrado de datos de salud) + Bcrypt (Hashing) + CSP Headers.
 - **Infra**: Docker + Coolify v4 + Cloudflare (Proxy SSL Full Strict).
+
+## 🚀 Despliegue Frontend (Flutter Web)
+
+El frontend se despliega automáticamente junto con el backend mediante `docker-compose`.
+
+- **URL**: `https://diabetics.jljimenez.es`
+- **Build**: Multi-stage (Flutter SDK -> Nginx).
+- **Seguridad**: Nginx configurado con `Content-Security-Policy` estricto y bloqueo de iframes (`X-Frame-Options: DENY`).
 
 ---
 

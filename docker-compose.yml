@@ -43,6 +43,26 @@ services:
       # Tells Coolify/Traefik where to route traffic
       - "coolify.proxy.port=8000"
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: ${DOCKER_IMAGE_FRONTEND:-frontend:latest}
+    container_name: diabetics_frontend
+    restart: always
+    environment:
+      - API_BASE_URL=https://diabetics-api.jljimenez.es
+    networks:
+      - coolify
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    labels:
+      - "coolify.managed=true"
+      - "coolify.proxy.port=80"
+
   db:
     image: postgres:16-alpine
     container_name: diabetics_db
