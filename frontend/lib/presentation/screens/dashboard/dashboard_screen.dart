@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/theme/theme_bloc.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../screens/nutrition/food_search_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -38,8 +39,9 @@ class DashboardScreen extends StatelessWidget {
           body: isAdult ? const _AdultDashboard() : const _ChildDashboard(),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(isAdult ? 'Añadir registro...' : '¡Nueva Misión!')),
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (_) => const FoodSearchScreen()),
               );
             },
             child: const Icon(Icons.add),

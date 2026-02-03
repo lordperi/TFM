@@ -83,17 +83,20 @@ Actualmente documentados en `/docs` (Swagger UI) al desplegar.
 
 ### Authentication (`/api/v1/auth`)
 
-* `POST /login`: Intercambia credenciales por **Access Token** (JWT Bearer).
+- `POST /login`: Intercambia credenciales por **Access Token** (JWT Bearer).
+
 - `POST /refresh`: (Planeado) Rotación de tokens de sesión.
 
 ### Users & Health (`/api/v1/users`)
 
-* `POST /register`: Creación de cuenta y **Perfil de Salud Inicial** (Ratios, Tipo Diabetes).
+- `POST /register`: Creación de cuenta y **Perfil de Salud Inicial** (Ratios, Tipo Diabetes).
+
 - `GET /me`: Obtiene datos del usuario descifrados en tiempo real (requiere Auth).
 
 ### Nutrition (`/api/v1/nutrition`) - *Coming Soon*
 
-* `GET /ingredients/search`: Búsqueda full-text de alimentos.
+- `GET /ingredients/search`: Búsqueda full-text de alimentos.
+
 - `POST /bolus/calculate`: Algoritmo complejo: $Bolus = \frac{Carbs}{ICR} + \frac{Gluc_{actual} - Gluc_{target}}{ISF}$.
 
 1. `feature/XXX` -> 2. Atomic Commits -> 3. PR Review -> 4. Automated Tests -> 5. Merge -> 6. Auto-Deploy.
@@ -124,6 +127,7 @@ Actualmente documentados en `/docs` (Swagger UI) al desplegar.
 - **CG (Carga Glucémica)**: Impacto real basado en el IG y la cantidad de carbohidratos netos.
 - **ICR (Carb Ratio)**: Gramos de carbohidratos cubiertos por 1 unidad de insulina.
 - **ISF (Sensitivity Factor)**: Cuánto baja la glucosa 1 unidad de insulina.
+
 ## ⚙️ Metodología de Desarrollo & CI/CD
 
 El equipo sigue un flujo estricto de **Trunk-Based Development** adaptado.
@@ -138,6 +142,23 @@ El equipo sigue un flujo estricto de **Trunk-Based Development** adaptado.
     - Construye la imagen Docker.
     - Ejecuta Migraciones de DB (`alembic upgrade head`).
     - Despliega en Producción sin downtime.
+
+## 📦 Data Seeding (Operación Semilla)
+
+Para poblar la base de datos de producción con alimentos validados (15 items iniciales):
+
+```bash
+# Requiere Python 3.10+ y requests
+python backend/scripts/remote_seed_v2.py
+```
+
+Esto inyectará alimentos como Arroz, Pollo, Manzana, etc., necesarios para el funcionamiento del Frontend.
+
+**Verificación:**
+
+```bash
+python backend/scripts/verify_seeding.py
+```
 
 **Gestión de Secretos**: Las variables (`ENCRYPTION_KEY`, `SECRET_KEY`, `DB_URL`) se inyectan exclusivamente a través de la UI de Coolify, nunca en el repositorio.
 
