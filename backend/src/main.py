@@ -20,10 +20,17 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# ... (Middlewares)
+# CORS Middleware configuration
+# WARNING: In production, restrict allow_origins to specific domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for Flutter Web/Localhost dev
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://diabetics.jljimenez.es",
+        "http://localhost", # Allow generic localhost for Flutter random ports
+    ],
+    allow_origin_regex="http://localhost:\d+", # Allow any port on localhost
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

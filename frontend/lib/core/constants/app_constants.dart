@@ -3,7 +3,10 @@
 // ==========================================
 
 class ApiConstants {
-  static const String baseUrl = 'https://diabetics-api.jljimenez.es';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://diabetics-api.jljimenez.es',
+  );
   static const String apiVersion = '/api/v1';
   
   // Endpoints

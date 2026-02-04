@@ -47,11 +47,15 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        API_BASE_URL: ${API_BASE_URL:-https://diabetics-api.jljimenez.es}
     image: ${DOCKER_IMAGE_FRONTEND:-frontend:latest}
     container_name: diabetics_frontend
     restart: always
+    # ports:
+    #   - "3000:80" # Disabled for Production to let Traefik handle ingress
     environment:
-      - API_BASE_URL=https://diabetics-api.jljimenez.es
+      - API_BASE_URL=${API_BASE_URL:-https://diabetics-api.jljimenez.es}
     networks:
       - coolify
     deploy:
@@ -67,6 +71,8 @@ services:
     image: postgres:16-alpine
     container_name: diabetics_db
     restart: always
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -90,9 +96,9 @@ networks:
   # Internal network for DB isolation (Not exposed to Traefik/Public)
   internal_db_network:
     driver: bridge
-    internal: true
+    # internal: true
 
-  # Network for Coolify/Traefik communication
+    # Network for Coolify/Traefik communication
   coolify:
     external: true # Assumes Coolify creates this (Standard name is 'coolify')
 

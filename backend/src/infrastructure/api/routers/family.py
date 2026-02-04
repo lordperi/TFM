@@ -26,7 +26,7 @@ class PatientResponse(BaseModel):
     id: str
     display_name: str
     theme_preference: str
-    login_code: str = None
+    login_code: str | None = None
 
 @router.get("/members", response_model=List[PatientResponse])
 def get_family_members(
