@@ -1,32 +1,16 @@
-# Stage 1: Build Flutter Web
-FROM ghcr.io/cirruslabs/flutter:3.19.0 AS build
-
-WORKDIR /app
-
-# 1. Copiamos SOLO el yaml para no arrastrar conflictos de versiones de Windows
-COPY pubspec.yaml ./
-
-# 2. Instalamos dependencias (Esto generará un pubspec.lock fresco para Linux)
-RUN flutter pub get
-
-# 3. Copiamos el resto del código
-COPY . .
-
-# 4. 🔥 CRÍTICO: Generar los archivos .g.dart (Clean Architecture)
-# Sin esto, la compilación falla porque no existen los modelos JSON
-RUN dart run build_runner build --delete-conflicting-outputs
-
-# 5. Construir la Web
-# Añadimos --verbose para ver el error real si falla
-RUN flutter build web --release --no-tree-shake-icons --verbose
-
-# Stage 2: Serve with Nginx
+# YA NO HAY FLUTTER AQUÍ. SOLO NGINX.
 FROM nginx:alpine
 
-# Limpieza y Configuración
+# 1. Limpiamos el servidor por defecto
 RUN rm -rf /usr/share/nginx/html/*
-COPY --from=build /app/build/web /usr/share/nginx/html
+
+# 2. Copiamos la carpeta que TU has compilado en Windows y subido a Git
+# La ruta depende de tu estructura, pero suele ser esta:
+COPY build/web /usr/share/nginx/html
+
+# 3. Copiamos la config de Nginx (asegúrate de que existe el archivo nginx.conf)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# 4. Exponemos y arrancamos
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
