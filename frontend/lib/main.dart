@@ -12,6 +12,9 @@ import 'data/datasources/nutrition_api_client.dart';
 import 'presentation/bloc/nutrition/nutrition_bloc.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
+import 'data/datasources/family_api_client.dart';
+import 'data/repositories/family_repository.dart';
+import 'presentation/screens/profile/profile_selection_screen.dart';
 
 // ==========================================
 // MAIN APPLICATION
@@ -33,6 +36,11 @@ void main() async {
     dioClient.dio,
     baseUrl: ApiConstants.baseUrl,
   );
+  final familyApiClient = FamilyApiClient(
+    dioClient.dio,
+    baseUrl: ApiConstants.baseUrl,
+  );
+  final familyRepository = FamilyRepository(familyApiClient);
 
   runApp(
     DiaBetyApp(
@@ -40,6 +48,7 @@ void main() async {
       sharedPreferences: sharedPreferences,
       authApiClient: authApiClient,
       nutritionApiClient: nutritionApiClient,
+      familyRepository: familyRepository,
     ),
   );
 }
@@ -49,6 +58,7 @@ class DiaBetyApp extends StatelessWidget {
   final SharedPreferences sharedPreferences;
   final AuthApiClient authApiClient;
   final NutritionApiClient nutritionApiClient;
+  final FamilyRepository familyRepository;
 
   const DiaBetyApp({
     super.key,
@@ -56,6 +66,7 @@ class DiaBetyApp extends StatelessWidget {
     required this.sharedPreferences,
     required this.authApiClient,
     required this.nutritionApiClient,
+    required this.familyRepository,
   });
 
   @override
@@ -72,6 +83,7 @@ class DiaBetyApp extends StatelessWidget {
           create: (context) => AuthBloc(
             authApiClient: authApiClient,
             secureStorage: secureStorage,
+            familyRepository: familyRepository,
           )..add(const CheckAuthStatus()),
         ),
         // Nutrition BLoC (Global access for now)
@@ -81,30 +93,37 @@ class DiaBetyApp extends StatelessWidget {
           ),
         ),
       ],
-      child: BlocBuilder<ThemeBloc, ThemeState>(
-        builder: (context, themeState) {
-          return MaterialApp(
-            title: 'DiaBeaty',
-            debugShowCheckedModeBanner: false,
-            theme: themeState.uiMode.isAdult
-                ? AppTheme.adultTheme
-                : AppTheme.childTheme,
-            home: BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, authState) {
-                if (authState is AuthAuthenticated) {
-                  // TODO: Navigate to Home Screen
-                  // Navegación basada en estado
-                  if (authState is AuthAuthenticated) {
-                    return const DashboardScreen();
-                  }
-                  // Si no está autenticado o hubo error, volver al login
-                  return const LoginScreen();
-                }
-                return const LoginScreen();
-              },
-            ),
-          );
+      child: BlocListener<AuthBloc, AuthState>(
+        listener: (context, authState) {
+          if (authState is AuthAuthenticated && authState.selectedProfile != null) {
+             final isChild = authState.selectedProfile!.isChild;
+             context.read<ThemeBloc>().add(SetUiMode(
+                 isChild ? UiMode.child : UiMode.adult
+             ));
+          }
         },
+        child: BlocBuilder<ThemeBloc, ThemeState>(
+          builder: (context, themeState) {
+            return MaterialApp(
+              title: 'DiaBeaty',
+              debugShowCheckedModeBanner: false,
+              theme: themeState.uiMode.isAdult
+                  ? AppTheme.adultTheme
+                  : AppTheme.childTheme,
+              home: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, authState) {
+                  if (authState is AuthAuthenticated) {
+                    if (authState.selectedProfile != null) {
+                      return const DashboardScreen();
+                    }
+                    return const ProfileSelectionScreen();
+                  }
+                  return const LoginScreen();
+                },
+              ),
+            );
+          },
+        ),
       ),
     );
   }

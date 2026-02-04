@@ -6,40 +6,46 @@ from uuid import UUID
 from src.domain.nutrition import calculate_daily_bolus
 # Infra (Repository would be cleaner, but we'll use DB models here carefully for MVP speed, 
 # ideally we should have a UserRepository interface)
-from src.infrastructure.db.models import UserModel, IngredientModel
+from src.infrastructure.db.models import PatientModel, IngredientModel
 
 class NutritionService:
     def __init__(self, db: Session):
         self.db = db
 
-    def calculate_bolus(self, user_id: str, carbs: float, glucose: float, 
+    def calculate_bolus(self, user_id: str, patient_id: str, carbs: float, glucose: float, 
                        icr_override: float = None, isf_override: float = None, target_override: float = None):
         """
         Orchestrates the Bolus Calculation Use Case.
-        1. Fetches User Profile
+        1. Fetches Patient Profile & Verifies Guardian Ownership
         2. Decrypts Data
         3. Applies Domain Logic
         """
-        # Fix: Cast string user_id to UUID object for SQLAlchemy strict typing
         try:
+            pid = UUID(patient_id)
             uid = UUID(user_id)
         except ValueError:
-             raise HTTPException(status_code=400, detail="Invalid User ID format")
+             raise HTTPException(status_code=400, detail="Invalid ID format")
 
-        user = self.db.query(UserModel).filter(UserModel.id == uid).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+        # Security: Allow access ONLY if User is the Guardian
+        patient = self.db.query(PatientModel).filter(
+            PatientModel.id == pid,
+            PatientModel.guardian_id == uid
+        ).first()
         
-        if not user.health_profile:
-            raise HTTPException(status_code=400, detail="Health profile missing")
+        if not patient:
+            # 404 is safer than 403 to avoid leaking patient existence
+            raise HTTPException(status_code=404, detail="Patient not found or access denied")
+        
+        if not patient.health_profile:
+            raise HTTPException(status_code=400, detail="Health profile missing for this patient")
 
         # Decryption Logic (Application Layer handles sensitive data orchestration)
         try:
-            print(f"DEBUG: Health Profile Raw: ICR={type(user.health_profile.carb_ratio)}/{user.health_profile.carb_ratio}")
+            print(f"DEBUG: Health Profile Raw: ICR={type(patient.health_profile.carb_ratio)}/{patient.health_profile.carb_ratio}")
             
-            profile_icr = float(user.health_profile.carb_ratio)
-            profile_isf = float(user.health_profile.insulin_sensitivity)
-            profile_target = float(user.health_profile.target_glucose)
+            profile_icr = float(patient.health_profile.carb_ratio)
+            profile_isf = float(patient.health_profile.insulin_sensitivity)
+            profile_target = float(patient.health_profile.target_glucose)
         except Exception as e:
             print(f"CRITICAL ERROR loading profile: {e}")
             raise HTTPException(status_code=500, detail="Data corruption in health profile")

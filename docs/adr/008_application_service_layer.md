@@ -1,32 +1,32 @@
-# 8. Application Service Layer for Business Logic
+# ADR-008: Capa de Servicios de Aplicación para Lógica de Negocio
 
-Date: 2026-02-02
+| Metadatos | Valor |
+| :--- | :--- |
+| **Fecha** | 2026-02-02 |
+| **Estado** | Aceptado |
+| **Decisores** | Lead Architect |
 
-## Status
+## Contexto
 
-Accepted
+Inicialmente, los Routers de la API (Capa de Infraestructura) accedían directamente a los Modelos de Base de Datos y ejecutaban lógica de negocio (por ejemplo, Cálculo de Bolus, Registro de Usuario). Esto violaba los principios de **Clean Architecture** y **Responsabilidad Única**, creando un acoplamiento fuerte entre el Framework HTTP (FastAPI) y las Reglas de Dominio.
 
-## Context
+## Decisión
 
-Initially, the API Routers (Infrastructure Layer) were directly accessing the Database Models and performing business logic (e.g., Bolus Calculation, User Registration). This violated the **Clean Architecture** and **Single Responsibility** principles, creating tight coupling between the HTTP Framework (FastAPI) and the Domain Rules.
+Se decidió introducir una **Capa de Aplicación** explícitamente definida que contenga **Servicios** (`NutritionService`, `UserService`).
 
-## Decision
+- **Routers** (`src/infrastructure/api/routers`): Solo manejan peticiones HTTP, validación de entrada (Esquemas) y formateo de respuestas. Delegan toda la lógica a los Servicios.
+- **Servicios** (`src/application/services`): Orquestan el flujo de datos. Recuperan entidades de Repositorios (o sesiones de DB por ahora), llaman a la lógica de Dominio y manejan la orquestación de cifrado/descifrado.
+- **Dominio** (`src/domain`): Lógica de negocio pura y funciones matemáticas, sin dependencias de la base de datos o el framework.
 
-We decided to introduce an explicitly defined **Application Layer** containing **Services** (`NutritionService`, `UserService`).
+## Consecuencias
 
-- **Routers** (`src/infrastructure/api/routers`): Only handle HTTP requests, input validation (Schemas), and response formatting. They delegate all logic to Services.
-- **Services** (`src/application/services`): Orchestrate the flow of data. They retrieve entities from Repositories (or DB sessions for now), call Domain logic, and handle encryption/decryption orchestration.
-- **Domain** (`src/domain`): Pure business logic and mathematical functions, with zero dependencies on the database or framework.
+### Positivas
 
-## Consequences
+- **Testabilidad**: Los servicios se pueden probar de forma aislada sin levantar un servidor HTTP.
+- **Flexibilidad**: La base de datos subyacente o el framework de API pueden cambiar sin tocar la lógica de negocio.
+- **Claridad**: Es instantáneamente obvio dónde viven las "reglas" de la aplicación.
 
-### Positive
+### Negativas
 
-- **Testability**: Services can be tested in isolation without spinning up an HTTP server.
-- **Flexibility**: The underlying database or API framework can change without touching the business logic.
-- **Clarity**: It is instantly obvious where the "rules" of the application live.
-
-### Negative
-
-- **Boilerplate**: Requires creating an extra class/file for simple CRUD operations.
-- **Complexity**: New developers must understand the layering (Router -> Service -> Domain) instead of just writing code in one function.
+- **Boilerplate**: Requiere crear una clase/archivo extra para operaciones CRUD simples.
+- **Complejidad**: Los nuevos desarrolladores deben entender la estratificación (Router -> Servicio -> Dominio) en lugar de simplemente escribir código en una función.

@@ -22,7 +22,8 @@ def calculate_bolus(
     Calculates insulin bolus via Application Service.
     """
     result = service.calculate_bolus(
-        user_id=user_id,
+        user_id=str(user_id), # Ensure string for UUID conversion in Service if needed, or pass as is
+        patient_id=req.patient_id,
         carbs=req.total_carbs,
         glucose=req.current_glucose,
         icr_override=req.icr,
