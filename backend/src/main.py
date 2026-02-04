@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from src.infrastructure.db.database import engine, Base
 
 # Import Routers
-from src.infrastructure.api.routers import health, users, auth, nutrition
+from src.infrastructure.api.routers import health, users, auth, nutrition, family
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,6 +34,7 @@ app.include_router(health.router)
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(nutrition.router, prefix="/api/v1")
+app.include_router(family.router, prefix="/api/v1")
 
 if __name__ == "__main__":
     import uvicorn

@@ -3,6 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 class BolusRequest(BaseModel):
+    patient_id: str = Field(..., description="UUID of the patient profile")
     total_carbs: float = Field(..., gt=0, description="Total carbohydrates in grams")
     current_glucose: float = Field(..., gt=0, description="Current blood glucose in mg/dL")
     target_glucose: Optional[float] = Field(100.0, gt=70, description="Target glucose (override DB profile default)")
