@@ -15,16 +15,35 @@ class UserModel(Base):
     full_name = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     
-    # 1:1 relationship with HealthProfile
-    health_profile = relationship("HealthProfileModel", uselist=False, back_populates="user", cascade="all, delete-orphan")
-    # 1:N relationship with MealLogs
-    meals = relationship("MealLogModel", back_populates="user", cascade="all, delete-orphan")
+    # 1:N relationship with Patients (Family Members)
+    patients = relationship("PatientModel", back_populates="guardian", cascade="all, delete-orphan")
+    
+    # Security for Quick Switch
+    pin_hash = Column(String, nullable=True) # 4-digit PIN for parental control
+
+class PatientModel(Base):
+    __tablename__ = "patients"
+
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    guardian_id = Column(Uuid(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    
+    display_name = Column(String, nullable=False)
+    birth_date = Column(DateTime, nullable=True) # For age logic
+    theme_preference = Column(String, default="adult") # 'child', 'teen', 'adult'
+    
+    # Device Linking (Simple Code)
+    login_code = Column(String, unique=True, index=True, nullable=True)
+    
+    # Relationships
+    guardian = relationship("UserModel", back_populates="patients")
+    health_profile = relationship("HealthProfileModel", uselist=False, back_populates="patient", cascade="all, delete-orphan")
 
 class HealthProfileModel(Base):
     __tablename__ = "health_profiles"
 
     id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False, index=True)
+    # Changed from user_id to patient_id
+    patient_id = Column(Uuid(as_uuid=True), ForeignKey("patients.id"), unique=True, nullable=False, index=True)
     diabetes_type = Column(String, nullable=False)
     
     # Sensitive Data (Encrypted at rest)
@@ -34,7 +53,8 @@ class HealthProfileModel(Base):
     carb_ratio = Column(EncryptedString, nullable=False)
     target_glucose = Column(EncryptedString, nullable=False) # Often personal preference, but kept private.
 
-    user = relationship("UserModel", back_populates="health_profile")
+    # user = relationship("UserModel", back_populates="health_profile") # DEPRECATED
+    patient = relationship("PatientModel", back_populates="health_profile")
 
 # --- NUTRITION DOMAIN ---
 
@@ -54,7 +74,10 @@ class MealLogModel(Base):
     __tablename__ = "meals_log"
 
     id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    # Linked to Patient (the one eating), not just the User (Guardian)
+    patient_id = Column(Uuid(as_uuid=True), ForeignKey("patients.id"), nullable=False, index=True)
+    # Optional: Keep user_id as "Recorded By" if needed, but for now assuming Patient context is enough.
+    
     timestamp = Column(DateTime, default=dt.datetime.utcnow, index=True)
     
     # Computed metrics snapshot
@@ -65,7 +88,8 @@ class MealLogModel(Base):
     notes = Column(EncryptedString, nullable=True) 
 
     # Relationships
-    user = relationship("UserModel", back_populates="meals")
+    patient = relationship("PatientModel", backref="meals")
+    # user = relationship("UserModel", back_populates="meals") # DEPRECATED linkage
     items = relationship("MealItemModel", back_populates="meal", cascade="all, delete-orphan")
 
 class MealItemModel(Base):
