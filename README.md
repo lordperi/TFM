@@ -73,7 +73,7 @@ El proyecto sigue una **Arquitectura Hexagonal (Clean Architecture)**, asegurand
 | **Datos** | **PostgreSQL 16** | Integridad ACID robusta y soporte JSONB para flexibilidad. |
 | **ORM / Migraciones** | **SQLAlchemy 2.0 / Alembic** | Abstracción de DB y control de versiones del esquema. |
 | **Mobile** | **Flutter 3.19** | Código único (Dart) para iOS/Android y motor gráfico Skia para gamificación. |
-| **CD / Orquestación** | **Coolify v4** | Deployments automáticos (Push-to-Deploy) y soberanía de datos. |
+| **CD / Orquestación** | **Coolify v4** | Deployments automáticos (Push-to-Deploy) y soberanía de datos. [Ver detalles](docs/infrastructure/coolify.md) |
 
 ---
 
@@ -122,11 +122,15 @@ Actualmente documentados en `/docs` (Swagger UI) al desplegar.
 
 ## 🚀 Despliegue Frontend (Flutter Web)
 
-El frontend se despliega automáticamente junto con el backend mediante `docker-compose`.
+El frontend utiliza una estrategia híbrida para optimizar recursos en el servidor:
 
-- **URL**: `https://diabetics.jljimenez.es`
-- **Build**: Multi-stage (Flutter SDK -> Nginx).
-- **Seguridad**: Nginx configurado con `Content-Security-Policy` estricto y bloqueo de iframes (`X-Frame-Options: DENY`).
+1. **Compilación Local**: El desarrollador genera los estáticos (`flutter build web`).
+2. **Containerización Ligera**: Docker empaqueta *solo* Nginx y los archivos HTML/JS resultantes.
+3. **Despliegue Automático**: Coolify orquesta ambos contenedores (`api` + `frontend`) al recibir un Push en `main`.
+
+- **Documentación Completa**: [Ver Guía de Despliegue](docs/infrastructure/deploy.md)
+- **URL Producción**: `https://diabetics.jljimenez.es`
+- **Seguridad**: Nginx con CSP estricto y bloqueo de iframes (`X-Frame-Options: DENY`).
 
 ---
 
