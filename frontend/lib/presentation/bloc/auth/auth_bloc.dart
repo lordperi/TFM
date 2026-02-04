@@ -4,6 +4,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../data/datasources/auth_api_client.dart';
 import '../../../data/models/auth_models.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../data/models/family_models.dart';
+import '../../../data/repositories/family_repository.dart';
 
 // ==========================================
 // AUTH BLOC - EVENTS
@@ -54,6 +56,15 @@ class CheckAuthStatus extends AuthEvent {
   const CheckAuthStatus();
 }
 
+class SelectProfile extends AuthEvent {
+  final PatientProfile profile;
+
+  const SelectProfile(this.profile);
+
+  @override
+  List<Object?> get props => [profile];
+}
+
 // ==========================================
 // AUTH BLOC - STATES
 // ==========================================
@@ -76,14 +87,16 @@ class AuthLoading extends AuthState {
 class AuthAuthenticated extends AuthState {
   final String accessToken;
   final UserPublicResponse? user;
+  final PatientProfile? selectedProfile;
 
   const AuthAuthenticated({
     required this.accessToken,
     this.user,
+    this.selectedProfile,
   });
 
   @override
-  List<Object?> get props => [accessToken, user];
+  List<Object?> get props => [accessToken, user, selectedProfile];
 }
 
 class AuthUnauthenticated extends AuthState {
@@ -106,17 +119,21 @@ class AuthError extends AuthState {
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthApiClient _authApiClient;
   final FlutterSecureStorage _secureStorage;
+  final FamilyRepository? _familyRepository;
 
   AuthBloc({
     required AuthApiClient authApiClient,
     required FlutterSecureStorage secureStorage,
+    FamilyRepository? familyRepository,
   })  : _authApiClient = authApiClient,
         _secureStorage = secureStorage,
+        _familyRepository = familyRepository,
         super(const AuthInitial()) {
     on<LoginRequested>(_onLoginRequested);
     on<RegisterRequested>(_onRegisterRequested);
     on<LogoutRequested>(_onLogoutRequested);
     on<CheckAuthStatus>(_onCheckAuthStatus);
+    on<SelectProfile>(_onSelectProfile);
   }
 
   Future<void> _onLoginRequested(
@@ -201,6 +218,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthAuthenticated(accessToken: token));
     } else {
       emit(const AuthUnauthenticated());
+    }
+  }
+
+  Future<void> _onSelectProfile(
+    SelectProfile event,
+    Emitter<AuthState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is AuthAuthenticated) {
+        // Save to storage
+        await _secureStorage.write(key: 'selected_patient_id', value: event.profile.id);
+        
+        emit(AuthAuthenticated(
+            accessToken: currentState.accessToken,
+            user: currentState.user,
+            selectedProfile: event.profile
+        ));
     }
   }
 
