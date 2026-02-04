@@ -71,58 +71,61 @@ class DiaBetyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        // Theme BLoC
-        BlocProvider(
-          create: (context) => ThemeBloc(prefs: sharedPreferences)
-            ..add(const LoadSavedTheme()),
-        ),
-        // Auth BLoC
-        BlocProvider(
-          create: (context) => AuthBloc(
-            authApiClient: authApiClient,
-            secureStorage: secureStorage,
-            familyRepository: familyRepository,
-          )..add(const CheckAuthStatus()),
-        ),
-        // Nutrition BLoC (Global access for now)
-        BlocProvider(
-          create: (context) => NutritionBloc(
-            apiClient: nutritionApiClient,
+    return RepositoryProvider.value(
+      value: familyRepository,
+      child: MultiBlocProvider(
+        providers: [
+          // Theme BLoC
+          BlocProvider(
+            create: (context) => ThemeBloc(prefs: sharedPreferences)
+              ..add(const LoadSavedTheme()),
           ),
-        ),
-      ],
-      child: BlocListener<AuthBloc, AuthState>(
-        listener: (context, authState) {
-          if (authState is AuthAuthenticated && authState.selectedProfile != null) {
-             final isChild = authState.selectedProfile!.isChild;
-             context.read<ThemeBloc>().add(SetUiMode(
-                 isChild ? UiMode.child : UiMode.adult
-             ));
-          }
-        },
-        child: BlocBuilder<ThemeBloc, ThemeState>(
-          builder: (context, themeState) {
-            return MaterialApp(
-              title: 'DiaBeaty',
-              debugShowCheckedModeBanner: false,
-              theme: themeState.uiMode.isAdult
-                  ? AppTheme.adultTheme
-                  : AppTheme.childTheme,
-              home: BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, authState) {
-                  if (authState is AuthAuthenticated) {
-                    if (authState.selectedProfile != null) {
-                      return const DashboardScreen();
-                    }
-                    return const ProfileSelectionScreen();
-                  }
-                  return const LoginScreen();
-                },
-              ),
-            );
+          // Auth BLoC
+          BlocProvider(
+            create: (context) => AuthBloc(
+              authApiClient: authApiClient,
+              secureStorage: secureStorage,
+              familyRepository: familyRepository,
+            )..add(const CheckAuthStatus()),
+          ),
+          // Nutrition BLoC (Global access for now)
+          BlocProvider(
+            create: (context) => NutritionBloc(
+              apiClient: nutritionApiClient,
+            ),
+          ),
+        ],
+        child: BlocListener<AuthBloc, AuthState>(
+          listener: (context, authState) {
+            if (authState is AuthAuthenticated && authState.selectedProfile != null) {
+               final isChild = authState.selectedProfile!.isChild;
+               context.read<ThemeBloc>().add(SetUiMode(
+                   isChild ? UiMode.child : UiMode.adult
+               ));
+            }
           },
+          child: BlocBuilder<ThemeBloc, ThemeState>(
+            builder: (context, themeState) {
+              return MaterialApp(
+                title: 'DiaBeaty',
+                debugShowCheckedModeBanner: false,
+                theme: themeState.uiMode.isAdult
+                    ? AppTheme.adultTheme
+                    : AppTheme.childTheme,
+                home: BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, authState) {
+                    if (authState is AuthAuthenticated) {
+                      if (authState.selectedProfile != null) {
+                        return const DashboardScreen();
+                      }
+                      return const ProfileSelectionScreen();
+                    }
+                    return const LoginScreen();
+                  },
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
