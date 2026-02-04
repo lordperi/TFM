@@ -46,8 +46,24 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
               final profiles = snapshot.data ?? [];
               
               if (profiles.isEmpty) {
-                 // Should ideally prompt to create one
-                 return _buildCreateProfileButton();
+                 return Column(
+                     mainAxisAlignment: MainAxisAlignment.center,
+                     children: [
+                       const Icon(Icons.family_restroom, size: 80, color: Colors.grey),
+                       const SizedBox(height: 20),
+                       const Text(
+                         "Welcome to DiaBeaty Family",
+                         style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                       ),
+                       const SizedBox(height: 10),
+                       const Text(
+                         "Please create your first profile to get started.",
+                         style: TextStyle(color: Colors.grey),
+                       ),
+                       const SizedBox(height: 30),
+                       _buildCreateProfileButton(),
+                     ],
+                 );
               }
 
               return GridView.builder(
