@@ -25,7 +25,7 @@
 
 ## 📶 Milestone Tracking (MVP Status)
 
-`[██████░░░░] 60% Completado`
+`[███████░░░] 70% Completado`
 
 | Hito | Estado | Detalles Técnicos |
 | :--- | :--- | :--- |
@@ -33,7 +33,8 @@
 | **II. Database Core** | ✅ 100% | PostgreSQL 16, Migraciones Alembic, Modelado Relacional. |
 | **III. Seguridad** | ✅ 100% | Auth JWT (HS256), Hash Bcrypt, Cifrado AES-256 (PHI). |
 | **IV. Motor Metabólico** | 🔄 10% | *[En curso]* Modelado de Alimentos y Algoritmo de Carga Glucémica. |
-| **V. Mobile App** | ⏳ 0% | Desarrollo Flutter pendiente (Fase Dual-UX). |
+| **V. Mobile App** | 🔄 50% | Implementada **Dual UX** (Perfiles Adulto/Niño) y Gestión de Estado. |
+| **VI. Gestión de Usuarios** | ✅ 100% | Perfiles Flexibles (Guardián/Niño), Protección PIN granular, UI Bloqueada. [Ref ADR 010](docs/adr/010_flexible_health_profiles_and_security.md) |
 
 ---
 
@@ -45,6 +46,7 @@ El objetivo es establecer un núcleo seguro y operativo.
 
 - [x] **Arquitectura Hexagonal**: Desacoplamiento total de lógica de negocio y frameworks.
 - [x] **Zero-Trust Security**: Cifrado de datos sensibles (Ratios, Notas médicas) en reposo.
+- [x] **Perfiles Flexibles**: Soporte para Guardianes (sin datos médicos) y Niños (UI Protegida).
 - [ ] **Motor Nutricional**: Base de datos de ingredientes con IG (Índice Glucémico) y Fibra.
 
 ### 👁️ Fase 2: AI Vision (Milestone Post-TFM)
@@ -124,9 +126,9 @@ Actualmente documentados en `/docs` (Swagger UI) al desplegar.
 
 El frontend utiliza una estrategia híbrida para optimizar recursos en el servidor:
 
-1. **Compilación Local**: El desarrollador genera los estáticos (`flutter build web`).
-2. **Containerización Ligera**: Docker empaqueta *solo* Nginx y los archivos HTML/JS resultantes.
-3. **Despliegue Automático**: Coolify orquesta ambos contenedores (`api` + `frontend`) al recibir un Push en `main`.
+1. **Compilación Automatizada**: Docker utiliza un *Multi-stage Build* para descargar Flutter y compilar el código.
+2. **Containerización Optimizada**: La imagen final solo contiene Nginx y los estáticos (Alpine Linux), descartando el SDK de Flutter.
+3. **Despliegue Continuo**: Coolify detecta cambios en `main`, construye la imagen Docker y despliega sin intervención manual.
 
 - **Documentación Completa**: [Ver Guía de Despliegue](docs/infrastructure/deploy.md)
 - **URL Producción**: `https://diabetics.jljimenez.es`

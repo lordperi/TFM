@@ -18,6 +18,9 @@ class UserModel(Base):
     # 1:N relationship with Patients (Family Members)
     patients = relationship("PatientModel", back_populates="guardian", cascade="all, delete-orphan")
     
+    # 1:1 relationship with Health Profile (Self)
+    health_profile = relationship("HealthProfileModel", uselist=False, back_populates="user", cascade="all, delete-orphan")
+    
     # Security for Quick Switch
     pin_hash = Column(String, nullable=True) # 4-digit PIN for parental control
 
@@ -31,6 +34,10 @@ class PatientModel(Base):
     birth_date = Column(DateTime, nullable=True) # For age logic
     theme_preference = Column(String, default="adult") # 'child', 'teen', 'adult'
     
+    # Security & Role
+    pin_hash = Column(String, nullable=True) # Encrypted/Hashed PIN for adult access
+    role = Column(String, default="DEPENDENT", nullable=False) # 'GUARDIAN', 'DEPENDENT'
+    
     # Device Linking (Simple Code)
     login_code = Column(String, unique=True, index=True, nullable=True)
     
@@ -42,18 +49,22 @@ class HealthProfileModel(Base):
     __tablename__ = "health_profiles"
 
     id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
-    # Changed from user_id to patient_id
-    patient_id = Column(Uuid(as_uuid=True), ForeignKey("patients.id"), unique=True, nullable=False, index=True)
-    diabetes_type = Column(String, nullable=False)
+    # Changed from user_id to patient_id -> Support BOTH 
+    # (User can have profile, Patient can have profile)
+    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=True, index=True)
+    patient_id = Column(Uuid(as_uuid=True), ForeignKey("patients.id"), unique=True, nullable=True, index=True)
+    
+    diabetes_type = Column(String, nullable=True)
+    therapy_mode = Column(String, nullable=True) # 'PEN', 'PUMP'
     
     # Sensitive Data (Encrypted at rest)
     # Stored as bytes in DB, but types.EncryptedString handles conversion
     # Note: We use EncryptedString so the ORM sees Python string/float, but DB sees garbage.
-    insulin_sensitivity = Column(EncryptedString, nullable=False) 
-    carb_ratio = Column(EncryptedString, nullable=False)
-    target_glucose = Column(EncryptedString, nullable=False) # Often personal preference, but kept private.
+    insulin_sensitivity = Column(EncryptedString, nullable=True) 
+    carb_ratio = Column(EncryptedString, nullable=True)
+    target_glucose = Column(EncryptedString, nullable=True) # Often personal preference, but kept private.
 
-    # user = relationship("UserModel", back_populates="health_profile") # DEPRECATED
+    user = relationship("UserModel", back_populates="health_profile")
     patient = relationship("PatientModel", back_populates="health_profile")
 
 # --- NUTRITION DOMAIN ---
