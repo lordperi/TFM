@@ -13,4 +13,16 @@ class FamilyRepository {
   Future<PatientProfile> createProfile(CreatePatientRequest request) async {
     return await _apiClient.createProfile(request);
   }
+
+  Future<bool> verifyPin(String patientId, String pin) async {
+    return await _apiClient.verifyPin(patientId, pin);
+  }
+
+  Future<void> updateProfile(String id, PatientUpdateRequest request) async {
+    await _apiClient.updateProfile(id, request);
+  }
+
+  Future<PatientProfile> getProfileDetails(String id) async {
+    return await _apiClient.getProfileDetails(id);
+  }
 }

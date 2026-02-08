@@ -65,13 +65,17 @@ class SelectProfile extends AuthEvent {
   List<Object?> get props => [profile];
 }
 
+class UnselectProfile extends AuthEvent {
+  const UnselectProfile();
+}
+
 // ==========================================
 // AUTH BLOC - STATES
 // ==========================================
 
 abstract class AuthState extends Equatable {
   const AuthState();
-
+  
   @override
   List<Object?> get props => [];
 }
@@ -86,12 +90,12 @@ class AuthLoading extends AuthState {
 
 class AuthAuthenticated extends AuthState {
   final String accessToken;
-  final UserPublicResponse? user;
+  final UserPublicResponse user;
   final PatientProfile? selectedProfile;
 
   const AuthAuthenticated({
     required this.accessToken,
-    this.user,
+    required this.user,
     this.selectedProfile,
   });
 
@@ -99,14 +103,10 @@ class AuthAuthenticated extends AuthState {
   List<Object?> get props => [accessToken, user, selectedProfile];
 }
 
-class AuthUnauthenticated extends AuthState {
-  const AuthUnauthenticated();
-}
-
 class AuthError extends AuthState {
   final String message;
 
-  const AuthError({required this.message});
+  const AuthError(this.message);
 
   @override
   List<Object?> get props => [message];
@@ -134,6 +134,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutRequested>(_onLogoutRequested);
     on<CheckAuthStatus>(_onCheckAuthStatus);
     on<SelectProfile>(_onSelectProfile);
+    on<UnselectProfile>(_onUnselectProfile);
   }
 
   Future<void> _onLoginRequested(
@@ -141,24 +142,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
-
     try {
       final response = await _authApiClient.login(
-        event.email,
+        event.email, 
         event.password,
       );
-
-      // Store token securely
-      await _secureStorage.write(
-        key: StorageKeys.accessToken,
-        value: response.accessToken,
-      );
+      
+      await _secureStorage.write(key: 'access_token', value: response.accessToken);
+      
+      final user = await _authApiClient.getMe();
+      
+      // Check if a profile was previously selected
+      final savedProfileId = await _secureStorage.read(key: 'selected_patient_id');
+      PatientProfile? selectedProfile;
+      
+      if (savedProfileId != null && _familyRepository != null) {
+          try {
+             selectedProfile = await _familyRepository!.getProfileDetails(savedProfileId);
+          } catch (_) {
+             // If failed to load profile, ignore
+          }
+      }
 
       emit(AuthAuthenticated(
         accessToken: response.accessToken,
+        user: user,
+        selectedProfile: selectedProfile,
       ));
     } catch (e) {
-      emit(AuthError(message: _getErrorMessage(e)));
+      emit(AuthError(_getErrorMessage(e)));
+      emit(const AuthInitial());
     }
   }
 
@@ -167,34 +180,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
-
     try {
-      final request = UserCreateRequest(
-        email: event.email,
-        password: event.password,
-        fullName: event.fullName,
-        healthProfile: event.healthProfile,
+      await _authApiClient.register(
+        UserCreateRequest(
+          email: event.email,
+          password: event.password,
+          fullName: event.fullName,
+          healthProfile: event.healthProfile,
+        ),
       );
-
-      final user = await _authApiClient.register(request);
-
-      // After registration, auto-login
-      final loginResponse = await _authApiClient.login(
-        event.email,
-        event.password,
-      );
-
-      await _secureStorage.write(
-        key: StorageKeys.accessToken,
-        value: loginResponse.accessToken,
-      );
-
-      emit(AuthAuthenticated(
-        accessToken: loginResponse.accessToken,
-        user: user,
-      ));
+      // Auto-login after registration
+      add(LoginRequested(email: event.email, password: event.password));
     } catch (e) {
-      emit(AuthError(message: _getErrorMessage(e)));
+      emit(AuthError(_getErrorMessage(e)));
+      emit(const AuthInitial());
     }
   }
 
@@ -202,22 +201,39 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     LogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
-    await _secureStorage.delete(key: StorageKeys.accessToken);
-    await _secureStorage.delete(key: StorageKeys.userId);
-    await _secureStorage.delete(key: StorageKeys.userEmail);
-    emit(const AuthUnauthenticated());
+    await _secureStorage.delete(key: 'access_token');
+    await _secureStorage.delete(key: 'selected_patient_id');
+    emit(const AuthInitial());
   }
 
   Future<void> _onCheckAuthStatus(
     CheckAuthStatus event,
     Emitter<AuthState> emit,
   ) async {
-    final token = await _secureStorage.read(key: StorageKeys.accessToken);
+    final token = await _secureStorage.read(key: 'access_token');
+    if (token != null) {
+      try {
+        final user = await _authApiClient.getMe();
+        
+        // Restore selected profile
+        final savedProfileId = await _secureStorage.read(key: 'selected_patient_id');
+        PatientProfile? selectedProfile;
+        
+        if (savedProfileId != null && _familyRepository != null) {
+             selectedProfile = await _familyRepository!.getProfileDetails(savedProfileId);
+        }
 
-    if (token != null && token.isNotEmpty) {
-      emit(AuthAuthenticated(accessToken: token));
+        emit(AuthAuthenticated(
+            accessToken: token,
+            user: user,
+            selectedProfile: selectedProfile
+        ));
+      } catch (_) {
+        await _secureStorage.delete(key: 'access_token');
+        emit(const AuthInitial());
+      }
     } else {
-      emit(const AuthUnauthenticated());
+      emit(const AuthInitial());
     }
   }
 
@@ -234,6 +250,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             accessToken: currentState.accessToken,
             user: currentState.user,
             selectedProfile: event.profile
+        ));
+    }
+  }
+
+  Future<void> _onUnselectProfile(
+    UnselectProfile event,
+    Emitter<AuthState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is AuthAuthenticated) {
+        await _secureStorage.delete(key: 'selected_patient_id');
+        
+        emit(AuthAuthenticated(
+            accessToken: currentState.accessToken,
+            user: currentState.user,
+            selectedProfile: null 
         ));
     }
   }
