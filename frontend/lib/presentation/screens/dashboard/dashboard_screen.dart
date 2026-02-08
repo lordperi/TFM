@@ -95,6 +95,15 @@ class DashboardScreen extends StatelessWidget {
             ],
             selectedItemColor: Theme.of(context).primaryColor,
             currentIndex: 0,
+            onTap: (index) {
+              if (index == 2) {
+                // Navigate to profile screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                );
+              }
+            },
           ),
         );
       },
