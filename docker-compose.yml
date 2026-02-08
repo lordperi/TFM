@@ -38,6 +38,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+    ports:
+      - "8000:8000"
     labels:
       - "coolify.managed=true"
       # Tells Coolify/Traefik where to route traffic
@@ -48,14 +50,14 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        API_BASE_URL: ${API_BASE_URL:-https://diabetics-api.jljimenez.es}
+        API_BASE_URL: ${API_BASE_URL:-http://localhost:8000}
     image: ${DOCKER_IMAGE_FRONTEND:-frontend:latest}
     container_name: diabetics_frontend
     restart: always
-    # ports:
-    #   - "3000:80" # Disabled for Production to let Traefik handle ingress
+    ports:
+      - "3000:80"
     environment:
-      - API_BASE_URL=${API_BASE_URL:-https://diabetics-api.jljimenez.es}
+      - API_BASE_URL=${API_BASE_URL:-http://localhost:8000}
     networks:
       - coolify
     deploy:

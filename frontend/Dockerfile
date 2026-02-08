@@ -35,6 +35,9 @@ COPY . .
 ARG API_BASE_URL
 ENV API_BASE_URL=${API_BASE_URL}
 
+# Generate code
+RUN flutter pub run build_runner build --delete-conflicting-outputs
+
 # Build for Web
 # --release is default for build web
 RUN flutter build web --release --dart-define=API_BASE_URL="$API_BASE_URL"
