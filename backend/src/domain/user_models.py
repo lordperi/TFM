@@ -27,6 +27,13 @@ class HealthProfileBase(BaseModel):
 class HealthProfileCreate(HealthProfileBase):
     pass
 
+class HealthProfileUpdate(BaseModel):
+    """Model for updating health profile (all fields optional)"""
+    diabetes_type: DiabetesType | None = None
+    insulin_sensitivity: float | None = Field(None, gt=0, le=500)
+    carb_ratio: float | None = Field(None, gt=0, le=150)
+    target_glucose: int | None = Field(None, ge=70, le=180)
+
 class HealthProfile(HealthProfileBase):
     user_id: UUID
 

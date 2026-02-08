@@ -23,6 +23,20 @@ class HealthMetric(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+# --- PASSWORD CHANGE MODELS ---
+
+class PasswordChange(BaseModel):
+    """Model for password change requests"""
+    old_password: str = Field(..., min_length=1, description="Current password")
+    new_password: str = Field(..., min_length=8, description="New password (min 8 characters)")
+    confirm_password: str = Field(..., min_length=8, description="Confirm new password")
+    
+    def passwords_match(self) -> bool:
+        """Validate that new passwords match"""
+        return self.new_password == self.confirm_password
+
+
 # --- INFRASTRUCTURE MODEL (SQLAlchemy) ---
 # Usually this lives in infrastructure/db/models.py, but placing here for context validation
 # In real clean arch code, this would be separate.
