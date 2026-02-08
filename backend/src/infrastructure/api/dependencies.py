@@ -13,3 +13,20 @@ async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
     )
     token_data = verify_token(token, credentials_exception)
     return token_data.user_id
+
+from sqlalchemy.orm import Session
+from src.infrastructure.db.database import get_db
+from src.infrastructure.db.models import UserModel
+
+async def get_current_user(
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+) -> UserModel:
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    if not user:
+         raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return user

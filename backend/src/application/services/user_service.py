@@ -35,7 +35,10 @@ def create_user(db: Session, user: UserCreate) -> UserPublic:
         diabetes_type=user.health_profile.diabetes_type.value,
         insulin_sensitivity=str(user.health_profile.insulin_sensitivity), # Convert to string for encryption wrapper
         carb_ratio=str(user.health_profile.carb_ratio),
-        target_glucose=str(user.health_profile.target_glucose)
+        target_glucose=str(user.health_profile.target_glucose),
+        # user_id will be set via relationship assignment below, or explicit:
+        # user_id=... (but user id is not generated if relying on default? No, Uuid default logic)
+        # We assign db_user.health_profile = db_health, so SA handles FK.
     )
     
     # Link manually or via Relationship

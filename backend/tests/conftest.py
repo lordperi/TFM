@@ -1,5 +1,10 @@
 import pytest
 import os
+import sys
+from unittest.mock import patch
+
+# Add project root to sys.path to ensure src module can be found
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -59,7 +64,28 @@ def client(db_session):
         finally:
             pass
             
-    app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app) as c:
-        yield c
+    # Override lifespan to avoid real DB connection startup
+    from contextlib import asynccontextmanager
+    
+    @asynccontextmanager
+    async def mock_lifespan(app):
+        print("DEBUG: mock_lifespan ENTERED")
+        yield
+
+    # Save original and override
+    original_lifespan = app.router.lifespan_context
+    app.router.lifespan_context = mock_lifespan
+    
+    # Patch SessionLocal to ensure get_db always returns the test session
+    # Also patch global engine to prevent any accidental production DB connections
+    with patch("src.infrastructure.db.database.SessionLocal", return_value=db_session), \
+         patch("src.main.engine", engine), \
+         patch("src.infrastructure.db.database.engine", engine):
+        
+        app.dependency_overrides[get_db] = override_get_db
+        with TestClient(app) as c:
+            yield c
+        
+    # Restore
+    app.router.lifespan_context = original_lifespan
     app.dependency_overrides.clear()
