@@ -180,7 +180,7 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
               if (!_isUnlocked)
                  Container(
                      padding: const EdgeInsets.all(12),
-                     margin: const EdgeInsets.bottom(16),
+                     margin: const EdgeInsets.only(bottom: 16),
                      decoration: BoxDecoration(
                          color: Colors.amber[100],
                          borderRadius: BorderRadius.circular(8),
