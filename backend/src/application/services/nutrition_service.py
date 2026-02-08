@@ -26,18 +26,25 @@ class NutritionService:
         except ValueError:
              raise HTTPException(status_code=400, detail="Invalid ID format")
 
-        # Security: Allow access ONLY if User is the Guardian
-        patient = self.db.query(PatientModel).filter(
-            PatientModel.id == pid,
-            PatientModel.guardian_id == uid
-        ).first()
+        # Security: Allow access ONLY if User is the Guardian OR asking for self
+        patient = None
+        if str(pid) == str(uid):
+            # Self-calculation
+            from src.infrastructure.db.models import UserModel # Local import to avoid circular dependency if any
+            patient = self.db.query(UserModel).filter(UserModel.id == uid).first()
+        else:
+             # Guardian calculation
+            patient = self.db.query(PatientModel).filter(
+                PatientModel.id == pid,
+                PatientModel.guardian_id == uid
+            ).first()
         
         if not patient:
             # 404 is safer than 403 to avoid leaking patient existence
             raise HTTPException(status_code=404, detail="Patient not found or access denied")
         
         if not patient.health_profile:
-            raise HTTPException(status_code=400, detail="Health profile missing for this patient")
+            raise HTTPException(status_code=400, detail="Health profile missing for this patient/user")
 
         # Decryption Logic (Application Layer handles sensitive data orchestration)
         try:
