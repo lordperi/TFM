@@ -1,12 +1,10 @@
 # ADR-009: Arquitectura Familiar y de Cuidadores
 
-## Estado
-
-Aceptado
-
-## Fecha
-
-2026-02-04
+| Metadatos | Valor |
+| :--- | :--- |
+| **Fecha** | 2026-02-04 |
+| **Estado** | Aceptado |
+| **Decisores** | Lead Architect |
 
 ## Contexto
 
