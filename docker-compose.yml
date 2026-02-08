@@ -39,7 +39,7 @@ services:
       retries: 3
       start_period: 20s
     ports:
-      - "8000:8000"
+      - "8001:8000"
     labels:
       - "coolify.managed=true"
       # Tells Coolify/Traefik where to route traffic
