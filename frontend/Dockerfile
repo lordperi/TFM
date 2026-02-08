@@ -35,8 +35,8 @@ COPY . .
 ARG API_BASE_URL
 ENV API_BASE_URL=${API_BASE_URL}
 
-# Generate code
-RUN flutter pub run build_runner build --delete-conflicting-outputs
+# Generate code (Already generated locally, skip in Docker to avoid errors)
+# RUN flutter pub run build_runner build --delete-conflicting-outputs
 
 # Build for Web
 # --release is default for build web

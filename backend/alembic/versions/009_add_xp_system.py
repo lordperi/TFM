@@ -1,7 +1,7 @@
 """Add XP and achievements system
 
-Revision ID: 006_add_xp_system
-Revises: 005_add_family_members
+Revision ID: 009_add_xp_system
+Revises: 008_make_health_fields_nullable
 Create Date: 2026-02-08 23:56:00
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 
 # revision identifiers, used by Alembic.
-revision = '006_add_xp_system'
-down_revision = '005_add_family_members'
+revision = '009_add_xp_system'
+down_revision = '008_make_health_fields_nullable'
 branch_labels = None
 depends_on = None
 
