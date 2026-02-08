@@ -29,17 +29,51 @@ class FamilyApiClient {
       data: request.toJson(),
     );
 
-    if (response.statusCode == 201) {
-        // Ideally returns full object, MVP might return just ID. 
-        // For now determining simplistic return or fetch again.
-        // Assuming we need to refetch or construct locally.
+    if (response.statusCode == 201 || response.statusCode == 200) {
         return PatientProfile(
             id: response.data['id'],
             displayName: request.displayName,
-            themePreference: request.themePreference
+            themePreference: request.themePreference,
+            role: request.role,
+            isProtected: request.pin != null && request.pin!.isNotEmpty,
         ); 
     } else {
       throw Exception('Failed to create profile');
+    }
+  }
+
+  Future<bool> verifyPin(String patientId, String pin) async {
+    try {
+      final response = await _dio.post(
+        '$baseUrl${ApiConstants.apiVersion}/family/members/$patientId/verify-pin',
+        data: {'pin': pin},
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      if (e is DioException && e.response?.statusCode == 401) {
+        return false;
+      }
+      throw Exception('Failed to verify PIN: $e');
+    }
+  }
+
+  Future<void> updateProfile(String id, PatientUpdateRequest request) async {
+    final response = await _dio.patch(
+      '$baseUrl${ApiConstants.apiVersion}/family/members/$id',
+      data: request.toJson(),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update profile');
+    }
+  }
+
+  Future<PatientProfile> getProfileDetails(String id) async {
+    final response = await _dio.get('$baseUrl${ApiConstants.apiVersion}/family/members/$id');
+    if (response.statusCode == 200) {
+      return PatientProfile.fromJson(response.data);
+    } else {
+      throw Exception('Failed to load profile details');
     }
   }
 }

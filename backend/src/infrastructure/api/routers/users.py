@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from src.domain.user_models import UserCreate, UserPublic
 from src.application.services.user_service import create_user
 from src.infrastructure.db.database import get_db
+from src.infrastructure.db.models import UserModel
+from src.infrastructure.api.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -15,3 +17,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     """
     created_user = create_user(db, user)
     return created_user
+
+@router.get("/me", response_model=UserPublic)
+def get_current_user_profile(current_user: UserModel = Depends(get_current_user)):
+    return current_user

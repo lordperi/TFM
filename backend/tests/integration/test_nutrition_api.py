@@ -25,6 +25,7 @@ def test_full_bolus_calculation_flow(client):
     })
     # Fail fast if register fails
     assert reg_resp.status_code == 201, f"Register failed: {reg_resp.text}"
+    user_id = reg_resp.json()["id"]
 
     # 2. Login
     login_resp = client.post("/api/v1/auth/login", data={"username": email, "password": password})
@@ -57,6 +58,7 @@ def test_full_bolus_calculation_flow(client):
     # - Total: 6.0u
     
     bolus_resp = client.post("/api/v1/nutrition/calculate-bolus", json={
+        "patient_id": user_id,
         "total_carbs": 30.0,
         "current_glucose": 250.0
     }, headers=headers)

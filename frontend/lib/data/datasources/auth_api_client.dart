@@ -27,4 +27,6 @@ abstract class AuthApiClient {
   Future<UserPublicResponse> register(
     @Body() UserCreateRequest request,
   );
+  @GET('/api/v1/users/me')
+  Future<UserPublicResponse> getMe();
 }

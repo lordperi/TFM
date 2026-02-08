@@ -17,36 +17,31 @@ El despliegue está **automatizado** mediante un webhook de GitHub -> Coolify. S
 
 ### 1. Preparar una Nueva Versión (Frontend)
 
-Antes de hacer un commit que incluya cambios visuales, debes recompilar el frontend:
+Gracias a Docker Multi-stage, **ya no necesitas compilar manualmente**. El servidor lo hará por ti.
 
-```bash
-cd frontend
-# Compilar para producción (Web/WASM)
-flutter build web --release --no-tree-shake-icons
-
-# Verificar que la carpeta build/web existe y tiene index.html
-ls build/web
-```
+1. Asegúrate de que `frontend/pubspec.yaml` tiene la versión correcta.
+2. Verifica que tu código funciona localmente con `docker-compose up`.
 
 ### 2. Subir Cambios (Git)
 
-Es crucial incluir la carpeta `build/web` en el commit. Si `.gitignore` la ignora, fuerza la inclusión o revisa la configuración.
+Simplemente haz push a `main`.
 
 ```bash
-cd ..
-# Añadir cambios de código + build artifacts
 git add .
-git commit -m "feat: Nueva funcionalidad y rebuild frontend"
+git commit -m "feat: Nueva funcionalidad"
 git push origin main
 ```
+
+**Nota Importante:** La carpeta `build/` debe estar en `.gitignore`. Ya no subimos binarios al repositorio.
 
 ### 3. Orquestación (Docker Compose)
 
 El archivo `docker-compose.yml` en la raíz define la infraestructura:
 
 * **`api`**: Construye desde `./backend/Dockerfile`. Ejecuta migraciones al inicio.
-* **`frontend`**: Construye desde `./frontend/Dockerfile`.
-  * *Nota:* Este Dockerfile ya NO compila Flutter (para ahorrar RAM en el servidor). Solo copia `build/web` a un contenedor Nginx Alpine.
+* **`frontend`**: Construye desde `./frontend/Dockerfile` (Multi-stage).
+  * *Stage 1:* Descarga Flutter y compila el proyecto.
+  * *Stage 2:* Genera una imagen limpia con Nginx Alpine y los estáticos.
 * **`db`**: PostgreSQL 16.
 
 ### 4. Variables de Entorno (Coolify)
