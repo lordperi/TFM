@@ -115,3 +115,46 @@ class MealItemModel(Base):
     # Relationships
     meal = relationship("MealLogModel", back_populates="items")
     ingredient = relationship("IngredientModel")
+
+
+# --- XP AND GAMIFICATION DOMAIN ---
+
+class AchievementModel(Base):
+    """Achievement definitions"""
+    __tablename__ = "achievements"
+    
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    name = Column(String(100), nullable=False)
+    description = Column(String(255), nullable=False)
+    category = Column(String(50), nullable=False, index=True)
+    icon = Column(String(50), nullable=False)
+    xp_reward = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    user_achievements = relationship("UserAchievementModel", back_populates="achievement")
+
+
+class XPTransactionModel(Base):
+    """XP transaction history"""
+    __tablename__ = "xp_transactions"
+    
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    amount = Column(Integer, nullable=False)
+    reason = Column(String(50), nullable=False)
+    description = Column(String(255), nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+class UserAchievementModel(Base):
+    """User's unlocked achievements"""
+    __tablename__ = "user_achievements"
+    
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    achievement_id = Column(Uuid(as_uuid=True), ForeignKey("achievements.id", ondelete="CASCADE"), nullable=False, index=True)
+    unlocked_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    achievement = relationship("AchievementModel", back_populates="user_achievements")
