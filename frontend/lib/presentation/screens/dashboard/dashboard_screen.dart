@@ -28,11 +28,43 @@ class DashboardScreen extends StatelessWidget {
                 tooltip: 'Cambiar Modo',
               ),
               // Logout
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () {
-                  context.read<AuthBloc>().add(LogoutRequested());
+              // User Menu
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'switch') {
+                    context.read<AuthBloc>().add(const UnselectProfile());
+                  } else if (value == 'logout') {
+                     context.read<AuthBloc>().add(const LogoutRequested());
+                  }
                 },
+                itemBuilder: (BuildContext context) {
+                  return [
+                    const PopupMenuItem(
+                      value: 'switch',
+                      child: Row(
+                        children: [
+                          Icon(Icons.switch_account, color: Colors.blueAccent),
+                          SizedBox(width: 8),
+                          Text('Cambiar Perfil'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'logout',
+                      child: Row(
+                        children: [
+                          Icon(Icons.logout, color: Colors.redAccent),
+                          SizedBox(width: 8),
+                          Text('Cerrar Sesión'),
+                        ],
+                      ),
+                    ),
+                  ];
+                },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Icon(Icons.account_circle),
+                ),
               ),
             ],
           ),

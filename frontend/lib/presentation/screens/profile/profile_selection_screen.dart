@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../../data/models/family_models.dart';
 import '../../../data/repositories/family_repository.dart';
+import '../auth/pin_verify_screen.dart';
+import 'edit_patient_screen.dart';
 
 class ProfileSelectionScreen extends StatefulWidget {
   const ProfileSelectionScreen({super.key});
@@ -92,23 +94,57 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
   Widget _buildProfileCard(PatientProfile profile) {
     return GestureDetector(
       onTap: () {
-        context.read<AuthBloc>().add(SelectProfile(profile));
+        if (profile.isProtected) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+               builder: (_) => PinVerifyScreen(profile: profile),
+            ),
+          );
+        } else {
+          context.read<AuthBloc>().add(SelectProfile(profile));
+        }
       },
       child: Column(
         children: [
-          Container(
-            height: 100,
-            width: 100,
-            decoration: BoxDecoration(
-              color: _getProfileColor(profile),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.white, width: 2)
-            ),
-            child: Icon(
-              profile.isChild ? Icons.child_care : Icons.person,
-              size: 50,
-              color: Colors.white,
-            ),
+          Stack(
+            children: [
+              Container(
+                height: 100,
+                width: 100,
+                decoration: BoxDecoration(
+                  color: _getProfileColor(profile),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white, width: 2)
+                ),
+                child: Icon(
+                  profile.isChild ? Icons.child_care : Icons.person,
+                  size: 50,
+                  color: Colors.white,
+                ),
+              ),
+              if (profile.isProtected)
+                  Positioned(
+                      bottom: 5,
+                      right: 5,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle
+                        ),
+                        child: const Icon(Icons.lock, size: 16, color: Colors.white),
+                      )
+                  ),
+              Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.white, size: 18),
+                    onPressed: () => _editProfile(profile),
+                  )
+              )
+            ],
           ),
           const SizedBox(height: 10),
           Text(
@@ -118,6 +154,56 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _editProfile(PatientProfile profile) async {
+      bool canEdit = true;
+      bool startUnlocked = true;
+      String? authPin;
+
+      // Logic: 
+      // Guardians: Must enter PIN to access.
+      // Dependents: Can access without PIN.
+      
+      if (profile.role == 'GUARDIAN') {
+          if (profile.isProtected) {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                   builder: (_) => PinVerifyScreen(profile: profile, verifyOnly: true),
+                ),
+              );
+              // Result is String (PIN) if success, null if cancelled
+              if (result != null && result is String) {
+                  canEdit = true;
+                  authPin = result;
+              } else {
+                  canEdit = false;
+              }
+          }
+          startUnlocked = true; 
+      } else {
+          // Dependent
+          canEdit = true; 
+          startUnlocked = !profile.isProtected;
+      }
+
+      if (canEdit && mounted) {
+          final bool? result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => EditPatientScreen(
+                profile: profile, 
+                isInitiallyUnlocked: startUnlocked,
+                authPin: authPin
+            )),
+          );
+          if (result == true) {
+              setState(() {
+                  final repo = context.read<FamilyRepository>();
+                  _profilesFuture = repo.getProfiles();
+              });
+          }
+      }
   }
 
   Widget _buildAddProfileCard() {
@@ -155,45 +241,17 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
   }
 
   Future<void> _showAddProfileDialog() async {
-      // MVP Dialog to create profile
-      final nameController = TextEditingController();
-      await showDialog(
-          context: context, 
-          builder: (context) => AlertDialog(
-              title: const Text("New Profile"),
-              content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                      TextField(controller: nameController, decoration: const InputDecoration(labelText: "Name")),
-                      // Add other fields mocked for MVP
-                  ],
-              ),
-              actions: [
-                  TextButton(
-                      child: const Text("Create"),
-                      onPressed: () async {
-                          final repo = context.read<FamilyRepository>();
-                          try {
-                              // Identify as child for now
-                              await repo.createProfile(CreatePatientRequest(
-                                  displayName: nameController.text, 
-                                  diabetesType: "Type 1",
-                                  insulinSensitivity: "1:50",
-                                  carbRatio: "1:10",
-                                  targetGlucose: "100"
-                              ));
-                              setState(() {
-                                  _profilesFuture = repo.getProfiles();
-                              });
-                              Navigator.pop(context);
-                          } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-                          }
-                      },
-                  )
-              ],
-          )
+      final bool? result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const EditPatientScreen()),
       );
+
+      if (result == true) {
+        setState(() {
+            final repo = context.read<FamilyRepository>();
+            _profilesFuture = repo.getProfiles();
+        });
+      }
   }
 
   Color _getProfileColor(PatientProfile p) {
