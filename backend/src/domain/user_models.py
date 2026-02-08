@@ -10,17 +10,19 @@ class DiabetesType(str, Enum):
     MODY = "mody"
 
 class HealthProfileBase(BaseModel):
-    diabetes_type: DiabetesType
+    diabetes_type: DiabetesType | None = None
     
     # Insulin Sensitivity Factor (ISF): How much 1 unit drops glucose (mg/dL)
     # Range validation: 1 to 500 is clinically reasonable.
-    insulin_sensitivity: float = Field(..., gt=0, le=500, description="Caída de glucosa (mg/dL) por 1 unidad de insulina")
+    # Insulin Sensitivity Factor (ISF): How much 1 unit drops glucose (mg/dL)
+    # Range validation: 1 to 500 is clinically reasonable.
+    insulin_sensitivity: float | None = Field(None, gt=0, le=500, description="Caída de glucosa (mg/dL) por 1 unidad de insulina")
     
     # Insulin-to-Carb Ratio (ICR): Grams of carbs covered by 1 unit
     # Range validation: 1 to 150
-    carb_ratio: float = Field(..., gt=0, le=150, description="Gramos de carbohidratos cubiertos por 1 unidad")
+    carb_ratio: float | None = Field(None, gt=0, le=150, description="Gramos de carbohidratos cubiertos por 1 unidad")
     
-    target_glucose: int = Field(100, ge=70, le=180, description="Objetivo glucémico (mg/dL)")
+    target_glucose: int | None = Field(100, ge=70, le=180, description="Objetivo glucémico (mg/dL)")
 
 class HealthProfileCreate(HealthProfileBase):
     pass
