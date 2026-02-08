@@ -50,14 +50,14 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        API_BASE_URL: ${API_BASE_URL:-http://localhost:8000}
+        API_BASE_URL: ${API_BASE_URL:-http://localhost:8001}
     image: ${DOCKER_IMAGE_FRONTEND:-frontend:latest}
     container_name: diabetics_frontend
     restart: always
     ports:
       - "3000:80"
     environment:
-      - API_BASE_URL=${API_BASE_URL:-http://localhost:8000}
+      - API_BASE_URL=${API_BASE_URL:-http://localhost:8001}
     networks:
       - coolify
     deploy:
