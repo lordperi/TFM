@@ -10,7 +10,7 @@ class ProfileRepository {
 
   ProfileRepository({String? baseUrl, http.Client? client})
       : client = client ?? http.Client(),
-        baseUrl = baseUrl ?? AppConstants.apiBaseUrl;
+        baseUrl = baseUrl ?? ApiConstants.baseUrl;
 
   /// Get current user profile
   Future<UserPublicResponse> getProfile(String token) async {
