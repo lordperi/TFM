@@ -72,7 +72,7 @@ class ProfileInitial extends ProfileState {}
 class ProfileLoading extends ProfileState {}
 
 class ProfileLoaded extends ProfileState {
-  final UserPublic user;
+  final UserPublicResponse user;
   final UserXPSummary? xpSummary;
   final AchievementsResponse? achievements;
 
@@ -86,7 +86,7 @@ class ProfileLoaded extends ProfileState {
   List<Object?> get props => [user, xpSummary, achievements];
 
   ProfileLoaded copyWith({
-    UserPublic? user,
+    UserPublicResponse? user,
     UserXPSummary? xpSummary,
     AchievementsResponse? achievements,
   }) {

@@ -189,7 +189,7 @@ class _AdultProfileScreenState extends State<AdultProfileScreen> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         final authState = context.read<AuthBloc>().state;
-                        if (authState is Authenticated) {
+                        if (authState is AuthAuthenticated) {
                           final update = HealthProfileUpdate(
                             diabetesType: _diabetesType,
                             insulinSensitivity: _insulinSensitivityController.text.isEmpty
@@ -202,7 +202,7 @@ class _AdultProfileScreenState extends State<AdultProfileScreen> {
                                 ? null
                                 : int.parse(_targetGlucoseController.text),
                           );
-                          context.read<ProfileBloc>().add(UpdateHealthProfile(authState.token, update));
+                          context.read<ProfileBloc>().add(UpdateHealthProfile(authState.accessToken, update));
                         }
                       }
                     },
@@ -222,8 +222,8 @@ class _AdultProfileScreenState extends State<AdultProfileScreen> {
                         builder: (dialogContext) => ChangePasswordDialog(
                           onSubmit: (request) {
                             final authState = context.read<AuthBloc>().state;
-                            if (authState is Authenticated) {
-                              context.read<ProfileBloc>().add(ChangePassword(authState.token, request));
+                            if (authState is AuthAuthenticated) {
+                              context.read<ProfileBloc>().add(ChangePassword(authState.accessToken, request));
                             }
                           },
                         ),

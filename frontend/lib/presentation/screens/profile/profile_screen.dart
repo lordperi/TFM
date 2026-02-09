@@ -22,11 +22,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _loadProfile() {
     final authState = context.read<AuthBloc>().state;
-    if (authState is Authenticated) {
-      context.read<ProfileBloc>().add(LoadProfile(authState.token));
+    if (authState is AuthAuthenticated) {
+      context.read<ProfileBloc>().add(LoadProfile(authState.accessToken));
       // Load XP and achievements for child mode
-      context.read<ProfileBloc>().add(LoadXPSummary(authState.token));
-      context.read<ProfileBloc>().add(LoadAchievements(authState.token));
+      context.read<ProfileBloc>().add(LoadXPSummary(authState.accessToken));
+      context.read<ProfileBloc>().add(LoadAchievements(authState.accessToken));
     }
   }
 

@@ -13,7 +13,7 @@ class ProfileRepository {
         baseUrl = baseUrl ?? AppConstants.apiBaseUrl;
 
   /// Get current user profile
-  Future<UserPublic> getProfile(String token) async {
+  Future<UserPublicResponse> getProfile(String token) async {
     final response = await client.get(
       Uri.parse('$baseUrl/api/v1/users/me'),
       headers: {
@@ -23,7 +23,7 @@ class ProfileRepository {
     );
 
     if (response.statusCode == 200) {
-      return UserPublic.fromJson(json.decode(response.body));
+      return UserPublicResponse.fromJson(json.decode(response.body));
     } else if (response.statusCode == 401) {
       throw Exception('Unauthorized');
     } else {
