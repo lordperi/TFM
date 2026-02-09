@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/profile_models.dart';
-import '../models/auth_models.dart';
-import '../../core/constants/app_constants.dart';
+import 'package:diabeaty_mobile/data/models/profile_models.dart';
+import 'package:diabeaty_mobile/data/models/auth_models.dart';
+import 'package:diabeaty_mobile/core/constants/app_constants.dart';
 
 class ProfileRepository {
   final String baseUrl;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/models/profile_models.dart';
+import 'package:diabeaty_mobile/data/models/profile_models.dart';
 
 class ChangePasswordDialog extends StatefulWidget {
   final Function(PasswordChangeRequest) onSubmit;

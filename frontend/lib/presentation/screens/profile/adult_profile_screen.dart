@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/profile/profile_bloc.dart';
-import '../../bloc/auth/auth_bloc.dart';
-import '../../widgets/change_password_dialog.dart';
-import '../../../data/models/profile_models.dart';
-import '../../../data/models/auth_models.dart';
+import 'package:diabeaty_mobile/presentation/bloc/profile/profile_bloc.dart';
+import 'package:diabeaty_mobile/presentation/bloc/auth/auth_bloc.dart';
+import 'package:diabeaty_mobile/presentation/widgets/change_password_dialog.dart';
+import 'package:diabeaty_mobile/data/models/profile_models.dart';
+import 'package:diabeaty_mobile/data/models/auth_models.dart';
 
 class AdultProfileScreen extends StatefulWidget {
   const AdultProfileScreen({super.key});

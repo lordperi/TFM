@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/profile/profile_bloc.dart';
-import '../../bloc/auth/auth_bloc.dart';
-import '../../../data/repositories/profile_repository.dart';
-import 'adult_profile_screen.dart';
-import 'child_profile_screen.dart';
+import 'package:diabeaty_mobile/presentation/bloc/profile/profile_bloc.dart';
+import 'package:diabeaty_mobile/presentation/bloc/auth/auth_bloc.dart';
+import 'package:diabeaty_mobile/data/repositories/profile_repository.dart';
+import 'package:diabeaty_mobile/presentation/screens/profile/adult_profile_screen.dart';
+import 'package:diabeaty_mobile/presentation/screens/profile/child_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

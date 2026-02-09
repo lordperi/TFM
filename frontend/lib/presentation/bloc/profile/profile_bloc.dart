@@ -1,8 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../data/models/auth_models.dart';
-import '../../data/models/profile_models.dart';
-import '../../data/repositories/profile_repository.dart';
+import 'package:diabeaty_mobile/data/models/auth_models.dart';
+import 'package:diabeaty_mobile/data/models/profile_models.dart';
+import 'package:diabeaty_mobile/data/repositories/profile_repository.dart';
 
 // Events
 abstract class ProfileEvent extends Equatable {
