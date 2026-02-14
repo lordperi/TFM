@@ -42,6 +42,8 @@ app.include_router(users.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(nutrition.router, prefix="/api/v1")
 app.include_router(family.router, prefix="/api/v1")
+from src.infrastructure.api.routers import glucose
+app.include_router(glucose.router, prefix="/api/v1")
 
 if __name__ == "__main__":
     import uvicorn

@@ -73,6 +73,10 @@ class HealthProfileModel(Base):
     basal_insulin_units = Column(EncryptedString, nullable=True)  # CIFRADO: Unidades (PHI)
     basal_insulin_time = Column(Time, nullable=True)  # Hora de administración
 
+    # NUEVO: Rangos objetivo (v1.1) para visualización en gráficas
+    target_range_low = Column(Integer, nullable=True) # e.g. 70
+    target_range_high = Column(Integer, nullable=True) # e.g. 180
+
     user = relationship("UserModel", back_populates="health_profile")
     patient = relationship("PatientModel", back_populates="health_profile")
 
@@ -167,3 +171,21 @@ class UserAchievementModel(Base):
     
     # Relationship
     achievement = relationship("AchievementModel", back_populates="user_achievements")
+
+
+class GlucoseMeasurementModel(Base):
+    """Glucose measurement storage"""
+    __tablename__ = "glucose_measurements"
+    
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    patient_id = Column(Uuid(as_uuid=True), ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    glucose_value = Column(Integer, nullable=False) # mg/dL
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    
+    # Metadata
+    measurement_type = Column(String(20), default="FINGER", nullable=False) # FINGER, CGM, MANUAL
+    notes = Column(EncryptedString, nullable=True) # Sensitive notes
+    
+    # Relationships
+    patient = relationship("PatientModel", backref="glucose_logs")

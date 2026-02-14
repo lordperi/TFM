@@ -22,6 +22,16 @@ class HealthProfileBase(BaseModel):
         description="Objetivo glucémico (mg/dL)"
     )
     
+    # Nuevos campos para rangos (v1.1)
+    target_range_low: int | None = Field(
+        None, ge=50, le=100, 
+        description="Límite inferior del rango objetivo (e.g. 70)"
+    )
+    target_range_high: int | None = Field(
+        None, ge=120, le=300, 
+        description="Límite superior del rango objetivo (e.g. 180)"
+    )
+    
     # Basal insulin info (optional, for long-acting insulin)
     basal_insulin: BasalInsulinInfo | None = None
     
@@ -49,6 +59,11 @@ class HealthProfileBase(BaseModel):
                 raise ValueError(
                     "Terapia con insulina requiere ISF, ICR y Target Glucose"
                 )
+        
+        # Validar consistencia de rangos si están presentes
+        if self.target_range_low and self.target_range_high:
+            if self.target_range_low >= self.target_range_high:
+                raise ValueError("Rango inferior debe ser menor al rango superior")
         
         return self
 

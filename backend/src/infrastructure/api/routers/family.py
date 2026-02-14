@@ -39,6 +39,8 @@ class PatientCreateRequest(BaseModel):
     insulin_sensitivity: Optional[float] = None
     carb_ratio: Optional[float] = None
     target_glucose: Optional[float] = None # cambiado de target_range a target_glucose para consistencia
+    target_range_low: Optional[int] = None
+    target_range_high: Optional[int] = None
     # Basal Insulin (Flattened or object? Let's use flattened for simplicity regarding DB mapping manually here, or nested if we want cleaner API.
     # User API uses nested HealthProfile. Let's keep it flat here for minimal refactor of existing calls structure, but adding new fields.)
     basal_insulin_type: Optional[str] = None
@@ -57,6 +59,8 @@ class PatientUpdateRequest(BaseModel):
     insulin_sensitivity: Optional[float] = None
     carb_ratio: Optional[float] = None
     target_glucose: Optional[float] = None
+    target_range_low: Optional[int] = None
+    target_range_high: Optional[int] = None
     basal_insulin_type: Optional[str] = None
     basal_insulin_units: Optional[float] = None
     basal_insulin_time: Optional[str] = None
@@ -131,6 +135,8 @@ def create_patient_profile(
         insulin_sensitivity=request.insulin_sensitivity,
         carb_ratio=request.carb_ratio,
         target_glucose=request.target_glucose,
+        target_range_low=request.target_range_low,
+        target_range_high=request.target_range_high,
         basal_insulin_type=request.basal_insulin_type,
         basal_insulin_units=request.basal_insulin_units, # EncryptedString handles float conversion? No, model expects string/float depending on definition. 
         # EncryptedString in models.py handles encryption. We pass raw value.
@@ -183,6 +189,8 @@ class PatientDetailResponse(PatientResponse):
     insulin_sensitivity: Optional[float] = None
     carb_ratio: Optional[float] = None
     target_glucose: Optional[float] = None
+    target_range_low: Optional[int] = None
+    target_range_high: Optional[int] = None
     basal_insulin_type: Optional[str] = None
     basal_insulin_units: Optional[float] = None
     basal_insulin_time: Optional[str] = None
@@ -219,6 +227,8 @@ def get_patient_details(
         insulin_sensitivity=hp.insulin_sensitivity if hp else None,
         carb_ratio=hp.carb_ratio if hp else None,
         target_glucose=hp.target_glucose if hp else None,
+        target_range_low=hp.target_range_low if hp else None,
+        target_range_high=hp.target_range_high if hp else None,
         basal_insulin_type=hp.basal_insulin_type if hp else None,
         basal_insulin_units=hp.basal_insulin_units if hp else None,
         basal_insulin_time=str(hp.basal_insulin_time) if hp and hp.basal_insulin_time else None
@@ -275,6 +285,9 @@ def update_patient_profile(
         if request.insulin_sensitivity: hp.insulin_sensitivity = request.insulin_sensitivity
         if request.carb_ratio: hp.carb_ratio = request.carb_ratio
         if request.target_glucose: hp.target_glucose = request.target_glucose
+        if request.target_range_low: hp.target_range_low = request.target_range_low
+        if request.target_range_high: hp.target_range_high = request.target_range_high
+        
         if request.basal_insulin_type: hp.basal_insulin_type = request.basal_insulin_type
         if request.basal_insulin_units: hp.basal_insulin_units = request.basal_insulin_units
         if request.basal_insulin_time:
