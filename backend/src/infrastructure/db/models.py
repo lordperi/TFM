@@ -1,9 +1,10 @@
-from sqlalchemy import Column, String, Boolean, ForeignKey, Index, Uuid, Integer, Float, DateTime, LargeBinary
+from sqlalchemy import Column, String, Boolean, ForeignKey, Index, Uuid, Integer, Float, DateTime, LargeBinary, Enum as SQLEnum, Time
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 from datetime import datetime
 from src.infrastructure.db.types import EncryptedString
 from src.infrastructure.db.database import Base
+from src.domain.health_models import TherapyType
 import datetime as dt
 
 class UserModel(Base):
@@ -57,12 +58,20 @@ class HealthProfileModel(Base):
     diabetes_type = Column(String, nullable=True)
     therapy_mode = Column(String, nullable=True) # 'PEN', 'PUMP'
     
+    # NUEVO: Tipo de tratamiento (INSULIN, ORAL, MIXED, NONE)
+    therapy_type = Column(SQLEnum(TherapyType), nullable=True)
+    
     # Sensitive Data (Encrypted at rest)
     # Stored as bytes in DB, but types.EncryptedString handles conversion
     # Note: We use EncryptedString so the ORM sees Python string/float, but DB sees garbage.
     insulin_sensitivity = Column(EncryptedString, nullable=True) 
     carb_ratio = Column(EncryptedString, nullable=True)
     target_glucose = Column(EncryptedString, nullable=True) # Often personal preference, but kept private.
+    
+    # NUEVO: Insulina basal (long-acting insulin like Lantus, Levemir, Tresiba)
+    basal_insulin_type = Column(String, nullable=True)  # "Lantus", "Levemir", etc.
+    basal_insulin_units = Column(EncryptedString, nullable=True)  # CIFRADO: Unidades (PHI)
+    basal_insulin_time = Column(Time, nullable=True)  # Hora de administración
 
     user = relationship("UserModel", back_populates="health_profile")
     patient = relationship("PatientModel", back_populates="health_profile")
