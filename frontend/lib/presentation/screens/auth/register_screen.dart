@@ -331,19 +331,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       // Build health profile
+      final isNone = _selectedDiabetesType == DiabetesType.none;
+      
       final healthProfile = HealthProfileCreate(
         diabetesType: _selectedDiabetesType.value,
-        therapyType: _selectedTherapyType?.value,
-        insulinSensitivity: _isfController.text.isEmpty
+        therapyType: isNone ? null : _selectedTherapyType?.value,
+        insulinSensitivity: isNone || _isfController.text.isEmpty
             ? null
             : double.tryParse(_isfController.text),
-        carbRatio: _icrController.text.isEmpty
+        carbRatio: isNone || _icrController.text.isEmpty
             ? null
             : double.tryParse(_icrController.text),
-        targetGlucose: _targetController.text.isEmpty
+        targetGlucose: isNone || _targetController.text.isEmpty
             ? null
             : int.tryParse(_targetController.text),
-        basalInsulin: basalInsulin,
+        basalInsulin: isNone ? null : basalInsulin,
       );
 
       // Build request
