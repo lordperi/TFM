@@ -8,9 +8,9 @@ part 'nutrition_api_client.g.dart';
 abstract class NutritionApiClient {
   factory NutritionApiClient(Dio dio, {String baseUrl}) = _NutritionApiClient;
 
-  @GET('/nutrition/ingredients')
+  @GET('/api/v1/nutrition/ingredients')
   Future<List<Ingredient>> searchIngredients(@Query('q') String query);
 
-  @POST('/nutrition/calculate-bolus')
+  @POST('/api/v1/nutrition/calculate-bolus')
   Future<BolusCalculationResponse> calculateBolus(@Body() BolusCalculationRequest request);
 }

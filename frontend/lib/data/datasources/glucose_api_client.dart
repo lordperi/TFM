@@ -5,17 +5,17 @@ import 'package:diabeaty_mobile/data/models/glucose_models.dart';
 
 part 'glucose_api_client.g.dart';
 
-@RestApi(baseUrl: '/glucose')
+@RestApi()
 abstract class GlucoseApiClient {
   factory GlucoseApiClient(Dio dio, {String baseUrl}) = _GlucoseApiClient;
 
-  @POST('/')
+  @POST('/api/v1/glucose/')
   Future<GlucoseMeasurement> createMeasurement(
     @Body() GlucoseCreateRequest request,
     @Query('patient_id') String patientId,
   );
 
-  @GET('/history')
+  @GET('/api/v1/glucose/history')
   Future<List<GlucoseMeasurement>> getHistory(
     @Query('patient_id') String patientId,
     @Query('limit') int limit,
