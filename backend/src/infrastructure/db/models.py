@@ -1,9 +1,10 @@
-from sqlalchemy import Column, String, Boolean, ForeignKey, Index, Uuid, Integer, Float, DateTime, LargeBinary
+from sqlalchemy import Column, String, Boolean, ForeignKey, Index, Uuid, Integer, Float, DateTime, LargeBinary, Enum as SQLEnum, Time
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 from datetime import datetime
 from src.infrastructure.db.types import EncryptedString
 from src.infrastructure.db.database import Base
+from src.domain.health_models import TherapyType
 import datetime as dt
 
 class UserModel(Base):
@@ -57,12 +58,20 @@ class HealthProfileModel(Base):
     diabetes_type = Column(String, nullable=True)
     therapy_mode = Column(String, nullable=True) # 'PEN', 'PUMP'
     
+    # NUEVO: Tipo de tratamiento (INSULIN, ORAL, MIXED, NONE)
+    therapy_type = Column(SQLEnum(TherapyType), nullable=True)
+    
     # Sensitive Data (Encrypted at rest)
     # Stored as bytes in DB, but types.EncryptedString handles conversion
     # Note: We use EncryptedString so the ORM sees Python string/float, but DB sees garbage.
     insulin_sensitivity = Column(EncryptedString, nullable=True) 
     carb_ratio = Column(EncryptedString, nullable=True)
     target_glucose = Column(EncryptedString, nullable=True) # Often personal preference, but kept private.
+    
+    # NUEVO: Insulina basal (long-acting insulin like Lantus, Levemir, Tresiba)
+    basal_insulin_type = Column(String, nullable=True)  # "Lantus", "Levemir", etc.
+    basal_insulin_units = Column(EncryptedString, nullable=True)  # CIFRADO: Unidades (PHI)
+    basal_insulin_time = Column(Time, nullable=True)  # Hora de administración
 
     user = relationship("UserModel", back_populates="health_profile")
     patient = relationship("PatientModel", back_populates="health_profile")
@@ -115,3 +124,46 @@ class MealItemModel(Base):
     # Relationships
     meal = relationship("MealLogModel", back_populates="items")
     ingredient = relationship("IngredientModel")
+
+
+# --- XP AND GAMIFICATION DOMAIN ---
+
+class AchievementModel(Base):
+    """Achievement definitions"""
+    __tablename__ = "achievements"
+    
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    name = Column(String(100), nullable=False)
+    description = Column(String(255), nullable=False)
+    category = Column(String(50), nullable=False, index=True)
+    icon = Column(String(50), nullable=False)
+    xp_reward = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    user_achievements = relationship("UserAchievementModel", back_populates="achievement")
+
+
+class XPTransactionModel(Base):
+    """XP transaction history"""
+    __tablename__ = "xp_transactions"
+    
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    amount = Column(Integer, nullable=False)
+    reason = Column(String(50), nullable=False)
+    description = Column(String(255), nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+class UserAchievementModel(Base):
+    """User's unlocked achievements"""
+    __tablename__ = "user_achievements"
+    
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    achievement_id = Column(Uuid(as_uuid=True), ForeignKey("achievements.id", ondelete="CASCADE"), nullable=False, index=True)
+    unlocked_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    achievement = relationship("AchievementModel", back_populates="user_achievements")

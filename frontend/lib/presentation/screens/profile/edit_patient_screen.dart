@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/family_models.dart';
+import '../../../data/models/auth_models.dart'; // For BasalInsulinInfo if needed helper
 import '../../../data/repositories/family_repository.dart';
 import '../auth/pin_verify_screen.dart';
+import '../../widgets/conditional_medical_fields.dart';
+import '../../widgets/basal_insulin_fields.dart';
+import '../../../core/constants/diabetes_type.dart';
+import '../../../core/constants/therapy_type.dart';
 
 class EditPatientScreen extends StatefulWidget {
   final PatientProfile? profile; // Null for Create mode
@@ -21,15 +26,20 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
   // Controllers
   late TextEditingController _nameController;
   late TextEditingController _pinController;
-  late TextEditingController _isController; // Insulin Sensitivity
-  late TextEditingController _crController; // Carb Ratio
+  late TextEditingController _isfController; // Insulin Sensitivity
+  late TextEditingController _icrController; // Carb Ratio
   late TextEditingController _targetController;
+  
+  // Basal Insulin Controllers
+  final _basalTypeController = TextEditingController();
+  final _basalUnitsController = TextEditingController();
+  final _basalTimeController = TextEditingController();
 
   // State values
   String _role = 'DEPENDENT';
   String _theme = 'child';
-  String _diabetesType = 'T1';
-  String _therapyMode = 'PEN';
+  DiabetesType _diabetesType = DiabetesType.type1;
+  TherapyType? _therapyType = TherapyType.insulin;
   DateTime? _birthDate;
   bool _isLoading = false;
   late bool _isUnlocked;
@@ -43,14 +53,18 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
     _nameController = TextEditingController(text: widget.profile?.displayName ?? '');
     _pinController = TextEditingController(); 
     
-    _isController = TextEditingController(text: "50");
-    _crController = TextEditingController(text: "10");
-    _targetController = TextEditingController(text: "100");
+    _isfController = TextEditingController(text: "");
+    _icrController = TextEditingController(text: "");
+    _targetController = TextEditingController(text: "");
 
     if (widget.profile != null) {
       _role = widget.profile!.role;
       _theme = widget.profile!.themePreference;
       _loadProfileDetails();
+    } else {
+      // Defaults for new profile
+      _diabetesType = DiabetesType.none;
+      _therapyType = null;
     }
   }
 
@@ -67,16 +81,28 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
                   if (details.birthDate != null) {
                       _birthDate = DateTime.parse(details.birthDate!);
                   }
-                  if (details.diabetesType != null) _diabetesType = details.diabetesType!;
-                  if (details.therapyMode != null) _therapyMode = details.therapyMode!;
-                  if (details.insulinSensitivity != null) _isController.text = details.insulinSensitivity.toString();
-                  if (details.carbRatio != null) _crController.text = details.carbRatio.toString();
+                  
+                  if (details.diabetesType != null) {
+                    _diabetesType = DiabetesType.fromString(details.diabetesType!);
+                  }
+                  
+                  if (details.therapyType != null) {
+                     _therapyType = TherapyType.fromString(details.therapyType!);
+                  } else {
+                     _therapyType = null;
+                  }
+
+                  if (details.insulinSensitivity != null) _isfController.text = details.insulinSensitivity.toString();
+                  if (details.carbRatio != null) _icrController.text = details.carbRatio.toString();
                   if (details.targetGlucose != null) _targetController.text = details.targetGlucose.toString();
+                  
+                  if (details.basalInsulinType != null) _basalTypeController.text = details.basalInsulinType!;
+                  if (details.basalInsulinUnits != null) _basalUnitsController.text = details.basalInsulinUnits.toString();
+                  if (details.basalInsulinTime != null) _basalTimeController.text = details.basalInsulinTime!;
               });
           }
       } catch (e) {
-          // ignore error or show snackbar
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error loading details: $e")));
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error cargando detalles: $e")));
       } finally {
           if (mounted) setState(() => _isLoading = false);
       }
@@ -86,9 +112,12 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
   void dispose() {
     _nameController.dispose();
     _pinController.dispose();
-    _isController.dispose();
-    _crController.dispose();
+    _isfController.dispose();
+    _icrController.dispose();
     _targetController.dispose();
+    _basalTypeController.dispose();
+    _basalUnitsController.dispose();
+    _basalTimeController.dispose();
     super.dispose();
   }
 
@@ -114,6 +143,20 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
     final repo = context.read<FamilyRepository>();
 
     try {
+      // Sanitización
+      final isNone = _diabetesType == DiabetesType.none;
+      
+      final dbTypeStr = _diabetesType.value;
+      final therapyStr = isNone ? null : _therapyType?.value;
+      
+      final isfStr = isNone || _isfController.text.isEmpty ? "0.0" : _isfController.text;
+      final icrStr = isNone || _icrController.text.isEmpty ? "0.0" : _icrController.text;
+      final targetStr = isNone || _targetController.text.isEmpty ? "0.0" : _targetController.text;
+      
+      final basalTypeStr = isNone || _basalTypeController.text.isEmpty ? null : _basalTypeController.text;
+      final basalUnitsStr = isNone || _basalUnitsController.text.isEmpty ? null : _basalUnitsController.text;
+      final basalTimeStr = isNone || _basalTimeController.text.isEmpty ? null : _basalTimeController.text;
+
       if (widget.profile == null) {
         // CREATE
         final request = CreatePatientRequest(
@@ -122,18 +165,18 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
           themePreference: _theme,
            birthDate: _birthDate?.toIso8601String().split('T')[0],
           pin: (_role == 'GUARDIAN' ? _pinController.text : null),
-          diabetesType: _diabetesType,
-          therapyMode: _therapyMode,
-          insulinSensitivity: _isController.text,
-          carbRatio: _crController.text,
-          targetGlucose: _targetController.text
+          diabetesType: dbTypeStr,
+          therapyType: therapyStr ?? 'NONE', // Default safe
+          insulinSensitivity: isfStr,
+          carbRatio: icrStr,
+          targetGlucose: targetStr,
+          basalInsulinType: basalTypeStr,
+          basalInsulinUnits: basalUnitsStr,
+          basalInsulinTime: basalTimeStr,
         );
         await repo.createProfile(request);
       } else {
         // UPDATE
-        // Determine which PIN to send:
-        // 1. If user entered a NEW PIN in _pinController (Guardian only), use it. (Note: currently fails backend auth if sensitive data changed)
-        // 2. Else use _authPin (the PIN used to unlock/enter).
         String? pinToSend = _authPin;
         if (_role == 'GUARDIAN' && _pinController.text.isNotEmpty) {
             pinToSend = _pinController.text;
@@ -145,11 +188,14 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
           themePreference: _theme,
            birthDate: _birthDate?.toIso8601String().split('T')[0],
           pin: pinToSend,
-          diabetesType: _diabetesType,
-          therapyMode: _therapyMode,
-          insulinSensitivity: _isController.text,
-          carbRatio: _crController.text,
-          targetGlucose: _targetController.text
+          diabetesType: dbTypeStr,
+          therapyType: therapyStr,
+          insulinSensitivity: isfStr,
+          carbRatio: icrStr,
+          targetGlucose: targetStr,
+          basalInsulinType: basalTypeStr,
+          basalInsulinUnits: basalUnitsStr,
+          basalInsulinTime: basalTimeStr
         );
         await repo.updateProfile(widget.profile!.id, request);
       }
@@ -169,7 +215,7 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
     final isEditing = widget.profile != null;
 
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? "Edit Profile" : "New Profile")),
+      appBar: AppBar(title: Text(isEditing ? "Editar Perfil" : "Nuevo Perfil")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -190,49 +236,49 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
                          children: [
                              const Icon(Icons.lock, color: Colors.orange),
                              const SizedBox(width: 10),
-                             Expanded(child: const Text("Sensitive settings are locked. Unlock to edit medical data.", style: TextStyle(color: Colors.black87))),
-                             TextButton(onPressed: _unlockSettings, child: const Text("UNLOCK"))
+                             Expanded(child: const Text("Configuración sensible bloqueada. Desbloquea para editar datos médicos.", style: TextStyle(color: Colors.black87))),
+                             TextButton(onPressed: _unlockSettings, child: const Text("DESBLOQUEAR"))
                          ],
                      ),
                  ),
                  
-              const Text("Personal Info", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text("Información Personal", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const Divider(),
               
               // NAME - Locked if !Unlocked
               TextFormField(
                 controller: _nameController,
                 enabled: _isUnlocked,
-                decoration: const InputDecoration(labelText: "Display Name"),
-                validator: (v) => v!.isEmpty ? "Required" : null,
+                decoration: const InputDecoration(labelText: "Nombre"),
+                validator: (v) => v!.isEmpty ? "Requerido" : null,
               ),
               const SizedBox(height: 10),
               
               // ROLE - Locked if !Unlocked
               DropdownButtonFormField<String>(
                 value: _role,
-                decoration: const InputDecoration(labelText: "Role"),
+                decoration: const InputDecoration(labelText: "Rol"),
                 onChanged: _isUnlocked ? (val) => setState(() {
                   _role = val!;
                   if (_role == 'GUARDIAN') _theme = 'adult';
                   if (_role == 'DEPENDENT') _theme = 'child';
                 }) : null, // Disable logic
                 items: const [
-                  DropdownMenuItem(value: 'GUARDIAN', child: Text("Guardian (Adult)")),
-                  DropdownMenuItem(value: 'DEPENDENT', child: Text("Dependent (Child)")),
+                  DropdownMenuItem(value: 'GUARDIAN', child: Text("Tutor (Adulto)")),
+                  DropdownMenuItem(value: 'DEPENDENT', child: Text("Dependiente (Niño)")),
                 ],
               ),
               
               // THEME - ALWAYS UNLOCKED (Requested Feature)
               const SizedBox(height: 10),
-              const Text("Theme Preference (Avatar)", style: TextStyle(fontSize: 14, color: Colors.grey)),
+              const Text("Tema visual (Avatar)", style: TextStyle(fontSize: 14, color: Colors.grey)),
               DropdownButtonFormField<String>(
                   value: _theme,
-                  decoration: const InputDecoration(labelText: "Theme"),
+                  decoration: const InputDecoration(labelText: "Tema"),
                   items: const [
-                       DropdownMenuItem(value: 'child', child: Text("Child (Fun)")),
-                       DropdownMenuItem(value: 'adult', child: Text("Adult (Clean)")),
-                       DropdownMenuItem(value: 'teen', child: Text("Teen (Minimal)")),
+                       DropdownMenuItem(value: 'child', child: Text("Niño (Divertido)")),
+                       DropdownMenuItem(value: 'adult', child: Text("Adulto (Limpio)")),
+                       DropdownMenuItem(value: 'teen', child: Text("Adolescente (Minimalista)")),
                   ],
                   onChanged: (v) => setState(() => _theme = v!),
               ),
@@ -242,12 +288,12 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
                 TextFormField(
                   controller: _pinController,
                   enabled: _isUnlocked, 
-                  decoration: const InputDecoration(labelText: "PIN (4 Digits)"),
+                  decoration: const InputDecoration(labelText: "PIN (4 Dígitos)"),
                   keyboardType: TextInputType.number,
                   obscureText: true,
                   validator: (v) {
                     if (isEditing && (v == null || v.isEmpty)) return null; 
-                    if (v == null || v.length != 4) return "Must be 4 digits";
+                    if (v == null || v.length != 4) return "Debe tener 4 dígitos";
                     return null;
                   },
                 ),
@@ -255,7 +301,7 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
 
                // DOB - Locked
                ListTile(
-                 title: Text(_birthDate == null ? "Select Birth Date" : "DOB: ${_birthDate.toString().split(' ')[0]}"),
+                 title: Text(_birthDate == null ? "Seleccionar F. Nacimiento" : "F. Nacimiento: ${_birthDate.toString().split(' ')[0]}"),
                  trailing: const Icon(Icons.calendar_today),
                  enabled: _isUnlocked,
                  onTap: () async {
@@ -280,55 +326,71 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
                    child: Column(
                      crossAxisAlignment: CrossAxisAlignment.start,
                      children: [
-                       const Text("Medical Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                       const Text("Configuración Médica", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                        const Divider(),
-                       Row(
-                         children: [
-                           Expanded(
-                             child: DropdownButtonFormField<String>(
-                                value: _diabetesType,
-                                decoration: const InputDecoration(labelText: "Diabetes Type"),
-                                items: const [
-                                  DropdownMenuItem(value: 'T1', child: Text("Type 1")),
-                                  DropdownMenuItem(value: 'T2', child: Text("Type 2")),
-                                  DropdownMenuItem(value: 'NONE', child: Text("None")),
-                                ],
-                                onChanged: (v) => setState(() => _diabetesType = v!),
-                             ),
-                           ),
-                           const SizedBox(width: 10),
-                           Expanded(
-                             child: DropdownButtonFormField<String>(
-                                value: _therapyMode,
-                                decoration: const InputDecoration(labelText: "Therapy"),
-                                items: const [
-                                  DropdownMenuItem(value: 'PEN', child: Text("Pen/Injections")),
-                                  DropdownMenuItem(value: 'PUMP', child: Text("Pump")),
-                                ],
-                                onChanged: (v) => setState(() => _therapyMode = v!),
-                             ),
-                           ),
-                         ],
+                       
+                       // DYNAMIC WIDGETS
+                       // Diabetes Type Selector
+                       DropdownButtonFormField<DiabetesType>(
+                         value: _diabetesType,
+                         decoration: const InputDecoration(
+                            labelText: 'Tipo de Diabetes',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.water_drop),
+                         ),
+                         items: DiabetesType.values.map((type) {
+                           return DropdownMenuItem(
+                             value: type,
+                             child: Text(type.displayName),
+                           );
+                         }).toList(),
+                         onChanged: _isUnlocked ? (DiabetesType? newValue) {
+                            if (newValue == null) return;
+                            setState(() {
+                              _diabetesType = newValue;
+                              
+                              // Reset logic
+                              if (_diabetesType == DiabetesType.none) {
+                                _therapyType = null;
+                                _isfController.clear();
+                                _icrController.clear();
+                                _targetController.clear();
+                                _basalTypeController.clear();
+                                _basalUnitsController.clear();
+                                _basalTimeController.clear();
+                              } else {
+                                // Default therapy? No, let user choose.
+                                _therapyType = null;
+                              }
+                            });
+                         } : null,
                        ),
+                       const SizedBox(height: 16),
+
+                       // DYNAMIC WIDGETS
+                       ConditionalMedicalFields(
+                          diabetesType: _diabetesType,
+                          therapyType: _therapyType,
+                          isfController: _isfController,
+                          icrController: _icrController,
+                          targetController: _targetController,
+                          onTherapyTypeChanged: (TherapyType? newValue) {
+                            setState(() {
+                              _therapyType = newValue;
+                            });
+                          },
+                       ),
+                       
                        const SizedBox(height: 10),
-                       TextFormField(
-                         controller: _isController,
-                         decoration: const InputDecoration(labelText: "Insulin Sensitivity (ISF)"),
-                         keyboardType: TextInputType.number,
-                         validator: (v) => v!.isEmpty ? "Required" : null,
-                       ),
-                       TextFormField(
-                         controller: _crController,
-                         decoration: const InputDecoration(labelText: "Carb Ratio (g/U)"),
-                         keyboardType: TextInputType.number,
-                         validator: (v) => v!.isEmpty ? "Required" : null,
-                       ),
-                       TextFormField(
-                         controller: _targetController,
-                         decoration: const InputDecoration(labelText: "Target Glucose (mg/dL)"),
-                         keyboardType: TextInputType.number,
-                         validator: (v) => v!.isEmpty ? "Required" : null,
-                       ),
+                       
+                       if (_therapyType != null && (_therapyType == TherapyType.insulin || _therapyType == TherapyType.mixed)) ...[
+                         const SizedBox(height: 10),
+                         BasalInsulinFields(
+                           typeController: _basalTypeController, 
+                           unitsController: _basalUnitsController, 
+                           timeController: _basalTimeController
+                         ),
+                       ],
                      ],
                    ),
                  ),
@@ -343,7 +405,7 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
                      padding: const EdgeInsets.symmetric(vertical: 16),
                      backgroundColor: Colors.blueAccent
                    ),
-                   child: _isLoading ? const CircularProgressIndicator() : Text(isEditing ? "Save Changes" : "Create Profile"),
+                   child: _isLoading ? const CircularProgressIndicator() : Text(isEditing ? "Guardar Cambios" : "Crear Perfil"),
                  ),
                )
             ],

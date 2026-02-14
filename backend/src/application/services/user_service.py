@@ -31,14 +31,20 @@ def create_user(db: Session, user: UserCreate) -> UserPublic:
     
     # 4. Create Health Profile Model
     # The EncryptedString type decorator will handle encryption automatically on commit
+    hp = user.health_profile
     db_health = HealthProfileModel(
-        diabetes_type=user.health_profile.diabetes_type.value,
-        insulin_sensitivity=str(user.health_profile.insulin_sensitivity), # Convert to string for encryption wrapper
-        carb_ratio=str(user.health_profile.carb_ratio),
-        target_glucose=str(user.health_profile.target_glucose),
-        # user_id will be set via relationship assignment below, or explicit:
-        # user_id=... (but user id is not generated if relying on default? No, Uuid default logic)
-        # We assign db_user.health_profile = db_health, so SA handles FK.
+        diabetes_type=hp.diabetes_type.value if hp.diabetes_type else None,
+        therapy_type=hp.therapy_type if hp.therapy_type else None,
+        
+        # Campos cifrados (convertir a string)
+        insulin_sensitivity=str(hp.insulin_sensitivity) if hp.insulin_sensitivity else None,
+        carb_ratio=str(hp.carb_ratio) if hp.carb_ratio else None,
+        target_glucose=str(hp.target_glucose) if hp.target_glucose else None,
+        
+        # Insulina basal (nuevos campos)
+        basal_insulin_type=hp.basal_insulin.type if hp.basal_insulin else None,
+        basal_insulin_units=str(hp.basal_insulin.units) if (hp.basal_insulin and hp.basal_insulin.units) else None,
+        basal_insulin_time=hp.basal_insulin.administration_time if hp.basal_insulin else None,
     )
     
     # Link manually or via Relationship
@@ -54,11 +60,23 @@ def create_user(db: Session, user: UserCreate) -> UserPublic:
     
     # 5. Map back to Domain (Public)
     # When reading back, EncryptedString decrypts to string. We cast to float/int for response.
+    from src.domain.health_models import BasalInsulinInfo
+    
+    basal_info = None
+    if db_health.basal_insulin_type or db_health.basal_insulin_units:
+        basal_info = BasalInsulinInfo(
+            type=db_health.basal_insulin_type,
+            units=float(db_health.basal_insulin_units) if db_health.basal_insulin_units else None,
+            administration_time=str(db_health.basal_insulin_time) if db_health.basal_insulin_time else None
+        )
+    
     hp_domain = HealthProfile(
         diabetes_type=db_health.diabetes_type,
-        insulin_sensitivity=float(db_health.insulin_sensitivity),
-        carb_ratio=float(db_health.carb_ratio),
-        target_glucose=int(db_health.target_glucose),
+        therapy_type=db_health.therapy_type,
+        insulin_sensitivity=float(db_health.insulin_sensitivity) if db_health.insulin_sensitivity else None,
+        carb_ratio=float(db_health.carb_ratio) if db_health.carb_ratio else None,
+        target_glucose=int(db_health.target_glucose) if db_health.target_glucose else None,
+        basal_insulin=basal_info,
         user_id=db_user.id
     )
     

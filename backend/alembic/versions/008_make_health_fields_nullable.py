@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '008'
+revision: str = '008_make_health_fields_nullable'
 down_revision: Union[str, None] = '007'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

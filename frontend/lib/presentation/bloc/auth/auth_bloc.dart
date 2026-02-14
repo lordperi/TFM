@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../../data/datasources/auth_api_client.dart';
-import '../../../data/models/auth_models.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../data/models/family_models.dart';
-import '../../../data/repositories/family_repository.dart';
+import 'package:diabeaty_mobile/data/datasources/auth_api_client.dart';
+import 'package:diabeaty_mobile/data/models/auth_models.dart';
+import 'package:diabeaty_mobile/core/constants/app_constants.dart';
+import 'package:diabeaty_mobile/data/models/family_models.dart';
+import 'package:diabeaty_mobile/data/repositories/family_repository.dart';
 
 // ==========================================
 // AUTH BLOC - EVENTS

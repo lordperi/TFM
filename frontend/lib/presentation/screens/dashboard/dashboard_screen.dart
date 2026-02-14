@@ -4,6 +4,7 @@ import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/theme/theme_bloc.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../screens/nutrition/food_search_screen.dart';
+import '../profile/profile_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -95,6 +96,15 @@ class DashboardScreen extends StatelessWidget {
             ],
             selectedItemColor: Theme.of(context).primaryColor,
             currentIndex: 0,
+            onTap: (index) {
+              if (index == 2) {
+                // Navigate to profile screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                );
+              }
+            },
           ),
         );
       },

@@ -14,8 +14,18 @@ router = APIRouter(prefix="/family", tags=["family"])
 
 # --- DTOs ---
 
+from src.domain.health_models import TherapyType, DiabetesType
+from src.infrastructure.db.types import EncryptedString
+
+# --- DTOs ---
+
 class PinVerificationRequest(BaseModel):
     pin: str
+
+class BasalInsulinData(BaseModel):
+    type: str # Lantus, etc
+    units: float
+    administration_time: Optional[str] = None # HH:MM
 
 class PatientCreateRequest(BaseModel):
     display_name: str
@@ -23,24 +33,33 @@ class PatientCreateRequest(BaseModel):
     role: str = "DEPENDENT" # 'GUARDIAN', 'DEPENDENT'
     birth_date: Optional[date] = None
     pin: Optional[str] = None # Only for GUARDIAN
-    # Health Profile Initial Data (Optional for Guardians/Non-Diabetics)
-    diabetes_type: Optional[str] = None
-    therapy_mode: Optional[str] = None # 'PEN', 'PUMP'
+    # Health Profile Initial Data
+    diabetes_type: Optional[DiabetesType] = None
+    therapy_type: Optional[TherapyType] = None
     insulin_sensitivity: Optional[float] = None
     carb_ratio: Optional[float] = None
-    target_glucose: Optional[float] = None
+    target_glucose: Optional[float] = None # cambiado de target_range a target_glucose para consistencia
+    # Basal Insulin (Flattened or object? Let's use flattened for simplicity regarding DB mapping manually here, or nested if we want cleaner API.
+    # User API uses nested HealthProfile. Let's keep it flat here for minimal refactor of existing calls structure, but adding new fields.)
+    basal_insulin_type: Optional[str] = None
+    basal_insulin_units: Optional[float] = None
+    basal_insulin_time: Optional[str] = None  # HH:MM:SS
+
 
 class PatientUpdateRequest(BaseModel):
     display_name: Optional[str] = None
     theme_preference: Optional[str] = None
     role: Optional[str] = None
     birth_date: Optional[date] = None
-    pin: Optional[str] = None # For verification during update
-    diabetes_type: Optional[str] = None
-    therapy_mode: Optional[str] = None
+    pin: Optional[str] = None 
+    diabetes_type: Optional[DiabetesType] = None
+    therapy_type: Optional[TherapyType] = None
     insulin_sensitivity: Optional[float] = None
     carb_ratio: Optional[float] = None
     target_glucose: Optional[float] = None
+    basal_insulin_type: Optional[str] = None
+    basal_insulin_units: Optional[float] = None
+    basal_insulin_time: Optional[str] = None
 
 class PatientResponse(BaseModel):
     id: str
@@ -94,13 +113,28 @@ def create_patient_profile(
     db.flush() # Generate ID
 
     # 2. Create Health Profile
+    # Parse time if present
+    b_time = None
+    if request.basal_insulin_time:
+        try:
+            b_time = datetime.strptime(request.basal_insulin_time, "%H:%M:%S").time()
+        except ValueError:
+            try:
+                b_time = datetime.strptime(request.basal_insulin_time, "%H:%M").time()
+            except:
+                pass
+
     health_profile = HealthProfileModel(
         patient_id=new_patient.id,
-        diabetes_type=request.diabetes_type,
-        therapy_mode=request.therapy_mode,
+        diabetes_type=request.diabetes_type.value if request.diabetes_type else None,
+        therapy_type=request.therapy_type, # Enum
         insulin_sensitivity=request.insulin_sensitivity,
         carb_ratio=request.carb_ratio,
-        target_glucose=request.target_glucose
+        target_glucose=request.target_glucose,
+        basal_insulin_type=request.basal_insulin_type,
+        basal_insulin_units=request.basal_insulin_units, # EncryptedString handles float conversion? No, model expects string/float depending on definition. 
+        # EncryptedString in models.py handles encryption. We pass raw value.
+        basal_insulin_time=b_time
     )
     db.add(health_profile)
     
@@ -145,10 +179,13 @@ def verify_patient_pin(
 class PatientDetailResponse(PatientResponse):
     birth_date: Optional[date] = None
     diabetes_type: Optional[str] = None
-    therapy_mode: Optional[str] = None
+    therapy_type: Optional[str] = None
     insulin_sensitivity: Optional[float] = None
     carb_ratio: Optional[float] = None
     target_glucose: Optional[float] = None
+    basal_insulin_type: Optional[str] = None
+    basal_insulin_units: Optional[float] = None
+    basal_insulin_time: Optional[str] = None
 
 @router.get("/members/{patient_id}", response_model=PatientDetailResponse)
 def get_patient_details(
@@ -178,10 +215,13 @@ def get_patient_details(
         is_protected=bool(patient.pin_hash),
         birth_date=patient.birth_date,
         diabetes_type=hp.diabetes_type if hp else None,
-        therapy_mode=hp.therapy_mode if hp else None,
+        therapy_type=hp.therapy_type.value if hp and hp.therapy_type else None, # Enum to str
         insulin_sensitivity=hp.insulin_sensitivity if hp else None,
         carb_ratio=hp.carb_ratio if hp else None,
-        target_glucose=hp.target_glucose if hp else None
+        target_glucose=hp.target_glucose if hp else None,
+        basal_insulin_type=hp.basal_insulin_type if hp else None,
+        basal_insulin_units=hp.basal_insulin_units if hp else None,
+        basal_insulin_time=str(hp.basal_insulin_time) if hp and hp.basal_insulin_time else None
     )
 
 @router.patch("/members/{patient_id}", response_model=PatientResponse)
@@ -203,14 +243,14 @@ def update_patient_profile(
         raise HTTPException(status_code=404, detail="Patient not found")
     
     # Security: PIN Verification for Sensitive Updates
-    # Define sensitive fields that require PIN if patient is protected
     sensitive_fields_present = any([
         request.role is not None,
         request.diabetes_type is not None,
-        request.therapy_mode is not None,
+        request.therapy_type is not None,
         request.insulin_sensitivity is not None,
         request.carb_ratio is not None,
-        request.target_glucose is not None
+        request.target_glucose is not None,
+        request.basal_insulin_type is not None
     ])
     
     if sensitive_fields_present and patient.pin_hash:
@@ -223,31 +263,25 @@ def update_patient_profile(
     if request.theme_preference: patient.theme_preference = request.theme_preference
     if request.role: patient.role = request.role
     if request.birth_date: patient.birth_date = request.birth_date
-    # Correct logic for updating the PIN itself:
-    # If users want to CHANGE the PIN, they should probably provide the OLD PIN?
-    # For MVP, we allow overwriting PIN if we passed the sensitive check above (which we did if 'role' was changing, but what if ONLY pin is changing?)
-    # Let's treat PIN change as sensitive too.
+    
     if request.pin and not sensitive_fields_present: 
-         # Edge case: User only sent 'pin' field. Is this an auth attempt or an update?
-         # In PatientUpdateRequest, 'pin' is used for BOTH.
-         # To UPDATE the pin, we might need a dedicated endpoint or assume if they provided it, they want to set it?
-         # BUT 'pin' is also the auth token.
-         # Let's assume request.pin is the AUTH token.
-         # To CHANGE pin, we'd need 'new_pin' field.
-         # For this MVP task, we are securing Role/Health. 
-         # We will NOT update patient.pin_hash from request.pin to avoid confusion between "Proof of Auth" and "New Value".
-         # If user wants to change PIN, we'll need a specific flow or field 'new_pin'. 
-         # Ignoring request.pin for UPDATE purposes for now to be safe.
          pass
     
-    # Update Health Profile (logic simplified)
+    # Update Health Profile
     if patient.health_profile:
         hp = patient.health_profile
-        if request.diabetes_type: hp.diabetes_type = request.diabetes_type
-        if request.therapy_mode: hp.therapy_mode = request.therapy_mode
+        if request.diabetes_type: hp.diabetes_type = request.diabetes_type.value
+        if request.therapy_type: hp.therapy_type = request.therapy_type
         if request.insulin_sensitivity: hp.insulin_sensitivity = request.insulin_sensitivity
         if request.carb_ratio: hp.carb_ratio = request.carb_ratio
         if request.target_glucose: hp.target_glucose = request.target_glucose
+        if request.basal_insulin_type: hp.basal_insulin_type = request.basal_insulin_type
+        if request.basal_insulin_units: hp.basal_insulin_units = request.basal_insulin_units
+        if request.basal_insulin_time:
+             try:
+                hp.basal_insulin_time = datetime.strptime(request.basal_insulin_time, "%H:%M").time()
+             except:
+                pass # Ignore malformed time update
 
     db.commit()
     db.refresh(patient)

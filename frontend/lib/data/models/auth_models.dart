@@ -78,20 +78,28 @@ class HealthProfileCreate {
   @JsonKey(name: 'diabetes_type')
   final String diabetesType;
   
+  @JsonKey(name: 'therapy_type')
+  final String? therapyType;
+  
   @JsonKey(name: 'insulin_sensitivity')
-  final double insulinSensitivity;
+  final double? insulinSensitivity;
   
   @JsonKey(name: 'carb_ratio')
-  final double carbRatio;
+  final double? carbRatio;
   
   @JsonKey(name: 'target_glucose')
   final int? targetGlucose;
+  
+  @JsonKey(name: 'basal_insulin')
+  final BasalInsulinInfo? basalInsulin;
 
   const HealthProfileCreate({
     required this.diabetesType,
-    required this.insulinSensitivity,
-    required this.carbRatio,
-    this.targetGlucose = 100,
+    this.therapyType,
+    this.insulinSensitivity,
+    this.carbRatio,
+    this.targetGlucose,
+    this.basalInsulin,
   });
 
   factory HealthProfileCreate.fromJson(Map<String, dynamic> json) =>
@@ -140,25 +148,57 @@ class HealthProfile {
   @JsonKey(name: 'diabetes_type')
   final String diabetesType;
   
+  @JsonKey(name: 'therapy_type')
+  final String? therapyType;
+  
   @JsonKey(name: 'insulin_sensitivity')
-  final double insulinSensitivity;
+  final double? insulinSensitivity;
   
   @JsonKey(name: 'carb_ratio')
-  final double carbRatio;
+  final double? carbRatio;
   
   @JsonKey(name: 'target_glucose')
-  final int targetGlucose;
+  final int? targetGlucose;
+  
+  @JsonKey(name: 'basal_insulin')
+  final BasalInsulinInfo? basalInsulin;
 
   const HealthProfile({
     required this.userId,
     required this.diabetesType,
-    required this.insulinSensitivity,
-    required this.carbRatio,
-    required this.targetGlucose,
+    this.therapyType,
+    this.insulinSensitivity,
+    this.carbRatio,
+    this.targetGlucose,
+    this.basalInsulin,
   });
 
   factory HealthProfile.fromJson(Map<String, dynamic> json) =>
       _$HealthProfileFromJson(json);
 
   Map<String, dynamic> toJson() => _$HealthProfileToJson(this);
+}
+
+// ==========================================
+// BASAL INSULIN INFO
+// ==========================================
+
+@JsonSerializable()
+class BasalInsulinInfo {
+  final String? type;
+  final double? units;
+  
+  @JsonKey(name: 'administration_time')
+  final String? administrationTime;
+
+  const BasalInsulinInfo({
+    this.type,
+    this.units,
+    this.administrationTime,
+  });
+
+  factory BasalInsulinInfo.fromJson(Map<String, dynamic> json) =>
+      _$BasalInsulinInfoFromJson(json);
+
+  Map<String, dynamic> toJson() => _$BasalInsulinInfoToJson(this);
 }

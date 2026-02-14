@@ -9,10 +9,14 @@ class PatientProfile {
   // Detailed fields (optional, loaded on demand)
   final String? birthDate;
   final String? diabetesType;
-  final String? therapyMode;
+  final String? therapyType; // Renamed
   final double? insulinSensitivity;
   final double? carbRatio;
   final double? targetGlucose;
+  // Basal Insulin
+  final String? basalInsulinType;
+  final double? basalInsulinUnits;
+  final String? basalInsulinTime;
 
   PatientProfile({
     required this.id,
@@ -23,10 +27,13 @@ class PatientProfile {
     required this.isProtected,
     this.birthDate,
     this.diabetesType,
-    this.therapyMode,
+    this.therapyType,
     this.insulinSensitivity,
     this.carbRatio,
     this.targetGlucose,
+    this.basalInsulinType,
+    this.basalInsulinUnits,
+    this.basalInsulinTime,
   });
 
   factory PatientProfile.fromJson(Map<String, dynamic> json) {
@@ -39,10 +46,13 @@ class PatientProfile {
       isProtected: json['is_protected'] ?? false,
       birthDate: json['birth_date'],
       diabetesType: json['diabetes_type'],
-      therapyMode: json['therapy_mode'],
+      therapyType: json['therapy_type'],
       insulinSensitivity: json['insulin_sensitivity'] != null ? (json['insulin_sensitivity'] as num).toDouble() : null,
       carbRatio: json['carb_ratio'] != null ? (json['carb_ratio'] as num).toDouble() : null,
       targetGlucose: json['target_glucose'] != null ? (json['target_glucose'] as num).toDouble() : null,
+      basalInsulinType: json['basal_insulin_type'],
+      basalInsulinUnits: json['basal_insulin_units'] != null ? (json['basal_insulin_units'] as num).toDouble() : null,
+      basalInsulinTime: json['basal_insulin_time'],
     );
   }
   
@@ -59,10 +69,15 @@ class CreatePatientRequest {
   
   // Health Data
   final String diabetesType;
-  final String therapyMode; // 'PEN', 'PUMP'
-  final String insulinSensitivity; // string for MVP/Controller
+  final String therapyType; // Renamed from therapyMode
+  final String insulinSensitivity; 
   final String carbRatio;
   final String targetGlucose;
+
+  // Basal Insulin
+  final String? basalInsulinType;
+  final String? basalInsulinUnits;
+  final String? basalInsulinTime;
 
   CreatePatientRequest({
      required this.displayName,
@@ -71,10 +86,13 @@ class CreatePatientRequest {
      this.birthDate,
      this.pin,
      required this.diabetesType,
-     this.therapyMode = 'PEN',
+     this.therapyType = 'PEN',
      required this.insulinSensitivity,
      required this.carbRatio,
      required this.targetGlucose,
+     this.basalInsulinType,
+     this.basalInsulinUnits,
+     this.basalInsulinTime,
   });
 
   Map<String, dynamic> toJson() => {
@@ -84,10 +102,13 @@ class CreatePatientRequest {
     'birth_date': birthDate,
     'pin': pin,
     'diabetes_type': diabetesType,
-    'therapy_mode': therapyMode,
-    'insulin_sensitivity': double.tryParse(insulinSensitivity) ?? 0.0, // Convert to number for API
+    'therapy_type': therapyType,
+    'insulin_sensitivity': double.tryParse(insulinSensitivity) ?? 0.0,
     'carb_ratio': double.tryParse(carbRatio) ?? 0.0,
     'target_glucose': double.tryParse(targetGlucose) ?? 0.0,
+    'basal_insulin_type': basalInsulinType,
+    'basal_insulin_units': basalInsulinUnits != null ? double.tryParse(basalInsulinUnits!) : null,
+    'basal_insulin_time': basalInsulinTime,
   };
 }
 
@@ -100,10 +121,14 @@ class PatientUpdateRequest {
   
   // Health Data
   final String? diabetesType;
-  final String? therapyMode;
+  final String? therapyType;
   final String? insulinSensitivity;
   final String? carbRatio;
   final String? targetGlucose;
+  
+  final String? basalInsulinType;
+  final String? basalInsulinUnits;
+  final String? basalInsulinTime;
 
   PatientUpdateRequest({
      this.displayName,
@@ -112,10 +137,13 @@ class PatientUpdateRequest {
      this.birthDate,
      this.pin,
      this.diabetesType,
-     this.therapyMode,
+     this.therapyType,
      this.insulinSensitivity,
      this.carbRatio,
      this.targetGlucose,
+     this.basalInsulinType,
+     this.basalInsulinUnits,
+     this.basalInsulinTime,
   });
 
   Map<String, dynamic> toJson() {
@@ -126,10 +154,15 @@ class PatientUpdateRequest {
     if (birthDate != null) data['birth_date'] = birthDate;
     if (pin != null) data['pin'] = pin;
     if (diabetesType != null) data['diabetes_type'] = diabetesType;
-    if (therapyMode != null) data['therapy_mode'] = therapyMode;
+    if (therapyType != null) data['therapy_type'] = therapyType;
     if (insulinSensitivity != null) data['insulin_sensitivity'] = double.tryParse(insulinSensitivity!);
     if (carbRatio != null) data['carb_ratio'] = double.tryParse(carbRatio!);
     if (targetGlucose != null) data['target_glucose'] = double.tryParse(targetGlucose!);
+    
+    if (basalInsulinType != null) data['basal_insulin_type'] = basalInsulinType;
+    if (basalInsulinUnits != null) data['basal_insulin_units'] = double.tryParse(basalInsulinUnits!);
+    if (basalInsulinTime != null) data['basal_insulin_time'] = basalInsulinTime;
+    
     return data;
   }
 }

@@ -1,6 +1,50 @@
 from datetime import datetime
 from uuid import UUID, uuid4
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from enum import Enum
+
+# --- DOMAIN ENUMS ---
+
+class DiabetesType(str, Enum):
+    """Tipos de diabetes"""
+    NONE = "NONE"  # No diabético (ej: guardianes)
+    T1 = "T1"      # Diabetes Tipo 1
+    T2 = "T2"      # Diabetes Tipo 2
+
+
+class TherapyType(str, Enum):
+    """Tipos de tratamiento para diabetes"""
+    INSULIN = "INSULIN"              # Insulina inyectable (T1 típico)
+    ORAL = "ORAL_MEDICATION"         # Medicación oral (T2 típico - Metformina)
+    MIXED = "MIXED"                  # Insulina + Medicación oral (T2 avanzado)
+    NONE = "NONE"                    # Sin tratamiento activo
+
+
+# --- DOMAIN VALUE OBJECTS ---
+
+class BasalInsulinInfo(BaseModel):
+    """
+    Información sobre insulina basal de acción prolongada.
+    Ejemplos: Lantus, Levemir, Tresiba, Toujeo.
+    """
+    type: str | None = Field(
+        None, 
+        description="Tipo de insulina basal: Lantus, Levemir, Tresiba, Toujeo"
+    )
+    units: float | None = Field(
+        None, 
+        ge=0, 
+        le=100, 
+        description="Unidades por dosis (0-100)"
+    )
+    administration_time: str | None = Field(
+        None, 
+        description="Hora de administración en formato HH:MM (ej: 22:00)",
+        pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"  # Validación HH:MM
+    )
+    
+    model_config = ConfigDict(from_attributes=True)
+
 
 # --- DOMAIN ENTITY ---
 class HealthMetricMetadata(BaseModel):
@@ -22,6 +66,20 @@ class HealthMetric(BaseModel):
     metadata: HealthMetricMetadata | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# --- PASSWORD CHANGE MODELS ---
+
+class PasswordChange(BaseModel):
+    """Model for password change requests"""
+    old_password: str = Field(..., min_length=1, description="Current password")
+    new_password: str = Field(..., min_length=8, description="New password (min 8 characters)")
+    confirm_password: str = Field(..., min_length=8, description="Confirm new password")
+    
+    def passwords_match(self) -> bool:
+        """Validate that new passwords match"""
+        return self.new_password == self.confirm_password
+
 
 # --- INFRASTRUCTURE MODEL (SQLAlchemy) ---
 # Usually this lives in infrastructure/db/models.py, but placing here for context validation
