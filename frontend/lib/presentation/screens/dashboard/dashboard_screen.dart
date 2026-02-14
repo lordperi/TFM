@@ -5,14 +5,22 @@ import '../../bloc/theme/theme_bloc.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../screens/nutrition/food_search_screen.dart';
 import '../profile/profile_screen.dart';
+import '../../bloc/glucose/glucose_bloc.dart';
+import '../../screens/glucose/add_glucose_screen.dart';
+import '../../widgets/glucose/glucose_chart.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Escuchar el modo actual para decidir qué UI mostrar
-    return BlocBuilder<ThemeBloc, ThemeState>(
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated && state.selectedProfile != null) {
+          context.read<GlucoseBloc>().add(LoadGlucoseHistory(state.selectedProfile!.id));
+        }
+      },
+      child: BlocBuilder<ThemeBloc, ThemeState>(
       builder: (context, themeState) {
         final isAdult = themeState.uiMode.isAdult;
         
@@ -72,10 +80,15 @@ class DashboardScreen extends StatelessWidget {
           body: isAdult ? const _AdultDashboard() : const _ChildDashboard(),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              Navigator.push(
-                context, 
-                MaterialPageRoute(builder: (_) => const FoodSearchScreen()),
-              );
+               final authState = context.read<AuthBloc>().state;
+               if (authState is AuthAuthenticated && authState.selectedProfile != null) {
+                 Navigator.push(
+                  context, 
+                  MaterialPageRoute(builder: (_) => AddGlucoseScreen(
+                    patientId: authState.selectedProfile!.id
+                  )),
+                );
+               }
             },
             child: const Icon(Icons.add),
           ),
@@ -108,7 +121,8 @@ class DashboardScreen extends StatelessWidget {
           ),
         );
       },
-    );
+    ),
+   );
   }
 }
 
@@ -130,35 +144,53 @@ class _AdultDashboard extends StatelessWidget {
             elevation: 2,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: BlocBuilder<GlucoseBloc, GlucoseState>(
+                builder: (context, state) {
+                   String value = '--';
+                   String timeCmd = '';
+                   
+                   if (state is GlucoseLoaded && state.history.isNotEmpty) {
+                      // Get latest by timestamp
+                      final latest = state.history.reduce((curr, next) => 
+                          curr.timestamp.isAfter(next.timestamp) ? curr : next);
+                      
+                      value = latest.glucoseValue.toString();
+                      final diff = DateTime.now().difference(latest.timestamp).inMinutes;
+                      timeCmd = 'Hace $diff min';
+                   }
+
+                   return Column(
                     children: [
-                      Text('Glucosa Actual', style: Theme.of(context).textTheme.titleMedium),
-                      const Icon(Icons.more_horiz),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '105', 
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.primary
-                        )
+                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Glucosa Actual', style: Theme.of(context).textTheme.titleMedium),
+                          const Icon(Icons.more_horiz),
+                        ],
                       ),
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 8.0, left: 4.0),
-                        child: Text('mg/dL'),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            value, 
+                            style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                              color: Theme.of(context).colorScheme.primary
+                            )
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8.0, left: 4.0),
+                            child: Text('mg/dL'),
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 8),
+                      if (timeCmd.isNotEmpty)
+                        Text(timeCmd, style: Theme.of(context).textTheme.bodySmall),
                     ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text('Hace 5 min • Estable', style: Theme.of(context).textTheme.bodySmall),
-                ],
+                  );
+                }
               ),
             ),
           ),
@@ -167,24 +199,40 @@ class _AdultDashboard extends StatelessWidget {
           Text('Tendencia (24h)', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           
-          // Placeholder Gráfico
-          Container(
-            height: 200,
+          // Gráfico de Glucosa
+          SizedBox(
+            height: 250,
             width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.show_chart, size: 48, color: Colors.grey),
-                  const SizedBox(height: 8),
-                  Text('Gráfico de Datos', style: Theme.of(context).textTheme.bodyMedium),
-                ],
-              ),
+            child: Card(
+               elevation: 2,
+               child: Padding(
+                 padding: const EdgeInsets.all(16.0),
+                 child: BlocBuilder<GlucoseBloc, GlucoseState>(
+                    builder: (context, state) {
+                      if (state is GlucoseLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is GlucoseLoaded) {
+                         // Get target range from AuthBloc
+                         final authState = context.read<AuthBloc>().state;
+                         int? min;
+                         int? max;
+                         if (authState is AuthAuthenticated && authState.selectedProfile != null) {
+                             min = authState.selectedProfile!.targetRangeLow;
+                             max = authState.selectedProfile!.targetRangeHigh;
+                         }
+
+                         return GlucoseChart(
+                           history: state.history,
+                           targetMin: min,
+                           targetMax: max,
+                         );
+                      } else if (state is GlucoseError) {
+                        return Center(child: Text('Error: ${state.message}'));
+                      }
+                      return const Center(child: Text('Sin datos recientes'));
+                    },
+                 ),
+               ),
             ),
           ),
         ],

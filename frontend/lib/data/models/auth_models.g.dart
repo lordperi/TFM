@@ -53,6 +53,8 @@ HealthProfileCreate _$HealthProfileCreateFromJson(Map<String, dynamic> json) =>
       insulinSensitivity: (json['insulin_sensitivity'] as num?)?.toDouble(),
       carbRatio: (json['carb_ratio'] as num?)?.toDouble(),
       targetGlucose: (json['target_glucose'] as num?)?.toInt(),
+      targetRangeLow: (json['target_range_low'] as num?)?.toInt(),
+      targetRangeHigh: (json['target_range_high'] as num?)?.toInt(),
       basalInsulin: json['basal_insulin'] == null
           ? null
           : BasalInsulinInfo.fromJson(
@@ -67,6 +69,8 @@ Map<String, dynamic> _$HealthProfileCreateToJson(
       'insulin_sensitivity': instance.insulinSensitivity,
       'carb_ratio': instance.carbRatio,
       'target_glucose': instance.targetGlucose,
+      'target_range_low': instance.targetRangeLow,
+      'target_range_high': instance.targetRangeHigh,
       'basal_insulin': instance.basalInsulin,
     };
 
@@ -99,6 +103,8 @@ HealthProfile _$HealthProfileFromJson(Map<String, dynamic> json) =>
       insulinSensitivity: (json['insulin_sensitivity'] as num?)?.toDouble(),
       carbRatio: (json['carb_ratio'] as num?)?.toDouble(),
       targetGlucose: (json['target_glucose'] as num?)?.toInt(),
+      targetRangeLow: (json['target_range_low'] as num?)?.toInt(),
+      targetRangeHigh: (json['target_range_high'] as num?)?.toInt(),
       basalInsulin: json['basal_insulin'] == null
           ? null
           : BasalInsulinInfo.fromJson(
@@ -113,6 +119,8 @@ Map<String, dynamic> _$HealthProfileToJson(HealthProfile instance) =>
       'insulin_sensitivity': instance.insulinSensitivity,
       'carb_ratio': instance.carbRatio,
       'target_glucose': instance.targetGlucose,
+      'target_range_low': instance.targetRangeLow,
+      'target_range_high': instance.targetRangeHigh,
       'basal_insulin': instance.basalInsulin,
     };
 

@@ -90,6 +90,12 @@ class HealthProfileCreate {
   @JsonKey(name: 'target_glucose')
   final int? targetGlucose;
   
+  @JsonKey(name: 'target_range_low')
+  final int? targetRangeLow;
+  
+  @JsonKey(name: 'target_range_high')
+  final int? targetRangeHigh;
+  
   @JsonKey(name: 'basal_insulin')
   final BasalInsulinInfo? basalInsulin;
 
@@ -99,6 +105,8 @@ class HealthProfileCreate {
     this.insulinSensitivity,
     this.carbRatio,
     this.targetGlucose,
+    this.targetRangeLow,
+    this.targetRangeHigh,
     this.basalInsulin,
   });
 
@@ -160,6 +168,12 @@ class HealthProfile {
   @JsonKey(name: 'target_glucose')
   final int? targetGlucose;
   
+  @JsonKey(name: 'target_range_low')
+  final int? targetRangeLow;
+  
+  @JsonKey(name: 'target_range_high')
+  final int? targetRangeHigh;
+  
   @JsonKey(name: 'basal_insulin')
   final BasalInsulinInfo? basalInsulin;
 
@@ -170,6 +184,8 @@ class HealthProfile {
     this.insulinSensitivity,
     this.carbRatio,
     this.targetGlucose,
+    this.targetRangeLow,
+    this.targetRangeHigh,
     this.basalInsulin,
   });
 

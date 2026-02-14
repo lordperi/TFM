@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:frontend/core/constants/diabetes_type.dart';
-import 'package:frontend/core/constants/therapy_type.dart';
-import 'package:frontend/presentation/widgets/conditional_medical_fields.dart';
+import 'package:diabeaty_mobile/core/constants/diabetes_type.dart';
+import 'package:diabeaty_mobile/core/constants/therapy_type.dart';
+import 'package:diabeaty_mobile/presentation/widgets/conditional_medical_fields.dart';
 
 void main() {
   group('ConditionalMedicalFields Widget Tests', () {

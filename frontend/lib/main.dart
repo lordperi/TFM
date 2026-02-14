@@ -16,6 +16,9 @@ import 'presentation/screens/dashboard/dashboard_screen.dart';
 import 'data/datasources/family_api_client.dart';
 import 'data/repositories/family_repository.dart';
 import 'presentation/screens/profile/profile_selection_screen.dart';
+import 'data/datasources/glucose_api_client.dart';
+import 'data/repositories/glucose_repository.dart';
+import 'presentation/bloc/glucose/glucose_bloc.dart';
 
 // ==========================================
 // MAIN APPLICATION
@@ -43,6 +46,12 @@ void main() async {
   );
   final familyRepository = FamilyRepository(familyApiClient);
 
+  final glucoseApiClient = GlucoseApiClient(
+    dioClient.dio,
+    baseUrl: ApiConstants.baseUrl,
+  );
+  final glucoseRepository = GlucoseRepository(glucoseApiClient);
+
   runApp(
     DiaBetyApp(
       secureStorage: secureStorage,
@@ -50,6 +59,7 @@ void main() async {
       authApiClient: authApiClient,
       nutritionApiClient: nutritionApiClient,
       familyRepository: familyRepository,
+      glucoseRepository: glucoseRepository,
     ),
   );
 }
@@ -60,6 +70,7 @@ class DiaBetyApp extends StatelessWidget {
   final AuthApiClient authApiClient;
   final NutritionApiClient nutritionApiClient;
   final FamilyRepository familyRepository;
+  final GlucoseRepository glucoseRepository;
 
   const DiaBetyApp({
     super.key,
@@ -68,6 +79,7 @@ class DiaBetyApp extends StatelessWidget {
     required this.authApiClient,
     required this.nutritionApiClient,
     required this.familyRepository,
+    required this.glucoseRepository,
   });
 
   @override
@@ -93,6 +105,12 @@ class DiaBetyApp extends StatelessWidget {
           BlocProvider(
             create: (context) => NutritionBloc(
               apiClient: nutritionApiClient,
+            ),
+          ),
+          // Glucose BLoC
+          BlocProvider(
+            create: (context) => GlucoseBloc(
+              glucoseRepository: glucoseRepository,
             ),
           ),
         ],

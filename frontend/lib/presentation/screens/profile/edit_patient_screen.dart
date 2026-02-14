@@ -29,6 +29,8 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
   late TextEditingController _isfController; // Insulin Sensitivity
   late TextEditingController _icrController; // Carb Ratio
   late TextEditingController _targetController;
+  late TextEditingController _targetLowController;
+  late TextEditingController _targetHighController;
   
   // Basal Insulin Controllers
   final _basalTypeController = TextEditingController();
@@ -56,6 +58,8 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
     _isfController = TextEditingController(text: "");
     _icrController = TextEditingController(text: "");
     _targetController = TextEditingController(text: "");
+    _targetLowController = TextEditingController(text: "");
+    _targetHighController = TextEditingController(text: "");
 
     if (widget.profile != null) {
       _role = widget.profile!.role;
@@ -95,6 +99,8 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
                   if (details.insulinSensitivity != null) _isfController.text = details.insulinSensitivity.toString();
                   if (details.carbRatio != null) _icrController.text = details.carbRatio.toString();
                   if (details.targetGlucose != null) _targetController.text = details.targetGlucose.toString();
+                  if (details.targetRangeLow != null) _targetLowController.text = details.targetRangeLow.toString();
+                  if (details.targetRangeHigh != null) _targetHighController.text = details.targetRangeHigh.toString();
                   
                   if (details.basalInsulinType != null) _basalTypeController.text = details.basalInsulinType!;
                   if (details.basalInsulinUnits != null) _basalUnitsController.text = details.basalInsulinUnits.toString();
@@ -115,6 +121,8 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
     _isfController.dispose();
     _icrController.dispose();
     _targetController.dispose();
+    _targetLowController.dispose();
+    _targetHighController.dispose();
     _basalTypeController.dispose();
     _basalUnitsController.dispose();
     _basalTimeController.dispose();
@@ -152,6 +160,8 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
       final isfStr = isNone || _isfController.text.isEmpty ? "0.0" : _isfController.text;
       final icrStr = isNone || _icrController.text.isEmpty ? "0.0" : _icrController.text;
       final targetStr = isNone || _targetController.text.isEmpty ? "0.0" : _targetController.text;
+      final targetLowInt = isNone || _targetLowController.text.isEmpty ? null : int.tryParse(_targetLowController.text);
+      final targetHighInt = isNone || _targetHighController.text.isEmpty ? null : int.tryParse(_targetHighController.text);
       
       final basalTypeStr = isNone || _basalTypeController.text.isEmpty ? null : _basalTypeController.text;
       final basalUnitsStr = isNone || _basalUnitsController.text.isEmpty ? null : _basalUnitsController.text;
@@ -170,6 +180,8 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
           insulinSensitivity: isfStr,
           carbRatio: icrStr,
           targetGlucose: targetStr,
+          targetRangeLow: targetLowInt,
+          targetRangeHigh: targetHighInt,
           basalInsulinType: basalTypeStr,
           basalInsulinUnits: basalUnitsStr,
           basalInsulinTime: basalTimeStr,
@@ -193,6 +205,8 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
           insulinSensitivity: isfStr,
           carbRatio: icrStr,
           targetGlucose: targetStr,
+          targetRangeLow: targetLowInt,
+          targetRangeHigh: targetHighInt,
           basalInsulinType: basalTypeStr,
           basalInsulinUnits: basalUnitsStr,
           basalInsulinTime: basalTimeStr
@@ -355,6 +369,8 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
                                 _isfController.clear();
                                 _icrController.clear();
                                 _targetController.clear();
+                                _targetLowController.clear();
+                                _targetHighController.clear();
                                 _basalTypeController.clear();
                                 _basalUnitsController.clear();
                                 _basalTimeController.clear();
@@ -374,6 +390,8 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
                           isfController: _isfController,
                           icrController: _icrController,
                           targetController: _targetController,
+                          targetRangeLowController: _targetLowController,
+                          targetRangeHighController: _targetHighController,
                           onTherapyTypeChanged: (TherapyType? newValue) {
                             setState(() {
                               _therapyType = newValue;

@@ -146,6 +146,12 @@ class HealthProfileUpdate {
   @JsonKey(name: 'target_glucose')
   final int? targetGlucose;
   
+  @JsonKey(name: 'target_range_low')
+  final int? targetRangeLow;
+  
+  @JsonKey(name: 'target_range_high')
+  final int? targetRangeHigh;
+  
   @JsonKey(name: 'basal_insulin_type')
   final String? basalInsulinType;
   
@@ -161,6 +167,8 @@ class HealthProfileUpdate {
     this.insulinSensitivity,
     this.carbRatio,
     this.targetGlucose,
+    this.targetRangeLow,
+    this.targetRangeHigh,
     this.basalInsulinType,
     this.basalInsulinUnits,
     this.basalInsulinTime,

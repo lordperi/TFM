@@ -40,7 +40,7 @@ ENV API_BASE_URL=${API_BASE_URL}
 
 # Build for Web
 # --release is default for build web
-RUN flutter build web --release --dart-define=API_BASE_URL="$API_BASE_URL"
+RUN flutter build web --release --no-wasm-dry-run --dart-define=API_BASE_URL="$API_BASE_URL"
 
 # STAGE 2: Runtime Environment (Nginx)
 FROM nginx:alpine
