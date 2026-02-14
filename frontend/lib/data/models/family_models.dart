@@ -13,6 +13,8 @@ class PatientProfile {
   final double? insulinSensitivity;
   final double? carbRatio;
   final double? targetGlucose;
+  final int? targetRangeLow;
+  final int? targetRangeHigh;
   // Basal Insulin
   final String? basalInsulinType;
   final double? basalInsulinUnits;
@@ -31,6 +33,8 @@ class PatientProfile {
     this.insulinSensitivity,
     this.carbRatio,
     this.targetGlucose,
+    this.targetRangeLow,
+    this.targetRangeHigh,
     this.basalInsulinType,
     this.basalInsulinUnits,
     this.basalInsulinTime,
@@ -50,6 +54,8 @@ class PatientProfile {
       insulinSensitivity: json['insulin_sensitivity'] != null ? (json['insulin_sensitivity'] as num).toDouble() : null,
       carbRatio: json['carb_ratio'] != null ? (json['carb_ratio'] as num).toDouble() : null,
       targetGlucose: json['target_glucose'] != null ? (json['target_glucose'] as num).toDouble() : null,
+      targetRangeLow: json['target_range_low'] as int?,
+      targetRangeHigh: json['target_range_high'] as int?,
       basalInsulinType: json['basal_insulin_type'],
       basalInsulinUnits: json['basal_insulin_units'] != null ? (json['basal_insulin_units'] as num).toDouble() : null,
       basalInsulinTime: json['basal_insulin_time'],
@@ -73,6 +79,8 @@ class CreatePatientRequest {
   final String insulinSensitivity; 
   final String carbRatio;
   final String targetGlucose;
+  final int? targetRangeLow;
+  final int? targetRangeHigh;
 
   // Basal Insulin
   final String? basalInsulinType;
@@ -90,6 +98,8 @@ class CreatePatientRequest {
      required this.insulinSensitivity,
      required this.carbRatio,
      required this.targetGlucose,
+     this.targetRangeLow,
+     this.targetRangeHigh,
      this.basalInsulinType,
      this.basalInsulinUnits,
      this.basalInsulinTime,
@@ -106,6 +116,8 @@ class CreatePatientRequest {
     'insulin_sensitivity': double.tryParse(insulinSensitivity) ?? 0.0,
     'carb_ratio': double.tryParse(carbRatio) ?? 0.0,
     'target_glucose': double.tryParse(targetGlucose) ?? 0.0,
+    'target_range_low': targetRangeLow,
+    'target_range_high': targetRangeHigh,
     'basal_insulin_type': basalInsulinType,
     'basal_insulin_units': basalInsulinUnits != null ? double.tryParse(basalInsulinUnits!) : null,
     'basal_insulin_time': basalInsulinTime,
@@ -125,6 +137,8 @@ class PatientUpdateRequest {
   final String? insulinSensitivity;
   final String? carbRatio;
   final String? targetGlucose;
+  final int? targetRangeLow;
+  final int? targetRangeHigh;
   
   final String? basalInsulinType;
   final String? basalInsulinUnits;
@@ -141,6 +155,8 @@ class PatientUpdateRequest {
      this.insulinSensitivity,
      this.carbRatio,
      this.targetGlucose,
+     this.targetRangeLow,
+     this.targetRangeHigh,
      this.basalInsulinType,
      this.basalInsulinUnits,
      this.basalInsulinTime,
@@ -158,6 +174,8 @@ class PatientUpdateRequest {
     if (insulinSensitivity != null) data['insulin_sensitivity'] = double.tryParse(insulinSensitivity!);
     if (carbRatio != null) data['carb_ratio'] = double.tryParse(carbRatio!);
     if (targetGlucose != null) data['target_glucose'] = double.tryParse(targetGlucose!);
+    if (targetRangeLow != null) data['target_range_low'] = targetRangeLow;
+    if (targetRangeHigh != null) data['target_range_high'] = targetRangeHigh;
     
     if (basalInsulinType != null) data['basal_insulin_type'] = basalInsulinType;
     if (basalInsulinUnits != null) data['basal_insulin_units'] = double.tryParse(basalInsulinUnits!);

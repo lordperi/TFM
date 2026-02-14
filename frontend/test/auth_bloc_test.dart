@@ -1,9 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:diabeaty/presentation/bloc/auth/auth_bloc.dart';
-import 'package:diabeaty/data/repositories/family_repository.dart';
-import 'package:diabeaty/data/models/family_models.dart';
+import 'package:diabeaty_mobile/presentation/bloc/auth/auth_bloc.dart';
+import 'package:diabeaty_mobile/data/repositories/family_repository.dart';
+import 'package:diabeaty_mobile/data/models/family_models.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // Mocks
@@ -28,8 +28,9 @@ void main() {
       id: '123',
       displayName: 'Test Child',
       themePreference: 'child',
-      isChild: true,
-      birthDate: DateTime(2015, 1, 1),
+      role: 'DEPENDENT',
+      isProtected: false,
+      birthDate: '2015-01-01',
     );
 
     blocTest<AuthBloc, AuthState>(

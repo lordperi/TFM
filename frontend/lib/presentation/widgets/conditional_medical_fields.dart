@@ -10,6 +10,8 @@ class ConditionalMedicalFields extends StatefulWidget {
   final TextEditingController? isfController;
   final TextEditingController? icrController;
   final TextEditingController? targetController;
+  final TextEditingController? targetRangeLowController;
+  final TextEditingController? targetRangeHighController;
 
   const ConditionalMedicalFields({
     super.key,
@@ -19,6 +21,8 @@ class ConditionalMedicalFields extends StatefulWidget {
     this.isfController,
     this.icrController,
     this.targetController,
+    this.targetRangeLowController,
+    this.targetRangeHighController,
   });
 
   @override
@@ -46,6 +50,9 @@ class _ConditionalMedicalFieldsState extends State<ConditionalMedicalFields> {
         if (widget.therapyType?.requiresInsulinFields() == true) ...[
           _buildInsulinFields(),
         ],
+        
+        const SizedBox(height: 16),
+        _buildGlucoseRanges(),
       ],
     );
   }
@@ -178,4 +185,55 @@ class _ConditionalMedicalFieldsState extends State<ConditionalMedicalFields> {
       ),
     );
   }
-}
+
+  Widget _buildGlucoseRanges() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Rangos Objetivo (Alarmas)',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 16),
+             Row(
+               children: [
+                 Expanded(
+                   child: TextFormField(
+                      controller: widget.targetRangeLowController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Min',
+                        suffixText: 'mg/dL',
+                        border: OutlineInputBorder(),
+                      ),
+                   ),
+                 ),
+                 const SizedBox(width: 16),
+                 Expanded(
+                   child: TextFormField(
+                      controller: widget.targetRangeHighController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Max',
+                        suffixText: 'mg/dL',
+                        border: OutlineInputBorder(),
+                      ),
+                   ),
+                 ),
+               ],
+             ),
+             const SizedBox(height: 8),
+             Text(
+               'Define los límites para considerar la glucosa en rango óptimo.',
+               style: Theme.of(context).textTheme.bodySmall,
+             ),
+          ],
+        ),
+      ),
+    );
+  }
