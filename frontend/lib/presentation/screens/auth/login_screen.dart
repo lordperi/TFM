@@ -197,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Register Link
               TextButton(
                 onPressed: () {
-                  // TODO: Navigate to register screen
+                  Navigator.pushNamed(context, '/register');
                 },
                 child: const Text('¿No tienes cuenta? Regístrate'),
               ),

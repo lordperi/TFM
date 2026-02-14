@@ -11,6 +11,7 @@ import 'presentation/bloc/theme/theme_bloc.dart';
 import 'data/datasources/nutrition_api_client.dart';
 import 'presentation/bloc/nutrition/nutrition_bloc.dart';
 import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/auth/register_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
 import 'data/datasources/family_api_client.dart';
 import 'data/repositories/family_repository.dart';
@@ -123,6 +124,14 @@ class DiaBetyApp extends StatelessWidget {
                     return const LoginScreen();
                   },
                 ),
+                routes: {
+                  '/login': (context) => const LoginScreen(),
+                  '/register': (context) => RegisterScreen(
+                    authApiClient: authApiClient,
+                  ),
+                  '/dashboard': (context) => const DashboardScreen(),
+                  '/profile-selection': (context) => const ProfileSelectionScreen(),
+                },
               );
             },
           ),
