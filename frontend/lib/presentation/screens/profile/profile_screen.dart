@@ -14,17 +14,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  void _loadProfile() {
+  // Removed initState to prevent context access error
+  
+  void _loadProfile(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       context.read<ProfileBloc>().add(LoadProfile(authState.accessToken));
-      // Load XP and achievements for child mode
       context.read<ProfileBloc>().add(LoadXPSummary(authState.accessToken));
       context.read<ProfileBloc>().add(LoadAchievements(authState.accessToken));
     }
@@ -33,7 +28,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ProfileBloc(repository: ProfileRepository()),
+      create: (context) {
+        final bloc = ProfileBloc(repository: ProfileRepository());
+        // Initial Load
+        final authState = context.read<AuthBloc>().state;
+        if (authState is AuthAuthenticated) {
+          bloc.add(LoadProfile(authState.accessToken));
+          bloc.add(LoadXPSummary(authState.accessToken));
+          bloc.add(LoadAchievements(authState.accessToken));
+        }
+        return bloc;
+      },
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Mi Perfil'),
@@ -41,9 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         body: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
-            // Reload data when ProfileBloc is created
             if (state is ProfileInitial) {
-              _loadProfile();
               return const Center(child: CircularProgressIndicator());
             }
 
@@ -61,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Text('Error: ${state.message}'),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: _loadProfile,
+                      onPressed: () => _loadProfile(context),
                       child: const Text('Reintentar'),
                     ),
                   ],
@@ -77,7 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // For now, we'll use a simple toggle. In production, check if user.patients.isNotEmpty
             return _ProfileModeSelector(
               user: state.user,
-              onReload: _loadProfile,
+              onReload: () => _loadProfile(context),
             );
           },
         ),
