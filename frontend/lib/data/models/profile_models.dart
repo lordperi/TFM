@@ -133,18 +133,37 @@ class AchievementsResponse {
 class HealthProfileUpdate {
   @JsonKey(name: 'diabetes_type')
   final String? diabetesType;
+  
+  @JsonKey(name: 'therapy_type')
+  final String? therapyType;
+  
   @JsonKey(name: 'insulin_sensitivity')
   final double? insulinSensitivity;
+  
   @JsonKey(name: 'carb_ratio')
   final double? carbRatio;
+  
   @JsonKey(name: 'target_glucose')
   final int? targetGlucose;
+  
+  @JsonKey(name: 'basal_insulin_type')
+  final String? basalInsulinType;
+  
+  @JsonKey(name: 'basal_insulin_units')
+  final double? basalInsulinUnits;
+  
+  @JsonKey(name: 'basal_insulin_time')
+  final String? basalInsulinTime;
 
   HealthProfileUpdate({
     this.diabetesType,
+    this.therapyType,
     this.insulinSensitivity,
     this.carbRatio,
     this.targetGlucose,
+    this.basalInsulinType,
+    this.basalInsulinUnits,
+    this.basalInsulinTime,
   });
 
   factory HealthProfileUpdate.fromJson(Map<String, dynamic> json) =>

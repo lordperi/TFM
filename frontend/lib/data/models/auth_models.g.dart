@@ -49,18 +49,25 @@ Map<String, dynamic> _$UserCreateRequestToJson(UserCreateRequest instance) =>
 HealthProfileCreate _$HealthProfileCreateFromJson(Map<String, dynamic> json) =>
     HealthProfileCreate(
       diabetesType: json['diabetes_type'] as String,
-      insulinSensitivity: (json['insulin_sensitivity'] as num).toDouble(),
-      carbRatio: (json['carb_ratio'] as num).toDouble(),
-      targetGlucose: (json['target_glucose'] as num?)?.toInt() ?? 100,
+      therapyType: json['therapy_type'] as String?,
+      insulinSensitivity: (json['insulin_sensitivity'] as num?)?.toDouble(),
+      carbRatio: (json['carb_ratio'] as num?)?.toDouble(),
+      targetGlucose: (json['target_glucose'] as num?)?.toInt(),
+      basalInsulin: json['basal_insulin'] == null
+          ? null
+          : BasalInsulinInfo.fromJson(
+              json['basal_insulin'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$HealthProfileCreateToJson(
         HealthProfileCreate instance) =>
     <String, dynamic>{
       'diabetes_type': instance.diabetesType,
+      'therapy_type': instance.therapyType,
       'insulin_sensitivity': instance.insulinSensitivity,
       'carb_ratio': instance.carbRatio,
       'target_glucose': instance.targetGlucose,
+      'basal_insulin': instance.basalInsulin,
     };
 
 UserPublicResponse _$UserPublicResponseFromJson(Map<String, dynamic> json) =>
@@ -88,16 +95,37 @@ HealthProfile _$HealthProfileFromJson(Map<String, dynamic> json) =>
     HealthProfile(
       userId: json['user_id'] as String,
       diabetesType: json['diabetes_type'] as String,
-      insulinSensitivity: (json['insulin_sensitivity'] as num).toDouble(),
-      carbRatio: (json['carb_ratio'] as num).toDouble(),
-      targetGlucose: (json['target_glucose'] as num).toInt(),
+      therapyType: json['therapy_type'] as String?,
+      insulinSensitivity: (json['insulin_sensitivity'] as num?)?.toDouble(),
+      carbRatio: (json['carb_ratio'] as num?)?.toDouble(),
+      targetGlucose: (json['target_glucose'] as num?)?.toInt(),
+      basalInsulin: json['basal_insulin'] == null
+          ? null
+          : BasalInsulinInfo.fromJson(
+              json['basal_insulin'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$HealthProfileToJson(HealthProfile instance) =>
     <String, dynamic>{
       'user_id': instance.userId,
       'diabetes_type': instance.diabetesType,
+      'therapy_type': instance.therapyType,
       'insulin_sensitivity': instance.insulinSensitivity,
       'carb_ratio': instance.carbRatio,
       'target_glucose': instance.targetGlucose,
+      'basal_insulin': instance.basalInsulin,
+    };
+
+BasalInsulinInfo _$BasalInsulinInfoFromJson(Map<String, dynamic> json) =>
+    BasalInsulinInfo(
+      type: json['type'] as String?,
+      units: (json['units'] as num?)?.toDouble(),
+      administrationTime: json['administration_time'] as String?,
+    );
+
+Map<String, dynamic> _$BasalInsulinInfoToJson(BasalInsulinInfo instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'units': instance.units,
+      'administration_time': instance.administrationTime,
     };

@@ -111,18 +111,26 @@ Map<String, dynamic> _$AchievementsResponseToJson(
 HealthProfileUpdate _$HealthProfileUpdateFromJson(Map<String, dynamic> json) =>
     HealthProfileUpdate(
       diabetesType: json['diabetes_type'] as String?,
+      therapyType: json['therapy_type'] as String?,
       insulinSensitivity: (json['insulin_sensitivity'] as num?)?.toDouble(),
       carbRatio: (json['carb_ratio'] as num?)?.toDouble(),
       targetGlucose: (json['target_glucose'] as num?)?.toInt(),
+      basalInsulinType: json['basal_insulin_type'] as String?,
+      basalInsulinUnits: (json['basal_insulin_units'] as num?)?.toDouble(),
+      basalInsulinTime: json['basal_insulin_time'] as String?,
     );
 
 Map<String, dynamic> _$HealthProfileUpdateToJson(
         HealthProfileUpdate instance) =>
     <String, dynamic>{
       'diabetes_type': instance.diabetesType,
+      'therapy_type': instance.therapyType,
       'insulin_sensitivity': instance.insulinSensitivity,
       'carb_ratio': instance.carbRatio,
       'target_glucose': instance.targetGlucose,
+      'basal_insulin_type': instance.basalInsulinType,
+      'basal_insulin_units': instance.basalInsulinUnits,
+      'basal_insulin_time': instance.basalInsulinTime,
     };
 
 PasswordChangeRequest _$PasswordChangeRequestFromJson(
