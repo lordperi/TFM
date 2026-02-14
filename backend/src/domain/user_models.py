@@ -1,28 +1,56 @@
-from enum import Enum
 from uuid import UUID, uuid4
-from pydantic import BaseModel, Field, EmailStr, field_validator
-
-class DiabetesType(str, Enum):
-    TYPE_1 = "type_1"
-    TYPE_2 = "type_2"
-    GESTATIONAL = "gestational"
-    LADA = "lada"
-    MODY = "mody"
+from pydantic import BaseModel, Field, EmailStr, field_validator, model_validator
+# Import from health_models (new location for DiabetesType, TherapyType, BasalInsulinInfo)
+from src.domain.health_models import DiabetesType, TherapyType, BasalInsulinInfo
 
 class HealthProfileBase(BaseModel):
+    """Base model for health profile with conditional validation"""
     diabetes_type: DiabetesType | None = None
+    therapy_type: TherapyType | None = Field(None, description="Tipo de tratamiento")
     
-    # Insulin Sensitivity Factor (ISF): How much 1 unit drops glucose (mg/dL)
-    # Range validation: 1 to 500 is clinically reasonable.
-    # Insulin Sensitivity Factor (ISF): How much 1 unit drops glucose (mg/dL)
-    # Range validation: 1 to 500 is clinically reasonable.
-    insulin_sensitivity: float | None = Field(None, gt=0, le=500, description="Caída de glucosa (mg/dL) por 1 unidad de insulina")
+    # Insulin therapy fields (required if therapy uses insulin)
+    insulin_sensitivity: float | None = Field(
+        None, gt=0, le=500, 
+        description="Caída de glucosa (mg/dL) por 1 unidad de insulina"
+    )
+    carb_ratio: float | None = Field(
+        None, gt=0, le=150, 
+        description="Gramos de carbohidratos cubiertos por 1 unidad"
+    )
+    target_glucose: int | None = Field(
+        None, ge=70, le=180, 
+        description="Objetivo glucémico (mg/dL)"
+    )
     
-    # Insulin-to-Carb Ratio (ICR): Grams of carbs covered by 1 unit
-    # Range validation: 1 to 150
-    carb_ratio: float | None = Field(None, gt=0, le=150, description="Gramos de carbohidratos cubiertos por 1 unidad")
+    # Basal insulin info (optional, for long-acting insulin)
+    basal_insulin: BasalInsulinInfo | None = None
     
-    target_glucose: int | None = Field(100, ge=70, le=180, description="Objetivo glucémico (mg/dL)")
+    @model_validator(mode='after')
+    def validate_conditional_fields(self) -> 'HealthProfileBase':
+        """
+        Validación condicional según diabetes_type y therapy_type.
+        
+        Reglas:
+        - diabetes_type=NONE → NO debe tener datos médicos
+        - therapy_type=INSULIN o MIXED → ISF/ICR/Target REQUERIDOS
+        - therapy_type=ORAL → ISF/ICR/Target OPCIONALES
+        """
+        if self.diabetes_type == DiabetesType.NONE:
+            # Si no tiene diabetes, no debería tener datos médicos
+            if any([self.insulin_sensitivity, self.carb_ratio, self.target_glucose]):
+                raise ValueError(
+                    "diabetes_type=NONE no debe tener datos médicos (ISF/ICR/Target)"
+                )
+            return self
+        
+        # Si usa insulina (INSULIN o MIXED), campos son requeridos
+        if self.therapy_type in [TherapyType.INSULIN, TherapyType.MIXED]:
+            if not all([self.insulin_sensitivity, self.carb_ratio, self.target_glucose]):
+                raise ValueError(
+                    "Terapia con insulina requiere ISF, ICR y Target Glucose"
+                )
+        
+        return self
 
 class HealthProfileCreate(HealthProfileBase):
     pass
@@ -30,9 +58,15 @@ class HealthProfileCreate(HealthProfileBase):
 class HealthProfileUpdate(BaseModel):
     """Model for updating health profile (all fields optional)"""
     diabetes_type: DiabetesType | None = None
+    therapy_type: TherapyType | None = None
     insulin_sensitivity: float | None = Field(None, gt=0, le=500)
     carb_ratio: float | None = Field(None, gt=0, le=150)
     target_glucose: int | None = Field(None, ge=70, le=180)
+    
+    # Basal insulin fields (for PATCH updates)
+    basal_insulin_type: str | None = None
+    basal_insulin_units: float | None = Field(None, ge=0, le=100)
+    basal_insulin_time: str | None = None
 
 class HealthProfile(HealthProfileBase):
     user_id: UUID
