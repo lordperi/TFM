@@ -61,7 +61,7 @@ class ChildProfileScreen extends StatelessWidget {
                           border: Border.all(color: Colors.white, width: 2),
                         ),
                         child: Text(
-                          'NI VEL ${xpSummary?.currentLevel ?? 1}',
+                          'NIVEL ${xpSummary?.currentLevel ?? 1}',
                           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ),

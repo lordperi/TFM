@@ -1,0 +1,208 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 67.0.0 (94.0.0 available)
+  analyzer 6.4.1 (10.0.2 available)
+  bloc 8.1.4 (9.2.0 available)
+  bloc_test 9.1.7 (10.0.0 available)
+  build 2.4.1 (4.0.4 available)
+  build_config 1.1.2 (1.2.0 available)
+  build_resolvers 2.4.2 (3.0.4 available)
+  build_runner 2.4.13 (2.11.1 available)
+  build_runner_core 7.3.2 (9.3.2 available)
+  characters 1.4.0 (1.4.1 available)
+  dart_style 2.3.6 (3.1.5 available)
+  ffi 2.1.5 (2.2.0 available)
+  flutter_bloc 8.1.6 (9.1.1 available)
+  flutter_lints 3.0.2 (6.0.0 available)
+  flutter_secure_storage 9.2.4 (10.0.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.0 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.0 available)
+  flutter_secure_storage_windows 3.1.2 (4.1.0 available)
+  get_it 7.7.0 (9.2.0 available)
+  google_fonts 6.3.3 (8.0.1 available)
+  hooks 1.0.0 (1.0.1 available)
+  injectable 2.6.0 (2.7.1+4 available)
+  injectable_generator 2.6.2 (2.12.0 available)
+  intl 0.19.0 (0.20.2 available)
+  js 0.6.7 (0.7.2 available)
+  json_annotation 4.9.0 (4.10.0 available)
+  json_serializable 6.8.0 (6.12.0 available)
+  lints 3.0.0 (6.1.0 available)
+  matcher 0.12.17 (0.12.18 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.17.0 (1.18.1 available)
+  mockito 5.4.4 (5.6.3 available)
+  objective_c 9.2.5 (9.3.0 available)
+  petitparser 7.0.1 (7.0.2 available)
+  retrofit 4.0.1 (4.9.2 available)
+  retrofit_generator 7.0.8 (10.2.3 available)
+  shelf_web_socket 2.0.1 (3.0.0 available)
+  source_gen 1.5.0 (4.2.0 available)
+  source_helper 1.3.5 (1.3.10 available)
+  source_span 1.10.1 (1.10.2 available)
+  test 1.26.3 (1.29.0 available)
+  test_api 0.7.7 (0.7.9 available)
+  test_core 0.6.12 (0.6.15 available)
+Got dependencies!
+45 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing lib...                                                
+
+   info - Missing a required trailing comma - lib\data\datasources\auth_api_client.g.dart:50:14 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\auth_api_client.g.dart:50:15 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\auth_api_client.g.dart:50:16 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\auth_api_client.g.dart:78:14 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\auth_api_client.g.dart:78:15 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\auth_api_client.g.dart:78:16 - require_trailing_commas
+   info - Use 'const' for final variables initialized to a constant value - lib\data\datasources\auth_api_client.g.dart:88:5 - prefer_const_declarations
+   info - Missing a required trailing comma - lib\data\datasources\auth_api_client.g.dart:105:14 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\auth_api_client.g.dart:105:15 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\auth_api_client.g.dart:105:16 - require_trailing_commas
+   info - Use 'const' for final variables initialized to a constant value - lib\data\datasources\nutrition_api_client.g.dart:26:5 - prefer_const_declarations
+   info - Missing a required trailing comma - lib\data\datasources\nutrition_api_client.g.dart:43:14 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\nutrition_api_client.g.dart:43:15 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\nutrition_api_client.g.dart:43:16 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\nutrition_api_client.g.dart:52:38 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\nutrition_api_client.g.dart:74:14 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\nutrition_api_client.g.dart:74:15 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\datasources\nutrition_api_client.g.dart:74:16 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\auth_models.g.dart:38:57 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\auth_models.g.dart:59:60 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\auth_models.g.dart:63:37 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\auth_models.g.dart:82:61 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\auth_models.g.dart:105:60 - require_trailing_commas
+warning - The declaration '_$BolusCalculationRequestFromJson' isn't referenced - lib\data\models\nutrition_models.g.dart:24:25 - unused_element
+   info - Missing a required trailing comma - lib\data\models\nutrition_models.g.dart:25:34 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\nutrition_models.g.dart:33:41 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\nutrition_models.g.dart:41:34 - require_trailing_commas
+warning - The declaration '_$BolusCalculationResponseToJson' isn't referenced - lib\data\models\nutrition_models.g.dart:49:22 - unused_element
+   info - Missing a required trailing comma - lib\data\models\nutrition_models.g.dart:50:42 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\profile_models.g.dart:94:34 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\profile_models.g.dart:105:38 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\profile_models.g.dart:124:37 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\profile_models.g.dart:137:34 - require_trailing_commas
+   info - Missing a required trailing comma - lib\data\models\profile_models.g.dart:145:39 - require_trailing_commas
+   info - The imported package 'http' isn't a dependency of the importing package - lib\data\repositories\profile_repository.dart:2:8 - depend_on_referenced_packages
+   info - Use 'const' for final variables initialized to a constant value - lib\main.dart:28:3 - prefer_const_declarations
+   info - Missing a required trailing comma - lib\main.dart:105:16 - require_trailing_commas
+   info - Missing a required trailing comma - lib\main.dart:105:17 - require_trailing_commas
+warning - Unused import: 'package:diabeaty_mobile/core/constants/app_constants.dart' - lib\presentation\bloc\auth\auth_bloc.dart:6:8 - unused_import
+warning - The '!' will have no effect because the receiver can't be null - lib\presentation\bloc\auth\auth_bloc.dart:161:55 - unnecessary_non_null_assertion
+   info - Missing a required trailing comma - lib\presentation\bloc\auth\auth_bloc.dart:171:8 - require_trailing_commas
+warning - The '!' will have no effect because the receiver can't be null - lib\presentation\bloc\auth\auth_bloc.dart:223:55 - unnecessary_non_null_assertion
+   info - Missing a required trailing comma - lib\presentation\bloc\auth\auth_bloc.dart:230:9 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\bloc\auth\auth_bloc.dart:230:10 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\bloc\auth\auth_bloc.dart:253:9 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\bloc\auth\auth_bloc.dart:253:10 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\bloc\auth\auth_bloc.dart:269:9 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\bloc\auth\auth_bloc.dart:269:10 - require_trailing_commas
+   info - Unnecessary use of double quotes - lib\presentation\bloc\nutrition\nutrition_bloc.dart:135:27 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\bloc\nutrition\nutrition_bloc.dart:154:33 - prefer_single_quotes
+   info - Missing a required trailing comma - lib\presentation\bloc\nutrition\nutrition_bloc.dart:175:8 - require_trailing_commas
+   info - Unnecessary use of double quotes - lib\presentation\bloc\nutrition\nutrition_bloc.dart:177:27 - prefer_single_quotes
+   info - The imported package 'bloc' isn't a dependency of the importing package - lib\presentation\bloc\profile\profile_bloc.dart:1:8 - depend_on_referenced_packages
+   info - Missing a required trailing comma - lib\presentation\bloc\profile\profile_bloc.dart:169:8 - require_trailing_commas
+   info - Don't invoke 'print' in production code - lib\presentation\bloc\profile\profile_bloc.dart:213:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\presentation\bloc\profile\profile_bloc.dart:230:7 - avoid_print
+warning - Unused import: '../../../core/constants/app_constants.dart' - lib\presentation\screens\auth\login_screen.dart:5:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\auth\login_screen.dart:221:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\auth\login_screen.dart:222:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\auth\login_screen.dart:251:60 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\presentation\screens\auth\login_screen.dart:289:37 - prefer_const_constructors
+   info - Unnecessary use of double quotes - lib\presentation\screens\auth\pin_verify_screen.dart:18:17 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\auth\pin_verify_screen.dart:60:22 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\auth\pin_verify_screen.dart:61:20 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\auth\pin_verify_screen.dart:65:31 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\auth\pin_verify_screen.dart:86:15 - prefer_single_quotes
+   info - Missing a required trailing comma - lib\presentation\screens\auth\pin_verify_screen.dart:115:11 - require_trailing_commas
+   info - Use a 'SizedBox' to add whitespace to a layout - lib\presentation\screens\auth\pin_verify_screen.dart:122:12 - sized_box_for_whitespace
+   info - Unnecessary use of double quotes - lib\presentation\screens\auth\pin_verify_screen.dart:130:55 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\auth\pin_verify_screen.dart:132:24 - prefer_single_quotes
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\auth\register_screen.dart:228:29 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\auth\register_screen.dart:230:29 - deprecated_member_use
+   info - Unnecessary use of 'toList' in a spread - lib\presentation\screens\auth\register_screen.dart:240:28 - unnecessary_to_list_in_spreads
+warning - The value of the local variable 'response' isn't used - lib\presentation\screens\auth\register_screen.dart:362:13 - unused_local_variable
+   info - Use 'const' with the constructor to improve performance - lib\presentation\screens\auth\register_screen.dart:367:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\presentation\screens\auth\register_screen.dart:368:22 - prefer_const_constructors
+warning - Unused import: '../../../core/constants/app_constants.dart' - lib\presentation\screens\dashboard\dashboard_screen.dart:5:8 - unused_import
+   info - Missing a required trailing comma - lib\presentation\screens\dashboard\dashboard_screen.dart:151:25 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\dashboard\dashboard_screen.dart:152:23 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\dashboard\dashboard_screen.dart:251:13 - require_trailing_commas
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\dashboard\dashboard_screen.dart:262:41 - deprecated_member_use
+warning - Unused import: '../../../core/constants/app_constants.dart' - lib\presentation\screens\nutrition\food_search_screen.dart:5:8 - unused_import
+   info - Missing a required trailing comma - lib\presentation\screens\nutrition\food_search_screen.dart:116:18 - require_trailing_commas
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\presentation\screens\profile\adult_profile_screen.dart:106:19 - deprecated_member_use
+warning - Unused import: 'package:diabeaty_mobile/presentation/bloc/auth/auth_bloc.dart' - lib\presentation\screens\profile\child_profile_screen.dart:4:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\profile\child_profile_screen.dart:31:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\profile\child_profile_screen.dart:88:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\profile\child_profile_screen.dart:130:52 - deprecated_member_use
+   info - Missing a required trailing comma - lib\presentation\screens\profile\child_profile_screen.dart:176:20 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\child_profile_screen.dart:192:21 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\child_profile_screen.dart:210:21 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\child_profile_screen.dart:217:23 - require_trailing_commas
+warning - Unused import: '../../../data/models/auth_models.dart' - lib\presentation\screens\profile\edit_patient_screen.dart:4:8 - unused_import
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:56:50 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:57:50 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:58:53 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:105:90 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:152:62 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:153:62 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:154:68 - prefer_single_quotes
+   info - Missing a required trailing comma - lib\presentation\screens\profile\edit_patient_screen.dart:199:9 - require_trailing_commas
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:218:46 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:218:64 - prefer_single_quotes
+   info - Missing a required trailing comma - lib\presentation\screens\profile\edit_patient_screen.dart:234:22 - require_trailing_commas
+   info - Use 'const' with the constructor to improve performance - lib\presentation\screens\profile\edit_patient_screen.dart:239:30 - prefer_const_constructors
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:239:57 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:240:87 - prefer_single_quotes
+   info - Missing a required trailing comma - lib\presentation\screens\profile\edit_patient_screen.dart:241:26 - require_trailing_commas
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:245:26 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:252:62 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:253:48 - prefer_single_quotes
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\presentation\screens\profile\edit_patient_screen.dart:259:17 - deprecated_member_use
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:260:62 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:267:67 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:268:68 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:274:26 - prefer_single_quotes
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\presentation\screens\profile\edit_patient_screen.dart:276:19 - deprecated_member_use
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:277:64 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:279:69 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:280:69 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:281:68 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:291:64 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:296:60 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:304:51 - prefer_single_quotes
+   info - Missing a required trailing comma - lib\presentation\screens\profile\edit_patient_screen.dart:314:20 - require_trailing_commas
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:329:35 - prefer_single_quotes
+  error - The named parameter 'onDiabetesTypeChanged' isn't defined - lib\presentation\screens\profile\edit_patient_screen.dart:339:27 - undefined_named_parameter
+  error - The named parameter 'diabetesType' isn't defined - lib\presentation\screens\profile\edit_patient_screen.dart:366:26 - undefined_named_parameter
+  error - The named parameter 'therapyType' isn't defined - lib\presentation\screens\profile\edit_patient_screen.dart:367:26 - undefined_named_parameter
+   info - Missing a required trailing comma - lib\presentation\screens\profile\edit_patient_screen.dart:371:24 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\edit_patient_screen.dart:385:20 - require_trailing_commas
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:386:93 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\edit_patient_screen.dart:386:113 - prefer_single_quotes
+   info - Missing a required trailing comma - lib\presentation\screens\profile\edit_patient_screen.dart:389:13 - require_trailing_commas
+   info - 'surfaceVariant' is deprecated and shouldn't be used. Use surfaceContainerHighest instead. This feature was deprecated after v3.18.0-0.1.pre - lib\presentation\screens\profile\profile_screen.dart:112:48 - deprecated_member_use
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\profile_selection_screen.dart:32:27 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\profile_selection_screen.dart:57:26 - prefer_single_quotes
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\profile_selection_screen.dart:62:26 - prefer_single_quotes
+   info - Missing a required trailing comma - lib\presentation\screens\profile\profile_selection_screen.dart:119:17 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\profile_selection_screen.dart:135:25 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\profile_selection_screen.dart:138:19 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\profile_selection_screen.dart:146:15 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\profile_selection_screen.dart:147:13 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\profile_selection_screen.dart:154:9 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\profile_selection_screen.dart:200:13 - require_trailing_commas
+   info - Missing a required trailing comma - lib\presentation\screens\profile\profile_selection_screen.dart:200:14 - require_trailing_commas
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\profile_selection_screen.dart:229:13 - prefer_single_quotes
+   info - Missing a required trailing comma - lib\presentation\screens\profile\profile_selection_screen.dart:232:9 - require_trailing_commas
+   info - Unnecessary use of double quotes - lib\presentation\screens\profile\profile_selection_screen.dart:240:29 - prefer_single_quotes
+   info - Missing a required trailing comma - lib\presentation\screens\profile\profile_selection_screen.dart:241:7 - require_trailing_commas
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\presentation\widgets\basal_insulin_fields.dart:45:19 - deprecated_member_use
+   info - Missing a required trailing comma - lib\presentation\widgets\basal_insulin_fields.dart:58:28 - require_trailing_commas
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\widgets\conditional_medical_fields.dart:82:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\widgets\conditional_medical_fields.dart:83:17 - deprecated_member_use
+   info - Unnecessary use of 'toList' in a spread - lib\presentation\widgets\conditional_medical_fields.dart:85:16 - unnecessary_to_list_in_spreads
+

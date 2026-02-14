@@ -29,7 +29,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
     return Scaffold(
       backgroundColor: Colors.black, // Dark background like Netflix
       appBar: AppBar(
-        title: const Text("Who's using DiaBeaty?"),
+        title: const Text("¿Quién eres?"),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -54,12 +54,12 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
                        const Icon(Icons.family_restroom, size: 80, color: Colors.grey),
                        const SizedBox(height: 20),
                        const Text(
-                         "Welcome to DiaBeaty Family",
+                         "Bienvenido a DiaBeaty Familia",
                          style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                        ),
                        const SizedBox(height: 10),
                        const Text(
-                         "Please create your first profile to get started.",
+                         "Crea tu primer perfil para comenzar.",
                          style: TextStyle(color: Colors.grey),
                        ),
                        const SizedBox(height: 30),
@@ -157,35 +157,37 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
   }
 
   Future<void> _editProfile(PatientProfile profile) async {
-      bool canEdit = true;
+      bool canEdit = false;
       bool startUnlocked = true;
       String? authPin;
 
       // Logic: 
-      // Guardians: Must enter PIN to access.
-      // Dependents: Can access without PIN.
+      // Guardians: Must enter PIN to access sensitive data, but can verify first.
+      // Dependents: Can access without PIN (initially unlocked if not protected? Wait, edit profile is guarded differently)
+      // Actually, editing another profile usually requires guardian auth. 
+      // For MVP: 
+      // - If Guardian: Show PIN screen.
+      // - If Dependent: Allow edit?? A dependent shouldn't edit their medical data.
+      // Let's assume ONLY Guardian can edit ANY profile.
+      // But if I am a guardian editing myself?
       
-      if (profile.role == 'GUARDIAN') {
-          if (profile.isProtected) {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                   builder: (_) => PinVerifyScreen(profile: profile, verifyOnly: true),
-                ),
-              );
-              // Result is String (PIN) if success, null if cancelled
-              if (result != null && result is String) {
-                  canEdit = true;
-                  authPin = result;
-              } else {
-                  canEdit = false;
-              }
+      // Let's keep it simple: Protected profiles need PIN to ENTER edit mode.
+      if (profile.isProtected) {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+               builder: (_) => PinVerifyScreen(profile: profile, verifyOnly: true),
+            ),
+          );
+          if (result != null && result is String) {
+              canEdit = true;
+              authPin = result;
+          } else {
+              canEdit = false;
           }
-          startUnlocked = true; 
       } else {
-          // Dependent
-          canEdit = true; 
-          startUnlocked = !profile.isProtected;
+          canEdit = true;
+          startUnlocked = true; // No PIN -> Unlocked
       }
 
       if (canEdit && mounted) {
@@ -199,8 +201,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
           );
           if (result == true) {
               setState(() {
-                  final repo = context.read<FamilyRepository>();
-                  _profilesFuture = repo.getProfiles();
+                  _profilesFuture = context.read<FamilyRepository>().getProfiles();
               });
           }
       }
@@ -225,7 +226,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
           ),
           const SizedBox(height: 10),
           const Text(
-            "Add Profile",
+            "Añadir Perfil",
             style: TextStyle(color: Colors.grey, fontSize: 16),
           )
         ],
@@ -236,11 +237,14 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
   Widget _buildCreateProfileButton() {
       return ElevatedButton(
           onPressed: _showAddProfileDialog,
-          child: const Text("Create First Profile")
+          child: const Text("Crear Primer Perfil")
       );
   }
 
   Future<void> _showAddProfileDialog() async {
+      // Logic for adding profile: Usually requires Guardian auth if active session exists.
+      // If empty profiles, allow freely.
+      
       final bool? result = await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const EditPatientScreen()),
@@ -248,8 +252,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
 
       if (result == true) {
         setState(() {
-            final repo = context.read<FamilyRepository>();
-            _profilesFuture = repo.getProfiles();
+            _profilesFuture = context.read<FamilyRepository>().getProfiles();
         });
       }
   }
