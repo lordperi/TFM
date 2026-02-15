@@ -12,7 +12,7 @@ from src.infrastructure.security.jwt_handler import create_access_token, Token, 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     # 1. Buscar usuario
     # NOTA: En Clean Arch estricto, esto iría en un AuthUseCase en la capa de Aplicación.
     # Dado el MVP, accedemos al repository/modelo directamente aquí por pragmatismo.

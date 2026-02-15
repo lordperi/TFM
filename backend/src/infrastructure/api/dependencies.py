@@ -4,7 +4,7 @@ from src.infrastructure.security.jwt_handler import verify_token, TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
-async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
+def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
     """Dependency para proteger rutas. Devuelve el user_id del token si es válido."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from src.infrastructure.db.database import get_db
 from src.infrastructure.db.models import UserModel
 
-async def get_current_user(
+def get_current_user(
     user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ) -> UserModel:
