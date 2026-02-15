@@ -29,6 +29,7 @@ void main() {
     registerFallbackValue(FakeGlucoseEvent());
     registerFallbackValue(FakeThemeEvent());
     registerFallbackValue(const LoadGlucoseHistory(''));
+    registerFallbackValue(const SetUiMode(UiMode.adult));
   });
 
   setUp(() {
