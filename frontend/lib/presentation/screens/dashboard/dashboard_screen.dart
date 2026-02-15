@@ -9,8 +9,26 @@ import '../../bloc/glucose/glucose_bloc.dart';
 import '../../screens/glucose/add_glucose_screen.dart';
 import '../../widgets/glucose/glucose_chart.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _loadGlucoseData();
+  }
+
+  void _loadGlucoseData() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated && authState.selectedProfile != null) {
+      context.read<GlucoseBloc>().add(LoadGlucoseHistory(authState.selectedProfile!.id));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
