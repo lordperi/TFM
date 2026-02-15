@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
-#build/
+build/
 develop-eggs/
 dist/
 downloads/
@@ -80,6 +80,51 @@ docker-compose.override.yml
 
 # --- Logs ---
 *.log
+*.txt
+!README.md
+!requirements.txt
+!pubspec.yaml
+!pubspec.lock
+!alembic.ini
+!*.example
+!*.json
+!*.md
+!*.yaml
+!*.yml
+!*.sh
+!*.sql
+!*.dockerignore
+!*.gitignore
+!*.lock
+!*.iml
+!*.metadata
+!*.yaml
+!*.dart
+!*.py
+!index.html
+!manifest.json
+!favicon.ico
+
+# Specific exclusions for common data/config files which should NOT be ignored
+!backend/requirements.txt
+!backend/alembic.ini
+!frontend/pubspec.yaml
+!frontend/pubspec.lock
+!frontend/analysis_options.yaml
+
+# Ignore all other txt files which are usually logs or analysis
+**/*_log.txt
+**/*_logs.txt
+**/*_result.txt
+**/*_output.txt
+**/*_dump.txt
+**/*_check.txt
+**/*_lib.txt
+**/*_final.txt
+**/help.txt
+**/analysis.txt
+**/test_result.txt
+**/build_log.txt
 
 # --- Local MyPy Cache ---
 .mypy_cache/
