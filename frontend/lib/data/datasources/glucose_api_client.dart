@@ -20,5 +20,7 @@ abstract class GlucoseApiClient {
     @Query('patient_id') String patientId,
     @Query('limit') int limit,
     @Query('offset') int offset,
+    @Query('start_date') int? startDate,
+    @Query('end_date') int? endDate,
   );
 }

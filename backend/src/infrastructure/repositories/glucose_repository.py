@@ -25,11 +25,25 @@ class GlucoseRepository:
         self.db.refresh(measurement)
         return measurement
 
-    def get_history(self, patient_id: UUID, limit: int = 20, offset: int = 0) -> List[GlucoseMeasurementModel]:
+    def get_history(
+        self, 
+        patient_id: UUID, 
+        limit: int = 20, 
+        offset: int = 0,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None
+    ) -> List[GlucoseMeasurementModel]:
         """Get glucose history for a patient, ordered by timestamp desc"""
-        return self.db.query(GlucoseMeasurementModel)\
-            .filter(GlucoseMeasurementModel.patient_id == patient_id)\
-            .order_by(GlucoseMeasurementModel.timestamp.desc())\
+        query = self.db.query(GlucoseMeasurementModel)\
+            .filter(GlucoseMeasurementModel.patient_id == patient_id)
+
+        if start_date:
+            query = query.filter(GlucoseMeasurementModel.timestamp >= start_date)
+        
+        if end_date:
+            query = query.filter(GlucoseMeasurementModel.timestamp <= end_date)
+
+        return query.order_by(GlucoseMeasurementModel.timestamp.desc())\
             .limit(limit)\
             .offset(offset)\
             .all()

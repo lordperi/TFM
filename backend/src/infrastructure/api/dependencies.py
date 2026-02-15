@@ -18,11 +18,22 @@ from sqlalchemy.orm import Session
 from src.infrastructure.db.database import get_db
 from src.infrastructure.db.models import UserModel
 
+from uuid import UUID
+
 def get_current_user(
     user_id: str = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ) -> UserModel:
-    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    try:
+        user_uuid = UUID(user_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token subject",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    user = db.query(UserModel).filter(UserModel.id == user_uuid).first()
     if not user:
          raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

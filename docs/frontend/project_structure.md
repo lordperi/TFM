@@ -60,8 +60,12 @@ TFM/
 │   │   │   │   │   └── home_screen.dart    # (Próximo)
 │   │   │   │   ├── bolus/
 │   │   │   │   │   └── bolus_calculator_screen.dart
+│   │   │   │   ├── glucose/
+│   │   │   │   │   └── glucose_history_screen.dart # ✅ Historial (Sprint 2)
 │   │   │   │   └── profile/
 │   │   │   │       └── profile_screen.dart
+│   │   │   │   ├── glucose/
+│   │   │   │   │   └── glucose_history_screen.dart # ✅ Historial (Sprint 2)
 │   │   │   └── widgets/
 │   │   │       ├── dual_ux/               # Componentes Dual UX
 │   │   │       │   ├── glucose_card.dart
@@ -358,4 +362,4 @@ lib/
 
 **Última actualización**: 2026-02-02  
 **Versión**: 0.1.0  
-**Estado**: Sprint 1 Completado ✅
+**Estado**: Sprint 2 En Progreso 🟡

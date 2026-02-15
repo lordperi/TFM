@@ -19,8 +19,19 @@ class GlucoseRepository {
     return await _apiClient.createMeasurement(request, patientId);
   }
 
-  Future<List<GlucoseMeasurement>> getHistory(String patientId,
-      {int limit = 20, int offset = 0}) async {
-    return await _apiClient.getHistory(patientId, limit, offset);
+  Future<List<GlucoseMeasurement>> getHistory(
+    String patientId, {
+    int limit = 20,
+    int offset = 0,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    return await _apiClient.getHistory(
+      patientId,
+      limit,
+      offset,
+      startDate?.millisecondsSinceEpoch,
+      endDate?.millisecondsSinceEpoch,
+    );
   }
 }

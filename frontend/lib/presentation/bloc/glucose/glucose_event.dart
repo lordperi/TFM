@@ -10,11 +10,21 @@ abstract class GlucoseEvent extends Equatable {
 
 class LoadGlucoseHistory extends GlucoseEvent {
   final String patientId;
+  final int limit;
+  final int offset;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
-  const LoadGlucoseHistory(this.patientId);
+  const LoadGlucoseHistory(
+    this.patientId, {
+    this.limit = 20,
+    this.offset = 0,
+    this.startDate,
+    this.endDate,
+  });
 
   @override
-  List<Object> get props => [patientId];
+  List<Object> get props => [patientId, limit, offset, startDate ?? '', endDate ?? ''];
 }
 
 class AddGlucoseMeasurement extends GlucoseEvent {
