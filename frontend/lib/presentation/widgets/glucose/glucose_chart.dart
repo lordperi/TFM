@@ -31,30 +31,46 @@ class GlucoseChart extends StatelessWidget {
       return FlSpot(e.key.toDouble(), e.value.glucoseValue.toDouble());
     }).toList();
 
+    final minVal = (targetMin ?? 90).toDouble();
+    final maxVal = (targetMax ?? 180).toDouble();
+
     return LineChart(
       LineChartData(
         gridData: const FlGridData(show: true, drawVerticalLine: false),
+        rangeAnnotations: RangeAnnotations(
+          horizontalRangeAnnotations: [
+            HorizontalRangeAnnotation(
+              y1: minVal,
+              y2: maxVal,
+              color: Colors.blue.withOpacity(0.1),
+            ),
+          ],
+        ),
         titlesData: FlTitlesData(
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              reservedSize: 60, // Increased for rotated text
+              interval: 1, // We control filtering in getTitlesWidget
               getTitlesWidget: (value, meta) {
                 final index = value.toInt();
-                if (index >= 0 && index < sorted.length) {
-                  // Show date every 5 points roughly
-                  if (index % (sorted.length > 5 ? sorted.length ~/ 5 : 1) == 0) {
-                     return Padding(
-                       padding: const EdgeInsets.only(top: 8.0),
-                       child: Text(
-                         DateFormat('dd/MM HH:mm').format(sorted[index].timestamp),
-                         style: const TextStyle(fontSize: 10),
-                       ),
-                     );
-                  }
-                }
-                return const SizedBox.shrink();
+                if (index < 0 || index >= sorted.length) return const SizedBox.shrink();
+                
+                // Show max 5 labels
+                final interval = (sorted.length / 5).ceil();
+                if (index % interval != 0) return const SizedBox.shrink();
+
+                return Padding(
+                    padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+                    child: Transform.rotate(
+                      angle: -0.5, // Rotate roughly 30 degrees
+                      child: Text(
+                        DateFormat('dd/MM HH:mm').format(sorted[index].timestamp),
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    ),
+                  );
               },
-              reservedSize: 32,
             ),
           ),
           leftTitles: const AxisTitles(
@@ -77,31 +93,28 @@ class GlucoseChart extends StatelessWidget {
             isStrokeCapRound: true,
             dotData: const FlDotData(show: true),
             belowBarData: BarAreaData(
-              show: true,
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              show: false, // Turn off since we have the range band
             ),
           ),
         ],
-        extraLinesData: targetMin != null && targetMax != null
-            ? ExtraLinesData(
-                horizontalLines: [
-                  HorizontalLine(
-                    y: targetMin!.toDouble(),
-                    color: Colors.green.withOpacity(0.5),
-                    strokeWidth: 1,
-                    dashArray: [5, 5],
-                    label: HorizontalLineLabel(show: true, labelResolver: (_) => 'Min'),
-                  ),
-                   HorizontalLine(
-                    y: targetMax!.toDouble(),
-                    color: Colors.green.withOpacity(0.5),
-                    strokeWidth: 1,
-                    dashArray: [5, 5],
-                    label: HorizontalLineLabel(show: true, labelResolver: (_) => 'Max'),
-                  ),
-                ],
-              )
-            : null,
+        extraLinesData: ExtraLinesData(
+          horizontalLines: [
+            HorizontalLine(
+              y: minVal,
+              color: Colors.blue.withOpacity(0.5),
+              strokeWidth: 1,
+              dashArray: [5, 5],
+              label: HorizontalLineLabel(show: true, labelResolver: (_) => 'Min'),
+            ),
+            HorizontalLine(
+              y: maxVal,
+              color: Colors.blue.withOpacity(0.5),
+              strokeWidth: 1,
+              dashArray: [5, 5],
+              label: HorizontalLineLabel(show: true, labelResolver: (_) => 'Max'),
+            ),
+          ],
+        ),
       ),
     );
   }
