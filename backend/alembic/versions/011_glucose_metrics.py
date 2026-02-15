@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column('glucose_value', sa.Integer(), nullable=False),
         sa.Column('timestamp', sa.DateTime(), nullable=True),
         sa.Column('measurement_type', sa.String(length=20), nullable=False),
-        sa.Column('notes', sa.String(), nullable=True), # EncryptedString
+        sa.Column('notes', sa.LargeBinary(), nullable=True), # EncryptedString
         sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )

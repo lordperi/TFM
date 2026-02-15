@@ -20,7 +20,7 @@ from uuid import UUID
 class GlucoseResponse(BaseModel):
     id: UUID
     patient_id: UUID
-    value: int = Field(validation_alias="glucose_value")
+    glucose_value: int
     timestamp: datetime
     measurement_type: GlucoseType
     notes: Optional[str] = None
