@@ -36,6 +36,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       listener: (context, state) {
         if (state is AuthAuthenticated && state.selectedProfile != null) {
           context.read<GlucoseBloc>().add(LoadGlucoseHistory(state.selectedProfile!.id));
+          
+          // Enforce Theme based on Profile
+          final isChild = state.selectedProfile!.themePreference.toLowerCase() == 'child';
+          context.read<ThemeBloc>().add(SetUiMode(isChild ? UiMode.child : UiMode.adult));
         }
       },
       child: BlocBuilder<ThemeBloc, ThemeState>(
@@ -46,14 +50,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           appBar: AppBar(
             title: Text(isAdult ? 'Panel de Control' : 'Mi Aventura'),
             actions: [
-              // Toggle de Tema
-              IconButton(
-                icon: Icon(isAdult ? Icons.child_care : Icons.person),
-                onPressed: () {
-                  context.read<ThemeBloc>().add(const ToggleUiMode());
-                },
-                tooltip: 'Cambiar Modo',
-              ),
               // Logout
               // User Menu
               PopupMenuButton<String>(
