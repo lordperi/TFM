@@ -30,7 +30,7 @@ app.add_middleware(
         "https://diabetics.jljimenez.es",
         "http://localhost", # Allow generic localhost for Flutter random ports
     ],
-    allow_origin_regex="http://localhost:\d+", # Allow any port on localhost
+    allow_origin_regex=r"http://localhost:\d+", # Allow any port on localhost
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -8,6 +8,7 @@ import '../profile/profile_screen.dart';
 import '../../bloc/glucose/glucose_bloc.dart';
 import '../../screens/glucose/add_glucose_screen.dart';
 import '../../widgets/glucose/glucose_chart.dart';
+import '../../screens/glucose/glucose_history_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -92,20 +93,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           body: isAdult ? const _AdultDashboard() : const _ChildDashboard(),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-               final authState = context.read<AuthBloc>().state;
-               if (authState is AuthAuthenticated && authState.selectedProfile != null) {
-                 Navigator.push(
-                  context, 
-                  MaterialPageRoute(builder: (_) => AddGlucoseScreen(
-                    patientId: authState.selectedProfile!.id
-                  )),
-                );
-               }
-            },
-            child: const Icon(Icons.add),
-          ),
+          // FloatingActionButton removed as it is now in the title row
+          // floatingActionButton: null,
           bottomNavigationBar: BottomNavigationBar(
             items: [
               BottomNavigationBarItem(
@@ -178,8 +167,42 @@ class _AdultDashboard extends StatelessWidget {
                        Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Glucosa Actual', style: Theme.of(context).textTheme.titleMedium),
-                          const Icon(Icons.more_horiz),
+                          Row(
+                            children: [
+                              Text('Glucosa Actual', style: Theme.of(context).textTheme.titleMedium),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(Icons.add_circle, color: Colors.blueAccent),
+                                tooltip: 'Añadir Medida',
+                                onPressed: () {
+                                   final authState = context.read<AuthBloc>().state;
+                                   if (authState is AuthAuthenticated && authState.selectedProfile != null) {
+                                     Navigator.push(
+                                      context, 
+                                      MaterialPageRoute(builder: (_) => AddGlucoseScreen(
+                                        patientId: authState.selectedProfile!.id
+                                      )),
+                                    );
+                                   }
+                                },
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.history),
+                            tooltip: 'Ver Historial',
+                            onPressed: () {
+                               final authState = context.read<AuthBloc>().state;
+                               if (authState is AuthAuthenticated && authState.selectedProfile != null) {
+                                 Navigator.push(
+                                  context, 
+                                  MaterialPageRoute(builder: (_) => GlucoseHistoryScreen(
+                                    patientId: authState.selectedProfile!.id
+                                  )),
+                                );
+                               }
+                            },
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),

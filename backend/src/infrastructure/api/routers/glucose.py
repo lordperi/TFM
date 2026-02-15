@@ -1,6 +1,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import datetime
 from uuid import UUID
 from typing import List
 
@@ -48,6 +49,8 @@ def get_glucose_history(
     patient_id: str,
     limit: int = 20,
     offset: int = 0,
+    start_date: int = None,  # Timestamp in milliseconds
+    end_date: int = None,    # Timestamp in milliseconds
     db: Session = Depends(get_db),
     user_id: str = Depends(get_current_user_id)
 ):
@@ -67,6 +70,22 @@ def get_glucose_history(
         raise HTTPException(status_code=404, detail="Patient not found or unauthorized")
     
     repo = GlucoseRepository(db)
-    history = repo.get_history(pid, limit=limit, offset=offset)
+    
+    # Convert timestamps to datetime if provided
+    start_dt = None
+    if start_date:
+        start_dt = datetime.fromtimestamp(start_date / 1000.0)
+        
+    end_dt = None
+    if end_date:
+        end_dt = datetime.fromtimestamp(end_date / 1000.0)
+
+    history = repo.get_history(
+        pid, 
+        limit=limit, 
+        offset=offset,
+        start_date=start_dt,
+        end_date=end_dt
+    )
     
     return history

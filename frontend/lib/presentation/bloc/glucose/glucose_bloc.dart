@@ -19,7 +19,13 @@ class GlucoseBloc extends Bloc<GlucoseEvent, GlucoseState> {
       LoadGlucoseHistory event, Emitter<GlucoseState> emit) async {
     emit(GlucoseLoading());
     try {
-      final history = await glucoseRepository.getHistory(event.patientId);
+      final history = await glucoseRepository.getHistory(
+        event.patientId,
+        limit: event.limit,
+        offset: event.offset,
+        startDate: event.startDate,
+        endDate: event.endDate,
+      );
       emit(GlucoseLoaded(history));
     } catch (e) {
       emit(GlucoseError(e.toString()));

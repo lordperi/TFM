@@ -11,7 +11,7 @@
 
 ## ✅ Estado Actual del Proyecto
 
-### 🟢 Completado (Sprint 1)
+### 🟢 Completado (Sprint 1) & 🟡 En Progreso (Sprint 2)
 
 #### 1. **Arquitectura Base**
 
@@ -54,6 +54,12 @@
 - ✅ Interceptor que añade automáticamente `Authorization: Bearer <token>`
 - ✅ Exclusión de endpoints públicos (login, register, health)
 
+## 7. **Historial de Glucosa (Sprint 2)**
+
+- ✅ Backend: Filtros por fecha (`start_date`, `end_date`) en `GET /glucose/history`
+- ✅ Frontend: Nueva pantalla `GlucoseHistoryScreen` con Grid View y Paginación
+- ✅ Dashboard: Acceso rápido al historial y "Añadir Glucosa" mejorado
+
 ---
 
 ## 📊 Endpoints Implementados
@@ -64,6 +70,7 @@
 |--------|----------|-------------|--------|
 | POST | `/api/v1/auth/login` | Login con JWT | ✅ |
 | POST | `/api/v1/users/register` | Registro de usuario | ✅ |
+| GET | `/api/v1/glucose/history` | Historial de glucosa (con filtros) | ✅ |
 
 ### Próximos Endpoints
 
@@ -366,6 +373,6 @@ El proyecto **DiaBeaty Mobile** ha completado exitosamente su **Sprint 1** con:
 ---
 
 **Fecha de Inicio**: 2026-02-02  
-**Sprint Actual**: 1/6 ✅  
-**Próximo Hito**: Dashboard con Dual UX (Sprint 2)  
-**Estado del Proyecto**: 🟢 En Progreso
+**Sprint Actual**: 2/6 (Dashboard & Glucose History) 🟡  
+**Próximo Hito**: Bolus Calculator (Sprint 3)  
+**Estado del Proyecto**: 🟡 En Progreso (Sprint 2)
