@@ -15,10 +15,12 @@ class GlucoseCreateRequest(BaseModel):
     measurement_type: GlucoseType = Field(default=GlucoseType.FINGER)
     notes: Optional[str] = None
 
+from uuid import UUID
+
 class GlucoseResponse(BaseModel):
-    id: str
-    patient_id: str
-    value: int
+    id: UUID
+    patient_id: UUID
+    value: int = Field(validation_alias="glucose_value")
     timestamp: datetime
     measurement_type: GlucoseType
     notes: Optional[str] = None
