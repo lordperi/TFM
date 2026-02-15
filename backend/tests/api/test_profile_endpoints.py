@@ -113,6 +113,26 @@ class TestUpdateHealthProfile:
         # Other fields should remain unchanged
         assert data["diabetes_type"] == "T1"
     
+    def test_update_health_profile_none_values(self, client, test_user_with_profile, authenticated_headers):
+        """Test updating health profile fields to None"""
+        update_data = {
+            "insulin_sensitivity": None,
+            "carb_ratio": None,
+            "target_glucose": None
+        }
+        
+        response = client.patch(
+            "/api/v1/users/me/health-profile",
+            json=update_data,
+            headers=authenticated_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["insulin_sensitivity"] is None
+        assert data["carb_ratio"] is None
+        assert data["target_glucose"] is None
+    
     def test_update_health_profile_invalid_data(self, client, test_user_with_profile, authenticated_headers):
         """Test update with invalid data"""
         update_data = {"insulin_sensitivity": -10}  # Invalid: must be > 0

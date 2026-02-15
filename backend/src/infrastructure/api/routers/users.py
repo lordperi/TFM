@@ -54,7 +54,7 @@ def update_health_profile(
     for field, value in update_data.items():
         # Convert to string for encrypted fields
         if field in ["insulin_sensitivity", "carb_ratio", "target_glucose"]:
-            setattr(health_profile, field, str(value))
+            setattr(health_profile, field, str(value) if value is not None else None)
         else:
             setattr(health_profile, field, value)
     
