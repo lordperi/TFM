@@ -23,7 +23,7 @@ Este proyecto está diseñado para funcionar con un registro de contenedores pri
 ### Seguridad
 
 * **Autenticación**: JWT (JSON Web Tokens) con expiración corta (30 min).
-* **Cifrado**: Datos sensibles (sensibilidad insulinica, ratios) cifrados en reposo (Fernet) y en tránsito (TLS).
+* **Cifrado**: Datos sensibles (sensibilidad insulínica, ratios) cifrados en reposo (Fernet) y en tránsito (TLS).
 
 ### Aislamiento de Red
 

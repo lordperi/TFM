@@ -1,8 +1,10 @@
 # ADR-011: Perfiles Médicos Condicionales con Insulina Basal
 
-**Fecha:** 2026-02-14  
-**Estado:** Aceptado  
-**Decisores:** Equipo DiaBeaty, Product Owner  
+| Metadatos | Valor |
+| :--- | :--- |
+| **Fecha** | 2026-02-14 |
+| **Estado** | Aceptado |
+| **Decisores** | Equipo DiaBeaty, Product Owner |  
 
 ## Contexto
 
@@ -69,7 +71,7 @@ if (diabetesType != DiabetesType.none) {
 ### Flujo por Tipo de Usuario
 
 | Diabetes Type | Therapy Type      | Campos Requeridos                          | Campos Opcionales         |
-|---------------|-------------------|--------------------------------------------|---------------------------|
+| :--- | :--- | :--- | :--- |
 | **NONE**      | N/A               | Ninguno                                    | Ninguno                   |
 | **T1**        | INSULIN           | ISF, ICR, Target                           | Basal Insulin (tipo, unidades, hora) |
 | **T2**        | ORAL              | Ninguno                                    | Ninguno                   |
