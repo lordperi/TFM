@@ -1,4 +1,10 @@
-# ADR 011: Diseño e Integración del Motor Nutricional y Protección PHI
+# ADR-012: Diseño e Integración del Motor Nutricional y Protección PHI
+
+| Metadatos | Valor |
+| :--- | :--- |
+| **Fecha** | 2026-02-21 |
+| **Estado** | Aceptado |
+| **Decisores** | Lead Architect, Doc-AutoBot |
 
 ## Contexto
 

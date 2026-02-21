@@ -24,8 +24,7 @@ class IngredientResponse(BaseModel):
     carbs_per_100g: float
     fiber_per_100g: float
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 class IngredientInput(BaseModel):
     ingredient_id: UUID
@@ -53,8 +52,7 @@ class MealLogResponse(BaseModel):
     total_carbs_grams: float
     total_glycemic_load: float
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 # --- ENDPOINTS ---
 

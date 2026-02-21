@@ -10,7 +10,7 @@ def test_login_successful_flow(client):
         "password": "SecurePass123!",
         "full_name": "JWT Test",
         "health_profile": {
-            "diabetes_type": "type_1",
+            "diabetes_type": "T1",
             "insulin_sensitivity": 30.0,
             "carb_ratio": 15.0,
             "target_glucose": 100
@@ -45,7 +45,7 @@ def test_login_invalid_credentials_returns_401(client):
         "email": "hacker@example.com",
         "password": "RealPassword",
         "health_profile": {
-            "diabetes_type": "type_1",
+            "diabetes_type": "T1",
             "insulin_sensitivity": 30.0,
             "carb_ratio": 15.0,
             "target_glucose": 100

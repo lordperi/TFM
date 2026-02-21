@@ -13,7 +13,7 @@ def test_create_user_with_valid_health_profile(client):
         "password": "StrongPassword123!",
         "full_name": "Test Patient",
         "health_profile": {
-            "diabetes_type": "type_1",
+            "diabetes_type": "T1",
             "insulin_sensitivity": 40.5, # 1 unidad baja 40.5 mg/dL
             "carb_ratio": 10.0,          # 1 unidad cubre 10g carbohidratos
             "target_glucose": 110
@@ -26,7 +26,7 @@ def test_create_user_with_valid_health_profile(client):
     assert response.status_code == 201
     data = response.json()
     assert data["email"] == payload["email"]
-    assert data["health_profile"]["diabetes_type"] == "type_1"
+    assert data["health_profile"]["diabetes_type"] == "T1"
     assert "id" in data
 
 def test_create_user_invlalid_sensitivity_rejects(client):
@@ -35,7 +35,7 @@ def test_create_user_invlalid_sensitivity_rejects(client):
         "email": "unsafe@example.com",
         "password": "123",
         "health_profile": {
-            "diabetes_type": "type_1",
+            "diabetes_type": "T1",
             "insulin_sensitivity": -5, # IMPOSIBLE BIOLÓGICAMENTE
             "carb_ratio": 10
         }
