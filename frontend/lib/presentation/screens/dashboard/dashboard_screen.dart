@@ -244,6 +244,23 @@ class _AdultDashboard extends StatelessWidget {
                                 },
                               ),
                               IconButton(
+                                icon: const Icon(Icons.add_circle,
+                                    color: Colors.orange),
+                                tooltip: 'Registrar Dosis de Insulina',
+                                onPressed: () {
+                                  final authState =
+                                      context.read<AuthBloc>().state;
+                                  if (authState is AuthAuthenticated &&
+                                      authState.selectedProfile != null) {
+                                    _showManualInsulinDialog(
+                                      context,
+                                      authState.selectedProfile!.id,
+                                      true,
+                                    );
+                                  }
+                                },
+                              ),
+                              IconButton(
                                 icon: const Icon(Icons.vaccines,
                                     color: Colors.orange),
                                 tooltip: 'Historial Insulina',
@@ -476,6 +493,38 @@ class _ChildDashboard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               height: 52,
+              child: ElevatedButton(
+                onPressed: () {
+                  final authState = context.read<AuthBloc>().state;
+                  if (authState is AuthAuthenticated &&
+                      authState.selectedProfile != null) {
+                    _showManualInsulinDialog(
+                      context,
+                      authState.selectedProfile!.id,
+                      false,
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_circle),
+                    SizedBox(width: 8),
+                    Text('AÑADIR DOSIS', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
               child: OutlinedButton(
                 onPressed: () {
                   final authState = context.read<AuthBloc>().state;
@@ -520,4 +569,43 @@ class _ChildDashboard extends StatelessWidget {
       ),
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Shared dialog helper
+// ---------------------------------------------------------------------------
+void _showManualInsulinDialog(BuildContext context, String patientId, bool isAdult) {
+  final controller = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Row(children: [
+        const Icon(Icons.vaccines, color: Colors.orange),
+        const SizedBox(width: 8),
+        Text(isAdult ? 'Registrar Dosis' : '¿Cuánta insulina te pusiste?'),
+      ]),
+      content: TextField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        decoration: const InputDecoration(labelText: 'Unidades (U)', suffixText: 'U'),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+          onPressed: () {
+            final units = double.tryParse(controller.text);
+            if (units != null && units > 0) {
+              context.read<NutritionBloc>().add(LogInsulinDose(patientId, units));
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Dosis registrada')),
+              );
+            }
+          },
+          child: const Text('REGISTRAR'),
+        ),
+      ],
+    ),
+  );
 }

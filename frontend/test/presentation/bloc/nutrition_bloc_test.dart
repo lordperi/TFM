@@ -119,4 +119,55 @@ void main() {
       expect(meal.parsedTimestamp!.year, 2026);
     });
   });
+
+  group('NutritionBloc — LogInsulinDose', () {
+    blocTest<NutritionBloc, NutritionState>(
+      'calls logMeal with empty ingredients and bolus_units_administered, then emits MealHistoryLoaded',
+      build: () {
+        when(
+          () => mockClient.logMeal(any()),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockClient.getMealHistory(
+            'patient-1',
+            limit: 20,
+            offset: 0,
+          ),
+        ).thenAnswer((_) async => [_fakeMeal(bolus: 3.5)]);
+        return NutritionBloc(apiClient: mockClient);
+      },
+      act: (bloc) => bloc.add(const LogInsulinDose('patient-1', 3.5)),
+      expect: () => [
+        isA<NutritionLoading>(),
+        isA<MealHistoryLoaded>().having(
+          (s) => s.meals.first.bolusUnitsAdministered,
+          'bolus units',
+          3.5,
+        ),
+      ],
+      verify: (_) {
+        verify(
+          () => mockClient.logMeal({
+            'patient_id': 'patient-1',
+            'ingredients': [],
+            'bolus_units_administered': 3.5,
+          }),
+        ).called(1);
+      },
+    );
+
+    blocTest<NutritionBloc, NutritionState>(
+      'emits NutritionError when logMeal throws',
+      build: () {
+        when(() => mockClient.logMeal(any()))
+            .thenThrow(Exception('server error'));
+        return NutritionBloc(apiClient: mockClient);
+      },
+      act: (bloc) => bloc.add(const LogInsulinDose('patient-1', 2.0)),
+      expect: () => [
+        isA<NutritionLoading>(),
+        isA<NutritionError>(),
+      ],
+    );
+  });
 }

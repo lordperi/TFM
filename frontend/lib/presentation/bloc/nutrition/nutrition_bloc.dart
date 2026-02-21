@@ -56,6 +56,16 @@ class LoadMealHistory extends NutritionEvent {
   List<Object?> get props => [patientId, limit, offset];
 }
 
+class LogInsulinDose extends NutritionEvent {
+  final String patientId;
+  final double units;
+
+  const LogInsulinDose(this.patientId, this.units);
+
+  @override
+  List<Object?> get props => [patientId, units];
+}
+
 // ==========================================
 // STATE
 // ==========================================
@@ -142,6 +152,7 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
     });
 
     on<LoadMealHistory>(_onLoadMealHistory);
+    on<LogInsulinDose>(_onLogInsulinDose);
   }
 
   Future<void> _onSearchIngredients(
@@ -183,6 +194,24 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
       emit(MealHistoryLoaded(meals));
     } catch (e) {
       emit(NutritionError("Error cargando historial: $e"));
+    }
+  }
+
+  Future<void> _onLogInsulinDose(
+    LogInsulinDose event,
+    Emitter<NutritionState> emit,
+  ) async {
+    emit(NutritionLoading());
+    try {
+      await _apiClient.logMeal({
+        'patient_id': event.patientId,
+        'ingredients': [],
+        'bolus_units_administered': event.units,
+      });
+      final meals = await _apiClient.getMealHistory(event.patientId);
+      emit(MealHistoryLoaded(meals));
+    } catch (e) {
+      emit(NutritionError('Error registrando dosis: $e'));
     }
   }
 
