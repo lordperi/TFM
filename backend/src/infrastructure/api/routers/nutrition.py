@@ -1,49 +1,104 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+from uuid import UUID
+from pydantic import BaseModel
 
 from src.infrastructure.db.database import get_db
-from src.infrastructure.api.schemas.nutrition import BolusRequest, BolusResponse, IngredientCreate, IngredientResponse
 from src.infrastructure.api.dependencies import get_current_user_id
-from src.application.services.nutrition_service import NutritionService
+from src.application.repositories.nutrition_repository import NutritionRepository
+from src.application.use_cases.search_ingredients import execute_search
+from src.application.use_cases.calculate_bolus import execute_calculate_bolus
+from src.application.use_cases.log_meal import execute_log_meal
 
-router = APIRouter(prefix="/nutrition", tags=["Nutrition"])
+router = APIRouter(prefix="/nutrition", tags=["Nutrition Engine"])
 
-def get_service(db: Session = Depends(get_db)) -> NutritionService:
-    return NutritionService(db)
+def get_nutrition_repo(db: Session = Depends(get_db)) -> NutritionRepository:
+    return NutritionRepository(db)
 
-@router.post("/calculate-bolus", response_model=BolusResponse)
-def calculate_bolus(
-    req: BolusRequest,
-    user_id: str = Depends(get_current_user_id),
-    service: NutritionService = Depends(get_service)
-):
-    """
-    Calculates insulin bolus via Application Service.
-    """
-    result = service.calculate_bolus(
-        user_id=str(user_id), # Ensure string for UUID conversion in Service if needed, or pass as is
-        patient_id=req.patient_id,
-        carbs=req.total_carbs,
-        glucose=req.current_glucose,
-        icr_override=req.icr,
-        isf_override=req.isf,
-        target_override=req.target_glucose
-    )
-    return BolusResponse(**result)
+# --- Pydantic Schemas (DTOS) ---
+class IngredientResponse(BaseModel):
+    id: UUID
+    name: str
+    glycemic_index: int
+    carbs_per_100g: float
+    fiber_per_100g: float
+    
+    class Config:
+        from_attributes = True
 
-@router.post("/ingredients", response_model=IngredientResponse, status_code=status.HTTP_201_CREATED)
-def create_ingredient(
-    ingredient: IngredientCreate,
-    service: NutritionService = Depends(get_service)
-):
-    return service.create_ingredient(ingredient.model_dump())
+class IngredientInput(BaseModel):
+    ingredient_id: UUID
+    weight_grams: float
+
+class BolusCalcRequest(BaseModel):
+    current_glucose: float
+    target_glucose: float
+    ingredients: List[IngredientInput]
+    icr: float = 10.0  
+    isf: float = 50.0  
+
+class BolusCalcResponse(BaseModel):
+    total_carbs_grams: float
+    recommended_bolus_units: float
+
+class LogMealRequest(BaseModel):
+    patient_id: UUID
+    ingredients: List[IngredientInput]
+    notes: Optional[str] = None
+
+class MealLogResponse(BaseModel):
+    id: UUID
+    patient_id: UUID
+    total_carbs_grams: float
+    total_glycemic_load: float
+    
+    class Config:
+        from_attributes = True
+
+# --- ENDPOINTS ---
 
 @router.get("/ingredients", response_model=List[IngredientResponse])
 def search_ingredients(
-    q: str = "",
-    skip: int = 0,
-    limit: int = 10,
-    service: NutritionService = Depends(get_service)
+    q: str = Query(..., min_length=2, description="Nombre del alimento a buscar"),
+    limit: int = 20,
+    repo: NutritionRepository = Depends(get_nutrition_repo)
 ):
-    return service.search_ingredients(q, skip, limit)
+    """Búsqueda por nombre de ingredientes."""
+    results = execute_search(query=q, repo=repo, limit=limit)
+    return results
+
+@router.post("/bolus/calculate", response_model=BolusCalcResponse)
+def calculate_bolus(
+    payload: BolusCalcRequest,
+    repo: NutritionRepository = Depends(get_nutrition_repo)
+):
+    """Calcula el bolus de insulina basado en carbohidratos, glucemia actual y objetivos."""
+    ing_dicts = [{"ingredient_id": i.ingredient_id, "weight_grams": i.weight_grams} for i in payload.ingredients]
+    result = execute_calculate_bolus(
+        current_glucose=payload.current_glucose,
+        target_glucose=payload.target_glucose,
+        icr=payload.icr,
+        isf=payload.isf,
+        ingredients_input=ing_dicts,
+        repo=repo
+    )
+    return result
+
+@router.post("/meals", response_model=MealLogResponse)
+def log_meal(
+    payload: LogMealRequest,
+    repo: NutritionRepository = Depends(get_nutrition_repo)
+):
+    """Registra una ingesta en el historial del paciente, encriptando notas (PHI)."""
+    ing_dicts = [{"ingredient_id": i.ingredient_id, "weight_grams": i.weight_grams} for i in payload.ingredients]
+    try:
+        meal = execute_log_meal(
+            patient_id=payload.patient_id,
+            ingredients_input=ing_dicts,
+            notes=payload.notes,
+            repo=repo
+        )
+        return meal
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
