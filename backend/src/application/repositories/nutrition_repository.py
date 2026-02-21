@@ -30,3 +30,16 @@ class NutritionRepository:
         self.db.commit()
         self.db.refresh(meal)
         return meal
+
+    def get_meal_history(
+        self, patient_id: UUID, limit: int = 20, offset: int = 0
+    ) -> List[MealLogModel]:
+        """Devuelve el historial de comidas de un paciente, más reciente primero."""
+        return (
+            self.db.query(MealLogModel)
+            .filter(MealLogModel.patient_id == patient_id)
+            .order_by(MealLogModel.timestamp.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )

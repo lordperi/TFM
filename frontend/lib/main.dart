@@ -19,6 +19,7 @@ import 'presentation/screens/profile/profile_selection_screen.dart';
 import 'data/datasources/glucose_api_client.dart';
 import 'data/repositories/glucose_repository.dart';
 import 'presentation/bloc/glucose/glucose_bloc.dart';
+import 'presentation/screens/nutrition/meal_history_screen.dart';
 
 // ==========================================
 // MAIN APPLICATION
@@ -149,6 +150,14 @@ class DiaBetyApp extends StatelessWidget {
                   ),
                   '/dashboard': (context) => const DashboardScreen(),
                   '/profile-selection': (context) => const ProfileSelectionScreen(),
+                  '/meal-history': (context) {
+                    final args = ModalRoute.of(context)!.settings.arguments
+                        as Map<String, String>;
+                    return BlocProvider.value(
+                      value: context.read<NutritionBloc>(),
+                      child: MealHistoryScreen(patientId: args['patient_id']!),
+                    );
+                  },
                 },
               );
             },

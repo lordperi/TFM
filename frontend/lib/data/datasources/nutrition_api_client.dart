@@ -16,4 +16,11 @@ abstract class NutritionApiClient {
 
   @POST('/api/v1/nutrition/meals')
   Future<dynamic> logMeal(@Body() Map<String, dynamic> request);
+
+  @GET('/api/v1/nutrition/meals/history')
+  Future<List<MealLogEntry>> getMealHistory(
+    @Query('patient_id') String patientId, {
+    @Query('limit') int limit = 20,
+    @Query('offset') int offset = 0,
+  });
 }

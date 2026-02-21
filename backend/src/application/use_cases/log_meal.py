@@ -9,7 +9,8 @@ def execute_log_meal(
     patient_id: UUID,
     ingredients_input: List[Dict],
     notes: str,
-    repo: NutritionRepository
+    repo: NutritionRepository,
+    bolus_units_administered: float = None,
 ) -> MealLogModel:
     """
     [Backend Ninja] Caso de Uso: Registrar una comida en el historial del paciente.
@@ -47,6 +48,7 @@ def execute_log_meal(
         total_carbs_grams=total_carbs,
         total_glycemic_load=total_gl,
         notes=notes,
+        bolus_units_administered=bolus_units_administered,
         items=meal_items
     )
     

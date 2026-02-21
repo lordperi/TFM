@@ -45,6 +45,17 @@ class CalculateBolus extends NutritionEvent {
 
 class ResetNutrition extends NutritionEvent {}
 
+class LoadMealHistory extends NutritionEvent {
+  final String patientId;
+  final int limit;
+  final int offset;
+
+  const LoadMealHistory(this.patientId, {this.limit = 20, this.offset = 0});
+
+  @override
+  List<Object?> get props => [patientId, limit, offset];
+}
+
 // ==========================================
 // STATE
 // ==========================================
@@ -93,6 +104,15 @@ class NutritionError extends NutritionState {
   List<Object?> get props => [message];
 }
 
+class MealHistoryLoaded extends NutritionState {
+  final List<MealLogEntry> meals;
+
+  const MealHistoryLoaded(this.meals);
+
+  @override
+  List<Object?> get props => [meals];
+}
+
 // ==========================================
 // BLOC LOGIC
 // ==========================================
@@ -120,6 +140,8 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
       _selectedIngredient = null;
       emit(NutritionInitial());
     });
+
+    on<LoadMealHistory>(_onLoadMealHistory);
   }
 
   Future<void> _onSearchIngredients(
@@ -145,6 +167,23 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
     // We stay in loaded state or move to a "ready to calculate" transient state
     // For simplicity, UI handles the selection modal, bloc just stores it implicitly if needed
     // or we can emit a specific state. Let's keep it simple: UI asks for calculation directly.
+  }
+
+  Future<void> _onLoadMealHistory(
+    LoadMealHistory event,
+    Emitter<NutritionState> emit,
+  ) async {
+    emit(NutritionLoading());
+    try {
+      final meals = await _apiClient.getMealHistory(
+        event.patientId,
+        limit: event.limit,
+        offset: event.offset,
+      );
+      emit(MealHistoryLoaded(meals));
+    } catch (e) {
+      emit(NutritionError("Error cargando historial: $e"));
+    }
   }
 
   Future<void> _onCalculateBolus(

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from uuid import UUID
+from datetime import datetime
 from pydantic import BaseModel
 
 from src.infrastructure.db.database import get_db
@@ -45,13 +46,16 @@ class LogMealRequest(BaseModel):
     patient_id: UUID
     ingredients: List[IngredientInput]
     notes: Optional[str] = None
+    bolus_units_administered: Optional[float] = None
 
 class MealLogResponse(BaseModel):
     id: UUID
     patient_id: UUID
     total_carbs_grams: float
     total_glycemic_load: float
-    
+    bolus_units_administered: Optional[float] = None
+    timestamp: Optional[datetime] = None
+
     model_config = {"from_attributes": True}
 
 # --- ENDPOINTS ---
@@ -95,8 +99,38 @@ def log_meal(
             patient_id=payload.patient_id,
             ingredients_input=ing_dicts,
             notes=payload.notes,
+            bolus_units_administered=payload.bolus_units_administered,
             repo=repo
         )
-        return meal
+        return MealLogResponse(
+            id=meal.id,
+            patient_id=meal.patient_id,
+            total_carbs_grams=meal.total_carbs_grams,
+            total_glycemic_load=meal.total_glycemic_load,
+            bolus_units_administered=meal.bolus_units_administered,
+            timestamp=meal.timestamp,
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/meals/history", response_model=List[MealLogResponse])
+def get_meal_history(
+    patient_id: UUID = Query(...),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    repo: NutritionRepository = Depends(get_nutrition_repo)
+):
+    """Devuelve el historial de comidas registradas para un paciente, más reciente primero."""
+    meals = repo.get_meal_history(patient_id=patient_id, limit=limit, offset=offset)
+    return [
+        MealLogResponse(
+            id=m.id,
+            patient_id=m.patient_id,
+            total_carbs_grams=m.total_carbs_grams,
+            total_glycemic_load=m.total_glycemic_load,
+            bolus_units_administered=m.bolus_units_administered,
+            timestamp=m.timestamp.isoformat() if m.timestamp else None,
+        )
+        for m in meals
+    ]

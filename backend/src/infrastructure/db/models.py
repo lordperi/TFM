@@ -107,9 +107,12 @@ class MealLogModel(Base):
     # Computed metrics snapshot
     total_carbs_grams = Column(Float, nullable=False)
     total_glycemic_load = Column(Float, nullable=False)
-    
+
+    # Bolus administered by patient at meal time (nullable for legacy records)
+    bolus_units_administered = Column(Float, nullable=True)
+
     # Sensitive data (e.g. "I felt dizzy") -> Encrypted
-    notes = Column(EncryptedString, nullable=True) 
+    notes = Column(EncryptedString, nullable=True)
 
     # Relationships
     patient = relationship("PatientModel", backref="meals")

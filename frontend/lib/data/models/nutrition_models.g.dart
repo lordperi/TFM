@@ -71,3 +71,23 @@ Map<String, dynamic> _$BolusCalculationResponseToJson(
       'recommended_bolus_units': instance.recommendedBolusUnits,
       'reason': instance.reason,
     };
+
+MealLogEntry _$MealLogEntryFromJson(Map<String, dynamic> json) => MealLogEntry(
+      id: json['id'] as String,
+      patientId: json['patient_id'] as String,
+      totalCarbsGrams: (json['total_carbs_grams'] as num).toDouble(),
+      totalGlycemicLoad: (json['total_glycemic_load'] as num).toDouble(),
+      bolusUnitsAdministered:
+          (json['bolus_units_administered'] as num?)?.toDouble(),
+      timestamp: json['timestamp'] as String?,
+    );
+
+Map<String, dynamic> _$MealLogEntryToJson(MealLogEntry instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'patient_id': instance.patientId,
+      'total_carbs_grams': instance.totalCarbsGrams,
+      'total_glycemic_load': instance.totalGlycemicLoad,
+      'bolus_units_administered': instance.bolusUnitsAdministered,
+      'timestamp': instance.timestamp,
+    };

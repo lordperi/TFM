@@ -4,8 +4,10 @@ import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/theme/theme_bloc.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../screens/nutrition/food_search_screen.dart';
+import '../../screens/nutrition/meal_history_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../bloc/glucose/glucose_bloc.dart';
+import '../../bloc/nutrition/nutrition_bloc.dart';
 import '../../screens/glucose/add_glucose_screen.dart';
 import '../../widgets/glucose/glucose_chart.dart';
 import '../../widgets/glucose/glucose_alert_widget.dart';
@@ -192,17 +194,37 @@ class _AdultDashboard extends StatelessWidget {
                           ),
                           IconButton(
                             icon: const Icon(Icons.history),
-                            tooltip: 'Ver Historial',
+                            tooltip: 'Ver Historial Glucosa',
                             onPressed: () {
                                final authState = context.read<AuthBloc>().state;
                                if (authState is AuthAuthenticated && authState.selectedProfile != null) {
                                  Navigator.push(
-                                  context, 
+                                  context,
                                   MaterialPageRoute(builder: (_) => GlucoseHistoryScreen(
                                     patientId: authState.selectedProfile!.id
                                   )),
                                 );
                                }
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.vaccines, color: Colors.orange),
+                            tooltip: 'Historial Insulina',
+                            onPressed: () {
+                              final authState = context.read<AuthBloc>().state;
+                              if (authState is AuthAuthenticated && authState.selectedProfile != null) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => BlocProvider.value(
+                                      value: context.read<NutritionBloc>(),
+                                      child: MealHistoryScreen(
+                                        patientId: authState.selectedProfile!.id,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                           ),
                         ],
@@ -378,7 +400,7 @@ class _ChildDashboard extends StatelessWidget {
             
             const Spacer(),
             
-            // Botón de Acción Principal Modificado
+            // Botón de Acción Principal
             SizedBox(
               width: double.infinity,
               height: 60,
@@ -396,6 +418,49 @@ class _ChildDashboard extends StatelessWidget {
                     Icon(Icons.gamepad),
                     SizedBox(width: 8),
                     Text('JUGAR MINIJUEGO'),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Botón Mis Dosis (Historial de Insulina - Modo Niño)
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton(
+                onPressed: () {
+                  final authState = context.read<AuthBloc>().state;
+                  if (authState is AuthAuthenticated && authState.selectedProfile != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider.value(
+                          value: context.read<NutritionBloc>(),
+                          child: MealHistoryScreen(
+                            patientId: authState.selectedProfile!.id,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.orange, width: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.vaccines, color: Colors.orange),
+                    SizedBox(width: 8),
+                    Text(
+                      'MIS DOSIS',
+                      style: TextStyle(
+                          color: Colors.orange, fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
               ),

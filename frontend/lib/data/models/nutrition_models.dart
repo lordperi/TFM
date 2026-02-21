@@ -89,6 +89,45 @@ class BolusCalculationResponse {
     this.reason = '',
   });
 
-  factory BolusCalculationResponse.fromJson(Map<String, dynamic> json) => 
+  factory BolusCalculationResponse.fromJson(Map<String, dynamic> json) =>
       _$BolusCalculationResponseFromJson(json);
+}
+
+// ==========================================
+// MEAL LOG HISTORY
+// ==========================================
+
+@JsonSerializable()
+class MealLogEntry {
+  final String id;
+
+  @JsonKey(name: 'patient_id')
+  final String patientId;
+
+  @JsonKey(name: 'total_carbs_grams')
+  final double totalCarbsGrams;
+
+  @JsonKey(name: 'total_glycemic_load')
+  final double totalGlycemicLoad;
+
+  @JsonKey(name: 'bolus_units_administered')
+  final double? bolusUnitsAdministered;
+
+  final String? timestamp;
+
+  MealLogEntry({
+    required this.id,
+    required this.patientId,
+    required this.totalCarbsGrams,
+    required this.totalGlycemicLoad,
+    this.bolusUnitsAdministered,
+    this.timestamp,
+  });
+
+  DateTime? get parsedTimestamp =>
+      timestamp != null ? DateTime.tryParse(timestamp!) : null;
+
+  factory MealLogEntry.fromJson(Map<String, dynamic> json) =>
+      _$MealLogEntryFromJson(json);
+  Map<String, dynamic> toJson() => _$MealLogEntryToJson(this);
 }
