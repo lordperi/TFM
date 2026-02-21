@@ -69,6 +69,11 @@ class UnselectProfile extends AuthEvent {
   const UnselectProfile();
 }
 
+/// Recarga el perfil activo desde la API (tras guardarlo, por ejemplo).
+class RefreshSelectedProfile extends AuthEvent {
+  const RefreshSelectedProfile();
+}
+
 // ==========================================
 // AUTH BLOC - STATES
 // ==========================================
@@ -135,6 +140,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CheckAuthStatus>(_onCheckAuthStatus);
     on<SelectProfile>(_onSelectProfile);
     on<UnselectProfile>(_onUnselectProfile);
+    on<RefreshSelectedProfile>(_onRefreshSelectedProfile);
   }
 
   Future<void> _onLoginRequested(
@@ -267,6 +273,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             user: currentState.user,
             selectedProfile: null 
         ));
+    }
+  }
+
+  Future<void> _onRefreshSelectedProfile(
+    RefreshSelectedProfile event,
+    Emitter<AuthState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! AuthAuthenticated) return;
+    if (currentState.selectedProfile == null) return;
+    if (_familyRepository == null) return;
+
+    try {
+      final refreshed = await _familyRepository!
+          .getProfileDetails(currentState.selectedProfile!.id);
+      emit(AuthAuthenticated(
+        accessToken: currentState.accessToken,
+        user: currentState.user,
+        selectedProfile: refreshed,
+      ));
+    } catch (_) {
+      // Si falla el refresh, mantenemos el estado actual sin error visible
     }
   }
 

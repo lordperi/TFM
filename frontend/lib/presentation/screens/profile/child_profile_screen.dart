@@ -22,6 +22,13 @@ class ChildProfileScreen extends StatelessWidget {
         final xpSummary = state.xpSummary;
         final achievements = state.achievements;
 
+        // Nombre del miembro activo (no el usuario principal)
+        final authState = context.read<AuthBloc>().state;
+        final memberName = (authState is AuthAuthenticated &&
+                authState.selectedProfile != null)
+            ? authState.selectedProfile!.displayName
+            : state.user.fullName ?? 'Campeón';
+
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -47,7 +54,7 @@ class ChildProfileScreen extends StatelessWidget {
                       radius: 60,
                       backgroundColor: const Color(0xFFEC4899),
                       child: Text(
-                        state.user.fullName?.substring(0, 1).toUpperCase() ?? 'U',
+                        memberName.substring(0, 1).toUpperCase(),
                         style: const TextStyle(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -71,7 +78,7 @@ class ChildProfileScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 
                 Text(
-                  '¡Hola, ${state.user.fullName ?? 'Campeón'}!',
+                  '¡Hola, $memberName!',
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 28),
                 ),
                 const SizedBox(height: 32),

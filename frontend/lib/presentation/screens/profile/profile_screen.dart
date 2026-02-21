@@ -8,44 +8,80 @@ import 'package:diabeaty_mobile/presentation/screens/profile/child_profile_scree
 import 'package:diabeaty_mobile/presentation/bloc/theme/theme_bloc.dart';
 import '../../../core/constants/app_constants.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  // Removed initState to prevent context access error
-  
-  void _loadProfile(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    if (authState is AuthAuthenticated) {
-      context.read<ProfileBloc>().add(LoadProfile(authState.accessToken));
-      context.read<ProfileBloc>().add(LoadXPSummary(authState.accessToken));
-      context.read<ProfileBloc>().add(LoadAchievements(authState.accessToken));
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) {
-        final bloc = ProfileBloc(repository: ProfileRepository());
-        // Initial Load
+    return BlocBuilder<ThemeBloc, ThemeState>(
+      builder: (context, themeState) {
+        // Obtener el nombre del miembro activo para el AppBar
         final authState = context.read<AuthBloc>().state;
-        if (authState is AuthAuthenticated) {
-          bloc.add(LoadProfile(authState.accessToken));
-          bloc.add(LoadXPSummary(authState.accessToken));
-          bloc.add(LoadAchievements(authState.accessToken));
+        final memberName = (authState is AuthAuthenticated &&
+                authState.selectedProfile != null)
+            ? authState.selectedProfile!.displayName
+            : 'Mi Perfil';
+
+        if (themeState.uiMode == UiMode.child) {
+          // El perfil niño necesita XP y logros del ProfileBloc
+          return BlocProvider(
+            create: (context) {
+              final bloc = ProfileBloc(repository: ProfileRepository());
+              if (authState is AuthAuthenticated) {
+                bloc.add(LoadProfile(authState.accessToken));
+                bloc.add(LoadXPSummary(authState.accessToken));
+                bloc.add(LoadAchievements(authState.accessToken));
+              }
+              return bloc;
+            },
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text(memberName),
+                elevation: 0,
+              ),
+              body: BlocBuilder<ProfileBloc, ProfileState>(
+                builder: (context, profileState) {
+                  if (profileState is ProfileInitial ||
+                      profileState is ProfileLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (profileState is ProfileError) {
+                    return Center(
+                      child: Text('Error: ${profileState.message}'),
+                    );
+                  }
+                  return const ChildProfileScreen();
+                },
+              ),
+            ),
+          );
         }
-        return bloc;
+
+        // Perfil adulto — los datos vienen directamente del AuthBloc (selectedProfile)
+        // No necesita esperar al ProfileBloc para renderizarse.
+        // Proveer ProfileBloc igualmente para el listener de ChangePassword.
+        return BlocProvider(
+          create: (context) {
+            final bloc = ProfileBloc(repository: ProfileRepository());
+            if (authState is AuthAuthenticated) {
+              bloc.add(LoadProfile(authState.accessToken));
+            }
+            return bloc;
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(memberName),
+              elevation: 0,
+            ),
+            body: const AdultProfileScreen(),
+          ),
+        );
       },
-      child: const ProfileView(),
     );
   }
 }
 
+/// Mantenida por compatibilidad con tests existentes.
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
 
@@ -61,20 +97,12 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mi Perfil'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Mi Perfil'), elevation: 0),
       body: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
-          if (state is ProfileInitial) {
+          if (state is ProfileInitial || state is ProfileLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          if (state is ProfileLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
           if (state is ProfileError) {
             return Center(
               child: Column(
@@ -92,12 +120,9 @@ class ProfileView extends StatelessWidget {
               ),
             );
           }
-
           if (state is! ProfileLoaded) {
             return const Center(child: Text('No se pudo cargar el perfil'));
           }
-
-          // Enforce UI Mode based on Global Theme
           return BlocBuilder<ThemeBloc, ThemeState>(
             builder: (context, themeState) {
               return themeState.uiMode == UiMode.child
