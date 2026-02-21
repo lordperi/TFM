@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/glucose/glucose_bloc.dart';
 import '../../../data/models/glucose_models.dart';
 
@@ -132,6 +133,14 @@ class _GlucoseHistoryScreenState extends State<GlucoseHistoryScreen> {
           Expanded(
             child: BlocBuilder<GlucoseBloc, GlucoseState>(
               builder: (context, state) {
+                // Read active profile ranges once per build
+                final authState = context.read<AuthBloc>().state;
+                final profile = authState is AuthAuthenticated
+                    ? authState.selectedProfile
+                    : null;
+                final rangeMin = profile?.targetRangeLow ?? 70;
+                final rangeMax = profile?.targetRangeHigh ?? 180;
+
                 if (state is GlucoseLoading) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (state is GlucoseError) {
@@ -140,7 +149,7 @@ class _GlucoseHistoryScreenState extends State<GlucoseHistoryScreen> {
                   if (state.history.isEmpty) {
                     return const Center(child: Text('No se encontraron registros.'));
                   }
-                  
+
                   return Column(
                     children: [
                       Expanded(
@@ -149,7 +158,11 @@ class _GlucoseHistoryScreenState extends State<GlucoseHistoryScreen> {
                           itemCount: state.history.length,
                           itemBuilder: (context, index) {
                             final item = state.history[index];
-                            return _GlucoseListItem(item: item);
+                            return _GlucoseListItem(
+                              item: item,
+                              rangeMin: rangeMin,
+                              rangeMax: rangeMax,
+                            );
                           },
                         ),
                       ),
@@ -221,18 +234,24 @@ class _DateSelector extends StatelessWidget {
 
 class _GlucoseListItem extends StatelessWidget {
   final GlucoseMeasurement item;
+  final int rangeMin;
+  final int rangeMax;
 
-  const _GlucoseListItem({required this.item});
+  const _GlucoseListItem({
+    required this.item,
+    required this.rangeMin,
+    required this.rangeMax,
+  });
 
   Color _glucoseColor(int value) {
-    if (value < 70) return Colors.red;
-    if (value > 180) return Colors.orange;
+    if (value < rangeMin) return Colors.red;
+    if (value > rangeMax) return Colors.orange;
     return Colors.green;
   }
 
   String _glucoseLabel(int value) {
-    if (value < 70) return 'Hipoglucemia';
-    if (value > 180) return 'Hiperglucemia';
+    if (value < rangeMin) return 'Hipoglucemia';
+    if (value > rangeMax) return 'Hiperglucemia';
     return 'En rango';
   }
 
