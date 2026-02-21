@@ -25,15 +25,15 @@
 
 ## 📶 Milestone Tracking (MVP Status)
 
-`[███████░░░] 70% Completado`
+`[████████░░] 78% Completado`
 
 | Hito | Estado | Detalles Técnicos |
 | :--- | :--- | :--- |
 | **I. Infraestructura** | ✅ 100% | VPS propio, Coolify v4, Registro Privado, HTTPS Strict. |
 | **II. Database Core** | ✅ 100% | PostgreSQL 16, Migraciones Alembic, Modelado Relacional. |
 | **III. Seguridad** | ✅ 100% | Auth JWT (HS256), Hash Bcrypt, Cifrado AES-256 (PHI). |
-| **IV. Motor Metabólico** | 🔄 10% | *[En curso]* Modelado de Alimentos y Algoritmo de Carga Glucémica. |
-| **V. Mobile App** | 🔄 50% | Implementada **Dual UX** (Perfiles Adulto/Niño) y Gestión de Estado. |
+| **IV. Motor Metabólico** | 🔄 40% | Modelado de Alimentos, Algoritmo de Carga Glucémica, Registro de Insulina (bolus_units_administered), Historial de Comidas con GET /meals/history. |
+| **V. Mobile App** | 🔄 65% | **Dual UX** (Adulto/Niño), Gestión de Estado BLoC, MealHistoryScreen con indicadores de color, marcadores de insulina en GlucoseChart (triángulos naranja ▲), botones "Historial Insulina" y "Mis Dosis" en Dashboard. |
 | **VI. Gestión de Usuarios** | ✅ 100% | Perfiles Flexibles (Guardián/Niño), Protección PIN granular, UI Bloqueada. [Ref ADR 010](docs/adr/010_flexible_health_profiles_and_security.md) |
 
 ---
@@ -110,6 +110,8 @@ Actualmente documentados en `/docs` (Swagger UI) al desplegar.
 | `POST` | `/auth/login` | Intercambio de credenciales por Token JWT | ✅ |
 | `POST` | `/users/register` | Registro de usuario y perfil médico cifrado | ✅ |
 | `POST` | `/nutrition/calc` | Cálculo de Bolus e Insulina (Wizard) | ✅ |
+| `POST` | `/nutrition/meals` | Registrar comida con bolus administrado | ✅ |
+| `GET` | `/nutrition/meals/history` | Historial de comidas/insulina por paciente | ✅ |
 | `GET` | `/health` | Heartbeat del sistema y la base de datos | ✅ |
 
 ---
