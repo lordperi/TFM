@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:diabetics_app/core/utils/time_utils.dart'; // To be created
+import 'package:diabeaty_mobile/core/utils/time_utils.dart';
 
 void main() {
   group('[TDD Enforcer] TimeUtils', () {

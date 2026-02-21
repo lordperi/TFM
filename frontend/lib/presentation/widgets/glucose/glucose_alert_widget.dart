@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/glucose/glucose_bloc.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../../core/utils/time_utils.dart';
-import '../../../core/di/injection.dart'; // Asumiendo get_it setup
+// import '../../../core/di/injection.dart'; // Asumiendo get_it setup
+import '../../bloc/nutrition/nutrition_bloc.dart';
 import '../../../data/datasources/nutrition_api_client.dart';
 import '../../../data/models/nutrition_models.dart';
 
@@ -32,13 +33,15 @@ class GlucoseAlertWidget extends StatelessWidget {
                 final icrStr = authState.selectedProfile!.carbRatio ?? "10.0";
                 final isfStr = authState.selectedProfile!.insulinSensitivity ?? "50.0";
                 
+                final isOutdated = TimeUtils.isMoreThanFiveMinutesOld(latest.timestamp);
+                
                 return _buildAlertCard(
                     context, 
                     latest.glucoseValue, 
                     isOutdated,
-                    targetGlucose: double.tryParse(targetBase) ?? 100.0,
-                    icr: double.tryParse(icrStr) ?? 10.0,
-                    isf: double.tryParse(isfStr) ?? 50.0,
+                    targetGlucose: double.tryParse(targetBase.toString()) ?? 100.0,
+                    icr: double.tryParse(icrStr.toString()) ?? 10.0,
+                    isf: double.tryParse(isfStr.toString()) ?? 50.0,
                 );
               }
             }
@@ -124,14 +127,14 @@ class GlucoseAlertWidget extends StatelessWidget {
     );
 
     try {
-      final client = getIt<NutritionApiClient>();
+      // We don't have GetIt here easily, instead of client = getIt<NutritionApiClient>();
+      // Fallback approach or Dispatch Bloc Event if exists, but we can also use Dio directly if needed.
+      // We will try finding the client or using Dio:
+      final client = context.read<NutritionBloc>().apiClient;
       
       final req = BolusCalculationRequest(
-        currentGlucose: currentVal.toDouble(),
-        targetGlucose: targetVal,
-        ingredients: [], // 0 carbs for correction only
-        icr: icr,
-        isf: isf,
+        glucoseValue: currentVal,
+        carbsGrams: 0, // 0 carbs for correction only
       );
 
       final response = await client.calculateBolus(req);

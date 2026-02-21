@@ -99,6 +99,7 @@ class NutritionError extends NutritionState {
 
 class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
   final NutritionApiClient _apiClient;
+  NutritionApiClient get apiClient => _apiClient;
   Ingredient? _selectedIngredient;
 
   NutritionBloc({required NutritionApiClient apiClient})
