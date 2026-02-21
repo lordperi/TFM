@@ -1,3 +1,4 @@
+import 'dart:ui' show lerpDouble;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../../../data/models/glucose_models.dart';
@@ -238,4 +239,16 @@ class _InsulinDotPainter extends FlDotPainter {
 
   @override
   double get strokeWidth => 1.0;
+
+  @override
+  FlDotPainter lerp(FlDotPainter a, FlDotPainter b, double t) {
+    final aP = a as _InsulinDotPainter;
+    final bP = b as _InsulinDotPainter;
+    return _InsulinDotPainter(
+      bolusUnits: lerpDouble(aP.bolusUnits, bP.bolusUnits, t) ?? bolusUnits,
+    );
+  }
+
+  @override
+  List<Object?> get props => [bolusUnits];
 }
