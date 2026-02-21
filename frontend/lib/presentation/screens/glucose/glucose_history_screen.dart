@@ -144,18 +144,12 @@ class _GlucoseHistoryScreenState extends State<GlucoseHistoryScreen> {
                   return Column(
                     children: [
                       Expanded(
-                        child: GridView.builder(
-                          padding: const EdgeInsets.all(16),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 1.5,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                          ),
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           itemCount: state.history.length,
                           itemBuilder: (context, index) {
                             final item = state.history[index];
-                            return _GlucoseGridItem(item: item);
+                            return _GlucoseListItem(item: item);
                           },
                         ),
                       ),
@@ -225,48 +219,80 @@ class _DateSelector extends StatelessWidget {
   }
 }
 
-class _GlucoseGridItem extends StatelessWidget {
+class _GlucoseListItem extends StatelessWidget {
   final GlucoseMeasurement item;
 
-  const _GlucoseGridItem({required this.item});
+  const _GlucoseListItem({required this.item});
+
+  Color _glucoseColor(int value) {
+    if (value < 70) return Colors.red;
+    if (value > 180) return Colors.orange;
+    return Colors.green;
+  }
+
+  String _glucoseLabel(int value) {
+    if (value < 70) return 'Hipoglucemia';
+    if (value > 180) return 'Hiperglucemia';
+    return 'En rango';
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Basic color coding
-    Color color = Colors.green;
-    if (item.glucoseValue < 70) color = Colors.red;
-    if (item.glucoseValue > 180) color = Colors.orange;
+    final color = _glucoseColor(item.glucoseValue);
 
     return Card(
-      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 6),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.all(14),
+        child: Row(
           children: [
-            Row(
-              children: [
-                Icon(Icons.water_drop, color: color, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  '${item.glucoseValue} mg/dL',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              DateFormat('dd/MM HH:mm').format(item.timestamp),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            if (item.notes != null && item.notes!.isNotEmpty)
-              Text(
-                item.notes!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+            // Glucose indicator circle
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: color, width: 2),
               ),
+              child: Center(
+                child: Icon(Icons.water_drop, color: color, size: 22),
+              ),
+            ),
+            const SizedBox(width: 14),
+            // Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _glucoseLabel(item.glucoseValue),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    DateFormat('dd/MM/yyyy HH:mm').format(item.timestamp.toLocal()),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  ),
+                  if (item.notes != null && item.notes!.isNotEmpty)
+                    Text(
+                      item.notes!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+                    ),
+                ],
+              ),
+            ),
+            // Value chip
+            Chip(
+              label: Text(
+                '${item.glucoseValue} mg/dL',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              backgroundColor: color,
+              padding: EdgeInsets.zero,
+            ),
           ],
         ),
       ),

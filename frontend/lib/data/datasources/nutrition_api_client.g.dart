@@ -105,13 +105,18 @@ class _NutritionApiClient implements NutritionApiClient {
     String patientId, {
     int limit = 20,
     int offset = 0,
+    String? startDate,
+    String? endDate,
   }) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'patient_id': patientId,
       r'limit': limit,
       r'offset': offset,
+      r'start_date': startDate,
+      r'end_date': endDate,
     };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<List<MealLogEntry>>(

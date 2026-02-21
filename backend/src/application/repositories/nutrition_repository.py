@@ -1,5 +1,6 @@
 from typing import List, Optional
 from uuid import UUID
+from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
@@ -32,14 +33,20 @@ class NutritionRepository:
         return meal
 
     def get_meal_history(
-        self, patient_id: UUID, limit: int = 20, offset: int = 0
+        self,
+        patient_id: UUID,
+        limit: int = 20,
+        offset: int = 0,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
     ) -> List[MealLogModel]:
         """Devuelve el historial de comidas de un paciente, más reciente primero."""
-        return (
+        q = (
             self.db.query(MealLogModel)
             .filter(MealLogModel.patient_id == patient_id)
-            .order_by(MealLogModel.timestamp.desc())
-            .offset(offset)
-            .limit(limit)
-            .all()
         )
+        if start_date is not None:
+            q = q.filter(MealLogModel.timestamp >= start_date)
+        if end_date is not None:
+            q = q.filter(MealLogModel.timestamp <= end_date)
+        return q.order_by(MealLogModel.timestamp.desc()).offset(offset).limit(limit).all()

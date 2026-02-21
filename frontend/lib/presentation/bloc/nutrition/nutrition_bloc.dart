@@ -58,11 +58,19 @@ class LoadMealHistory extends NutritionEvent {
   final String patientId;
   final int limit;
   final int offset;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
-  const LoadMealHistory(this.patientId, {this.limit = 20, this.offset = 0});
+  const LoadMealHistory(
+    this.patientId, {
+    this.limit = 20,
+    this.offset = 0,
+    this.startDate,
+    this.endDate,
+  });
 
   @override
-  List<Object?> get props => [patientId, limit, offset];
+  List<Object?> get props => [patientId, limit, offset, startDate, endDate];
 }
 
 class LogInsulinDose extends NutritionEvent {
@@ -199,6 +207,8 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
         event.patientId,
         limit: event.limit,
         offset: event.offset,
+        startDate: event.startDate?.toUtc().toIso8601String(),
+        endDate: event.endDate?.toUtc().toIso8601String(),
       );
       emit(MealHistoryLoaded(meals));
     } catch (e) {
