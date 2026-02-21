@@ -8,7 +8,7 @@ def test_login_successful_returns_token(client):
         "password": "SecurePassword123!",
         "full_name": "Login User",
         "health_profile": {
-            "diabetes_type": "type_1",
+            "diabetes_type": "T1",
             "insulin_sensitivity": 30.0,
             "carb_ratio": 15.0,
             "target_glucose": 100
@@ -36,7 +36,7 @@ def test_login_failed_wrong_password(client):
         "email": "fail_test@example.com",
         "password": "SecurePassword123!",
         "health_profile": {
-            "diabetes_type": "type_1",
+            "diabetes_type": "T1",
             "insulin_sensitivity": 30.0,
             "carb_ratio": 15.0
         }

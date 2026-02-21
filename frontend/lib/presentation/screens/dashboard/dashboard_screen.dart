@@ -8,6 +8,7 @@ import '../profile/profile_screen.dart';
 import '../../bloc/glucose/glucose_bloc.dart';
 import '../../screens/glucose/add_glucose_screen.dart';
 import '../../widgets/glucose/glucose_chart.dart';
+import '../../widgets/glucose/glucose_alert_widget.dart';
 import '../../screens/glucose/glucose_history_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -142,6 +143,7 @@ class _AdultDashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const GlucoseAlertWidget(),
           // Tarjeta de Resumen Rápido
           Card(
             elevation: 2,
@@ -301,7 +303,8 @@ class _ChildDashboard extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            const GlucoseAlertWidget(),
+            const SizedBox(height: 8),
             // Avatar y Nivel
             Stack(
               alignment: Alignment.bottomCenter,

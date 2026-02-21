@@ -30,15 +30,17 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ConditionalMedicalFields(
-              diabetesType: selectedDiabetesType,
-              therapyType: selectedTherapyType,
-              onTherapyTypeChanged: (value) {
-                selectedTherapyType = value;
-              },
-              isfController: isfController,
-              icrController: icrController,
-              targetController: targetController,
+            body: SingleChildScrollView(
+              child: ConditionalMedicalFields(
+                diabetesType: selectedDiabetesType,
+                therapyType: selectedTherapyType,
+                onTherapyTypeChanged: (value) {
+                  selectedTherapyType = value;
+                },
+                isfController: isfController,
+                icrController: icrController,
+                targetController: targetController,
+              ),
             ),
           ),
         ),
@@ -85,57 +87,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ConditionalMedicalFields(
-              diabetesType: selectedDiabetesType,
-              therapyType: selectedTherapyType,
-              onTherapyTypeChanged: (value) {},
-              isfController: isfController,
-              icrController: icrController,
-              targetController: targetController,
-            ),
-          ),
-        ),
-      );
-
-      // Should show insulin fields (ISF, ICR, Target)
-      expect(find.text('ISF (Insulin Sensitivity Factor)'), findsOneWidget);
-      expect(find.text('ICR (Insulin-to-Carb Ratio)'), findsOneWidget);
-      expect(find.text('Glucosa Objetivo (mg/dL)'), findsOneWidget);
-    });
-
-    testWidgets('hides insulin fields when therapy is ORAL',
-        (WidgetTester tester) async {
-      DiabetesType selectedDiabetesType = DiabetesType.type2;
-      TherapyType? selectedTherapyType = TherapyType.oral;
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ConditionalMedicalFields(
-              diabetesType: selectedDiabetesType,
-              therapyType: selectedTherapyType,
-              onTherapyTypeChanged: (value) {},
-              isfController: isfController,
-              icrController: icrController,
-              targetController: targetController,
-            ),
-          ),
-        ),
-      );
-
-      // Should NOT show insulin fields
-      expect(find.text('ISF (Insulin Sensitivity Factor)'), findsNothing);
-      expect(find.text('ICR (Insulin-to-Carb Ratio)'), findsNothing);
-    });
-
-    testWidgets('validates ISF range (1-500)', (WidgetTester tester) async {
-      DiabetesType selectedDiabetesType = DiabetesType.type1;
-      TherapyType? selectedTherapyType = TherapyType.insulin;
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Form(
+            body: SingleChildScrollView(
               child: ConditionalMedicalFields(
                 diabetesType: selectedDiabetesType,
                 therapyType: selectedTherapyType,
@@ -149,9 +101,65 @@ void main() {
         ),
       );
 
+      // Should show insulin fields (ISF, ICR, Target)
+      expect(find.text('Factor de Sensibilidad a la Insulina (ISF)'), findsOneWidget);
+      expect(find.text('Ratio Insulina:Carbohidratos (ICR)'), findsOneWidget);
+      expect(find.text('Glucosa Objetivo'), findsOneWidget);
+    });
+
+    testWidgets('hides insulin fields when therapy is ORAL',
+        (WidgetTester tester) async {
+      DiabetesType selectedDiabetesType = DiabetesType.type2;
+      TherapyType? selectedTherapyType = TherapyType.oral;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ConditionalMedicalFields(
+                diabetesType: selectedDiabetesType,
+                therapyType: selectedTherapyType,
+                onTherapyTypeChanged: (value) {},
+                isfController: isfController,
+                icrController: icrController,
+                targetController: targetController,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Should NOT show insulin fields
+      expect(find.text('Factor de Sensibilidad a la Insulina (ISF)'), findsNothing);
+      expect(find.text('Ratio Insulina:Carbohidratos (ICR)'), findsNothing);
+    });
+
+    testWidgets('validates ISF range (1-500)', (WidgetTester tester) async {
+      DiabetesType selectedDiabetesType = DiabetesType.type1;
+      TherapyType? selectedTherapyType = TherapyType.insulin;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: Form(
+                child: ConditionalMedicalFields(
+                  diabetesType: selectedDiabetesType,
+                  therapyType: selectedTherapyType,
+                  onTherapyTypeChanged: (value) {},
+                  isfController: isfController,
+                  icrController: icrController,
+                  targetController: targetController,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
       // Test validation directly
       final formField = tester.widget<TextFormField>(
-        find.widgetWithText(TextFormField, 'ISF (Insulin Sensitivity Factor)'),
+        find.widgetWithText(TextFormField, 'Factor de Sensibilidad a la Insulina (ISF)'),
       );
       
       // Invalid value (>500)
@@ -170,14 +178,16 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Form(
-              child: ConditionalMedicalFields(
-                diabetesType: selectedDiabetesType,
-                therapyType: selectedTherapyType,
-                onTherapyTypeChanged: (value) {},
-                isfController: isfController,
-                icrController: icrController,
-                targetController: targetController,
+            body: SingleChildScrollView(
+              child: Form(
+                child: ConditionalMedicalFields(
+                  diabetesType: selectedDiabetesType,
+                  therapyType: selectedTherapyType,
+                  onTherapyTypeChanged: (value) {},
+                  isfController: isfController,
+                  icrController: icrController,
+                  targetController: targetController,
+                ),
               ),
             ),
           ),
@@ -185,7 +195,7 @@ void main() {
       );
 
       final formField = tester.widget<TextFormField>(
-        find.widgetWithText(TextFormField, 'ICR (Insulin-to-Carb Ratio)'),
+        find.widgetWithText(TextFormField, 'Ratio Insulina:Carbohidratos (ICR)'),
       );
       
       // Invalid value
