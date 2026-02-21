@@ -11,6 +11,9 @@ abstract class NutritionApiClient {
   @GET('/api/v1/nutrition/ingredients')
   Future<List<Ingredient>> searchIngredients(@Query('q') String query);
 
-  @POST('/api/v1/nutrition/calculate-bolus')
+  @POST('/api/v1/nutrition/bolus/calculate')
   Future<BolusCalculationResponse> calculateBolus(@Body() BolusCalculationRequest request);
+
+  @POST('/api/v1/nutrition/meals')
+  Future<dynamic> logMeal(@Body() Map<String, dynamic> request);
 }
