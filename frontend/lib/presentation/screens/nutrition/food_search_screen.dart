@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/nutrition/nutrition_bloc.dart';
 import '../../bloc/theme/theme_bloc.dart';
-import '../../../core/constants/app_constants.dart';
 
 class FoodSearchScreen extends StatefulWidget {
   const FoodSearchScreen({super.key});
@@ -158,7 +157,7 @@ class _ResultView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Text(
-                '${state.result.totalBolus.toStringAsFixed(1)} Unidades',
+                '${state.result.recommendedBolusUnits.toStringAsFixed(1)} Unidades',
                 style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue),
               ),
             ),
@@ -208,12 +207,14 @@ class _ResultView extends StatelessWidget {
                     Text('(Ratio + Corrección)', style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ),
-                Text(
-                  '${state.result.totalBolus.toStringAsFixed(2)} U',
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                  Text(
+                    '${state.result.recommendedBolusUnits.toStringAsFixed(2)} U',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ),
-                ),
               ],
             ),
           ),

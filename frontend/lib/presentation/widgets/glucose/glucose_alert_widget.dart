@@ -133,8 +133,11 @@ class GlucoseAlertWidget extends StatelessWidget {
       final client = context.read<NutritionBloc>().apiClient;
       
       final req = BolusCalculationRequest(
-        glucoseValue: currentVal,
-        carbsGrams: 0, // 0 carbs for correction only
+        currentGlucose: currentVal.toDouble(),
+        targetGlucose: targetVal,
+        ingredients: [], // 0 carbs for correction only
+        icr: icr,
+        isf: isf,
       );
 
       final response = await client.calculateBolus(req);
@@ -160,7 +163,7 @@ class GlucoseAlertWidget extends StatelessWidget {
               Text('Objetivo: $targetVal mg/dL'),
               const Divider(),
               Text(
-                '${response.totalBolus.toStringAsFixed(1)} U',
+                '${response.recommendedBolusUnits.toStringAsFixed(1)} U',
                 style: TextStyle(
                   fontSize: 36, 
                   fontWeight: FontWeight.bold, 

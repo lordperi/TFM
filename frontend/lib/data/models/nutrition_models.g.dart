@@ -21,36 +21,53 @@ Map<String, dynamic> _$IngredientToJson(Ingredient instance) =>
       'carbs': instance.carbs,
     };
 
+IngredientInput _$IngredientInputFromJson(Map<String, dynamic> json) =>
+    IngredientInput(
+      ingredientId: json['ingredient_id'] as String,
+      weightGrams: (json['weight_grams'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _$IngredientInputToJson(IngredientInput instance) =>
+    <String, dynamic>{
+      'ingredient_id': instance.ingredientId,
+      'weight_grams': instance.weightGrams,
+    };
+
 BolusCalculationRequest _$BolusCalculationRequestFromJson(
         Map<String, dynamic> json) =>
     BolusCalculationRequest(
-      glucoseValue: (json['glucose_value'] as num).toInt(),
-      carbsGrams: (json['carbs_grams'] as num).toInt(),
-      mealType: json['meal_type'] as String? ?? 'snack',
+      currentGlucose: (json['current_glucose'] as num).toDouble(),
+      targetGlucose: (json['target_glucose'] as num).toDouble(),
+      ingredients: (json['ingredients'] as List<dynamic>)
+          .map((e) => IngredientInput.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      icr: (json['icr'] as num?)?.toDouble() ?? 10.0,
+      isf: (json['isf'] as num?)?.toDouble() ?? 50.0,
     );
 
 Map<String, dynamic> _$BolusCalculationRequestToJson(
         BolusCalculationRequest instance) =>
     <String, dynamic>{
-      'glucose_value': instance.glucoseValue,
-      'carbs_grams': instance.carbsGrams,
-      'meal_type': instance.mealType,
+      'current_glucose': instance.currentGlucose,
+      'target_glucose': instance.targetGlucose,
+      'ingredients': instance.ingredients.map((e) => e.toJson()).toList(),
+      'icr': instance.icr,
+      'isf': instance.isf,
     };
 
 BolusCalculationResponse _$BolusCalculationResponseFromJson(
         Map<String, dynamic> json) =>
     BolusCalculationResponse(
-      totalBolus: (json['total_bolus'] as num).toDouble(),
-      correctionBolus: (json['correction_bolus'] as num).toDouble(),
-      mealBolus: (json['meal_bolus'] as num).toDouble(),
-      reason: json['reason'] as String,
+      totalCarbsGrams: (json['total_carbs_grams'] as num).toDouble(),
+      recommendedBolusUnits:
+          (json['recommended_bolus_units'] as num).toDouble(),
+      reason: json['reason'] as String? ?? '',
     );
 
 Map<String, dynamic> _$BolusCalculationResponseToJson(
         BolusCalculationResponse instance) =>
     <String, dynamic>{
-      'total_bolus': instance.totalBolus,
-      'correction_bolus': instance.correctionBolus,
-      'meal_bolus': instance.mealBolus,
+      'total_carbs_grams': instance.totalCarbsGrams,
+      'recommended_bolus_units': instance.recommendedBolusUnits,
       'reason': instance.reason,
     };

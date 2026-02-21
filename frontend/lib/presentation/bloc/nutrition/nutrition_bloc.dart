@@ -163,8 +163,16 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
       final totalCarbs = (_selectedIngredient!.carbs * event.grams) / 100;
 
       final request = BolusCalculationRequest(
-        glucoseValue: event.currentGlucose,
-        carbsGrams: totalCarbs.round(),
+        currentGlucose: event.currentGlucose.toDouble(),
+        targetGlucose: 100.0, // Default for now
+        ingredients: [
+          IngredientInput(
+            ingredientId: _selectedIngredient!.id.toString(),
+            weightGrams: event.grams.toDouble(),
+          )
+        ],
+        icr: 10.0,
+        isf: 50.0,
       );
 
       final response = await _apiClient.calculateBolus(request);

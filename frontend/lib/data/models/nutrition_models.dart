@@ -30,43 +30,63 @@ class Ingredient {
 // ==========================================
 
 @JsonSerializable()
-class BolusCalculationRequest {
-  @JsonKey(name: 'glucose_value')
-  final int glucoseValue;
+class IngredientInput {
+  @JsonKey(name: 'ingredient_id')
+  final String ingredientId;
   
-  @JsonKey(name: 'carbs_grams')
-  final int carbsGrams;
-  
-  @JsonKey(name: 'meal_type')
-  final String mealType; // 'breakfast', 'lunch', 'dinner', 'snack'
+  @JsonKey(name: 'weight_grams')
+  final double weightGrams;
 
-  BolusCalculationRequest({
-    required this.glucoseValue,
-    required this.carbsGrams,
-    this.mealType = 'snack', // Default, simple logic for now
+  IngredientInput({
+    required this.ingredientId,
+    required this.weightGrams,
   });
 
+  factory IngredientInput.fromJson(Map<String, dynamic> json) => _$IngredientInputFromJson(json);
+  Map<String, dynamic> toJson() => _$IngredientInputToJson(this);
+}
+
+@JsonSerializable(explicitToJson: true)
+class BolusCalculationRequest {
+  @JsonKey(name: 'current_glucose')
+  final double currentGlucose;
+  
+  @JsonKey(name: 'target_glucose')
+  final double targetGlucose;
+  
+  final List<IngredientInput> ingredients;
+  
+  final double icr;
+  final double isf;
+
+  BolusCalculationRequest({
+    required this.currentGlucose,
+    required this.targetGlucose,
+    required this.ingredients,
+    this.icr = 10.0,
+    this.isf = 50.0,
+  });
+
+  factory BolusCalculationRequest.fromJson(Map<String, dynamic> json) => _$BolusCalculationRequestFromJson(json);
   Map<String, dynamic> toJson() => _$BolusCalculationRequestToJson(this);
 }
 
 @JsonSerializable()
 class BolusCalculationResponse {
-  @JsonKey(name: 'total_bolus')
-  final double totalBolus;
+  @JsonKey(name: 'total_carbs_grams')
+  final double totalCarbsGrams;
   
-  @JsonKey(name: 'correction_bolus')
-  final double correctionBolus;
+  @JsonKey(name: 'recommended_bolus_units')
+  final double recommendedBolusUnits;
   
-  @JsonKey(name: 'meal_bolus')
-  final double mealBolus;
-  
+  // Keep these if frontend really needs them, but backend doesn't send them currently
+  @JsonKey(name: 'reason', defaultValue: '')
   final String reason;
 
   BolusCalculationResponse({
-    required this.totalBolus,
-    required this.correctionBolus,
-    required this.mealBolus,
-    required this.reason,
+    required this.totalCarbsGrams,
+    required this.recommendedBolusUnits,
+    this.reason = '',
   });
 
   factory BolusCalculationResponse.fromJson(Map<String, dynamic> json) => 
