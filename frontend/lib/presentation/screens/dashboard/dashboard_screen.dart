@@ -12,6 +12,7 @@ import '../../screens/glucose/add_glucose_screen.dart';
 import '../../widgets/glucose/glucose_chart.dart';
 import '../../widgets/glucose/glucose_alert_widget.dart';
 import '../../screens/glucose/glucose_history_screen.dart';
+import '../../../data/models/nutrition_models.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -21,51 +22,75 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  /// Cached insulin events. Updated whenever NutritionBloc emits
+  /// [MealHistoryLoaded]. Persists even when NutritionBloc moves to
+  /// another state (e.g. ingredient search), so the chart always shows data.
+  List<MealLogEntry> _insulinEvents = [];
+
   @override
   void initState() {
     super.initState();
-    _loadGlucoseData();
+    _loadDashboardData();
   }
 
-  void _loadGlucoseData() {
+  void _loadDashboardData() {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated && authState.selectedProfile != null) {
-      context.read<GlucoseBloc>().add(LoadGlucoseHistory(authState.selectedProfile!.id));
+      final patientId = authState.selectedProfile!.id;
+      context.read<GlucoseBloc>().add(LoadGlucoseHistory(patientId));
+      context.read<NutritionBloc>().add(LoadMealHistory(patientId));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthAuthenticated && state.selectedProfile != null) {
-          context.read<GlucoseBloc>().add(LoadGlucoseHistory(state.selectedProfile!.id));
-          
-          // Enforce Theme based on Profile
-          final isChild = state.selectedProfile!.themePreference.toLowerCase() == 'child';
-          context.read<ThemeBloc>().add(SetUiMode(isChild ? UiMode.child : UiMode.adult));
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        // Reload data when the selected profile changes
+        BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is AuthAuthenticated && state.selectedProfile != null) {
+              final patientId = state.selectedProfile!.id;
+              context.read<GlucoseBloc>().add(LoadGlucoseHistory(patientId));
+              context.read<NutritionBloc>().add(LoadMealHistory(patientId));
+
+              final isChild =
+                  state.selectedProfile!.themePreference.toLowerCase() ==
+                      'child';
+              context
+                  .read<ThemeBloc>()
+                  .add(SetUiMode(isChild ? UiMode.child : UiMode.adult));
+            }
+          },
+        ),
+        // Cache insulin events whenever a fresh history load completes.
+        // Using setState keeps the chart updated without depending on
+        // NutritionBloc's current state (which changes for searches, etc.).
+        BlocListener<NutritionBloc, NutritionState>(
+          listener: (context, state) {
+            if (state is MealHistoryLoaded) {
+              setState(() => _insulinEvents = state.meals);
+            }
+          },
+        ),
+      ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
-      builder: (context, themeState) {
-        final isAdult = themeState.uiMode.isAdult;
-        
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(isAdult ? 'Panel de Control' : 'Mi Aventura'),
-            actions: [
-              // Logout
-              // User Menu
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'switch') {
-                    context.read<AuthBloc>().add(const UnselectProfile());
-                  } else if (value == 'logout') {
-                     context.read<AuthBloc>().add(const LogoutRequested());
-                  }
-                },
-                itemBuilder: (BuildContext context) {
-                  return [
+        builder: (context, themeState) {
+          final isAdult = themeState.uiMode.isAdult;
+
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(isAdult ? 'Panel de Control' : 'Mi Aventura'),
+              actions: [
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'switch') {
+                      context.read<AuthBloc>().add(const UnselectProfile());
+                    } else if (value == 'logout') {
+                      context.read<AuthBloc>().add(const LogoutRequested());
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => [
                     const PopupMenuItem(
                       value: 'switch',
                       child: Row(
@@ -86,49 +111,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ],
                       ),
                     ),
-                  ];
-                },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Icon(Icons.account_circle),
+                  ],
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Icon(Icons.account_circle),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          body: isAdult ? const _AdultDashboard() : const _ChildDashboard(),
-          // FloatingActionButton removed as it is now in the title row
-          // floatingActionButton: null,
-          bottomNavigationBar: BottomNavigationBar(
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(isAdult ? Icons.home : Icons.map),
-                label: isAdult ? 'Inicio' : 'Mapa',
-              ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.restaurant),
-                label: 'Comidas',
-              ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: 'Perfil',
-              ),
-            ],
-            selectedItemColor: Theme.of(context).primaryColor,
-            currentIndex: 0,
-            onTap: (index) {
-              if (index == 2) {
-                // Navigate to profile screen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                );
-              }
-            },
-          ),
-        );
-      },
-    ),
-   );
+              ],
+            ),
+            body: isAdult
+                ? _AdultDashboard(insulinEvents: _insulinEvents)
+                : const _ChildDashboard(),
+            bottomNavigationBar: BottomNavigationBar(
+              items: [
+                BottomNavigationBarItem(
+                  icon: Icon(isAdult ? Icons.home : Icons.map),
+                  label: isAdult ? 'Inicio' : 'Mapa',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.restaurant),
+                  label: 'Comidas',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: 'Perfil',
+                ),
+              ],
+              selectedItemColor: Theme.of(context).primaryColor,
+              currentIndex: 0,
+              onTap: (index) {
+                if (index == 2) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
+                }
+              },
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 
@@ -136,16 +159,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 // ADULT UX COMPONENT
 // -----------------------------------------------------------------------------
 class _AdultDashboard extends StatelessWidget {
-  const _AdultDashboard();
+  final List<MealLogEntry> insulinEvents;
+
+  const _AdultDashboard({this.insulinEvents = const []});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const GlucoseAlertWidget(),
+
           // Tarjeta de Resumen Rápido
           Card(
             elevation: 2,
@@ -153,79 +179,95 @@ class _AdultDashboard extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: BlocBuilder<GlucoseBloc, GlucoseState>(
                 builder: (context, state) {
-                   String value = '--';
-                   String timeCmd = '';
-                   
-                   if (state is GlucoseLoaded && state.history.isNotEmpty) {
-                      // Get latest by timestamp
-                      final latest = state.history.reduce((curr, next) => 
-                          curr.timestamp.isAfter(next.timestamp) ? curr : next);
-                      
-                      value = latest.glucoseValue.toString();
-                      final diff = DateTime.now().difference(latest.timestamp).inMinutes;
-                      timeCmd = 'Hace $diff min';
-                   }
+                  String value = '--';
+                  String timeCmd = '';
 
-                   return Column(
+                  if (state is GlucoseLoaded && state.history.isNotEmpty) {
+                    final latest = state.history.reduce((curr, next) =>
+                        curr.timestamp.isAfter(next.timestamp) ? curr : next);
+                    value = latest.glucoseValue.toString();
+                    final diff =
+                        DateTime.now().difference(latest.timestamp).inMinutes;
+                    timeCmd = 'Hace $diff min';
+                  }
+
+                  return Column(
                     children: [
-                       Row(
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
-                              Text('Glucosa Actual', style: Theme.of(context).textTheme.titleMedium),
+                              Text('Glucosa Actual',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium),
                               const SizedBox(width: 8),
                               IconButton(
-                                icon: const Icon(Icons.add_circle, color: Colors.blueAccent),
+                                icon: const Icon(Icons.add_circle,
+                                    color: Colors.blueAccent),
                                 tooltip: 'Añadir Medida',
                                 onPressed: () {
-                                   final authState = context.read<AuthBloc>().state;
-                                   if (authState is AuthAuthenticated && authState.selectedProfile != null) {
-                                     Navigator.push(
-                                      context, 
-                                      MaterialPageRoute(builder: (_) => AddGlucoseScreen(
-                                        patientId: authState.selectedProfile!.id
-                                      )),
+                                  final authState =
+                                      context.read<AuthBloc>().state;
+                                  if (authState is AuthAuthenticated &&
+                                      authState.selectedProfile != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => AddGlucoseScreen(
+                                              patientId: authState
+                                                  .selectedProfile!.id)),
                                     );
-                                   }
+                                  }
                                 },
                               ),
                             ],
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.history),
-                            tooltip: 'Ver Historial Glucosa',
-                            onPressed: () {
-                               final authState = context.read<AuthBloc>().state;
-                               if (authState is AuthAuthenticated && authState.selectedProfile != null) {
-                                 Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => GlucoseHistoryScreen(
-                                    patientId: authState.selectedProfile!.id
-                                  )),
-                                );
-                               }
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.vaccines, color: Colors.orange),
-                            tooltip: 'Historial Insulina',
-                            onPressed: () {
-                              final authState = context.read<AuthBloc>().state;
-                              if (authState is AuthAuthenticated && authState.selectedProfile != null) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => BlocProvider.value(
-                                      value: context.read<NutritionBloc>(),
-                                      child: MealHistoryScreen(
-                                        patientId: authState.selectedProfile!.id,
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.history),
+                                tooltip: 'Ver Historial Glucosa',
+                                onPressed: () {
+                                  final authState =
+                                      context.read<AuthBloc>().state;
+                                  if (authState is AuthAuthenticated &&
+                                      authState.selectedProfile != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => GlucoseHistoryScreen(
+                                              patientId: authState
+                                                  .selectedProfile!.id)),
+                                    );
+                                  }
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.vaccines,
+                                    color: Colors.orange),
+                                tooltip: 'Historial Insulina',
+                                onPressed: () {
+                                  final authState =
+                                      context.read<AuthBloc>().state;
+                                  if (authState is AuthAuthenticated &&
+                                      authState.selectedProfile != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => BlocProvider.value(
+                                          value: context.read<NutritionBloc>(),
+                                          child: MealHistoryScreen(
+                                            patientId: authState
+                                                .selectedProfile!.id,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -235,10 +277,13 @@ class _AdultDashboard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            value, 
-                            style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                              color: Theme.of(context).colorScheme.primary
-                            )
+                            value,
+                            style: Theme.of(context)
+                                .textTheme
+                                .displayLarge
+                                ?.copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
                           ),
                           const Padding(
                             padding: EdgeInsets.only(bottom: 8.0, left: 4.0),
@@ -248,52 +293,56 @@ class _AdultDashboard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       if (timeCmd.isNotEmpty)
-                        Text(timeCmd, style: Theme.of(context).textTheme.bodySmall),
+                        Text(timeCmd,
+                            style: Theme.of(context).textTheme.bodySmall),
                     ],
                   );
-                }
+                },
               ),
             ),
           ),
           const SizedBox(height: 24),
-          
+
           Text('Tendencia (24h)', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
-          
-          // Gráfico de Glucosa
+
+          // Gráfico de Glucosa con marcadores de insulina superpuestos
           SizedBox(
             height: 250,
             width: double.infinity,
             child: Card(
-               elevation: 2,
-               child: Padding(
-                 padding: const EdgeInsets.all(16.0),
-                 child: BlocBuilder<GlucoseBloc, GlucoseState>(
-                    builder: (context, state) {
-                      if (state is GlucoseLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (state is GlucoseLoaded) {
-                         // Get target range from AuthBloc
-                         final authState = context.read<AuthBloc>().state;
-                         int? min;
-                         int? max;
-                         if (authState is AuthAuthenticated && authState.selectedProfile != null) {
-                             min = authState.selectedProfile!.targetRangeLow;
-                             max = authState.selectedProfile!.targetRangeHigh;
-                         }
-
-                         return GlucoseChart(
-                           history: state.history,
-                           targetMin: min,
-                           targetMax: max,
-                         );
-                      } else if (state is GlucoseError) {
-                        return Center(child: Text('Error: ${state.message}'));
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: BlocBuilder<GlucoseBloc, GlucoseState>(
+                  builder: (context, state) {
+                    if (state is GlucoseLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state is GlucoseLoaded) {
+                      final authState = context.read<AuthBloc>().state;
+                      int? min;
+                      int? max;
+                      if (authState is AuthAuthenticated &&
+                          authState.selectedProfile != null) {
+                        min = authState.selectedProfile!.targetRangeLow;
+                        max = authState.selectedProfile!.targetRangeHigh;
                       }
-                      return const Center(child: Text('Sin datos recientes'));
-                    },
-                 ),
-               ),
+
+                      return GlucoseChart(
+                        history: state.history,
+                        targetMin: min,
+                        targetMax: max,
+                        // Pass cached insulin events — these survive
+                        // NutritionBloc state transitions
+                        insulinEvents: insulinEvents,
+                      );
+                    } else if (state is GlucoseError) {
+                      return Center(child: Text('Error: ${state.message}'));
+                    }
+                    return const Center(child: Text('Sin datos recientes'));
+                  },
+                ),
+              ),
             ),
           ),
         ],
@@ -327,41 +376,42 @@ class _ChildDashboard extends StatelessWidget {
           children: [
             const GlucoseAlertWidget(),
             const SizedBox(height: 8),
-            // Avatar y Nivel
             Stack(
               alignment: Alignment.bottomCenter,
               children: [
                 const CircleAvatar(
                   radius: 60,
-                  backgroundColor: Color(0xFFEC4899), // Pink
+                  backgroundColor: Color(0xFFEC4899),
                   child: Icon(Icons.face, size: 80, color: Colors.white),
                 ),
                 Positioned(
                   bottom: 0,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B), // Amber
+                      color: const Color(0xFFF59E0B),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: const Text(
                       'NVL 5',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            
             Text(
-              '¡Hola, Campeón!', 
-              style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 28)
+              '¡Hola, Campeón!',
+              style: Theme.of(context)
+                  .textTheme
+                  .displayMedium
+                  ?.copyWith(fontSize: 28),
             ),
             const SizedBox(height: 32),
-            
-            // Barra de Experiencia (XP)
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -380,8 +430,10 @@ class _ChildDashboard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Experiencia', style: Theme.of(context).textTheme.labelLarge),
-                      Text('450 / 500 XP', style: Theme.of(context).textTheme.labelLarge),
+                      Text('Experiencia',
+                          style: Theme.of(context).textTheme.labelLarge),
+                      Text('450 / 500 XP',
+                          style: Theme.of(context).textTheme.labelLarge),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -391,23 +443,21 @@ class _ChildDashboard extends StatelessWidget {
                       value: 0.9,
                       minHeight: 20,
                       backgroundColor: Colors.grey.shade200,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)), // Emerald
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF10B981)),
                     ),
                   ),
                 ],
               ),
             ),
-            
             const Spacer(),
-            
-            // Botón de Acción Principal
             SizedBox(
               width: double.infinity,
               height: 60,
               child: ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF7C3AED), // Violet
+                  backgroundColor: const Color(0xFF7C3AED),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -423,15 +473,14 @@ class _ChildDashboard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-
-            // Botón Mis Dosis (Historial de Insulina - Modo Niño)
             SizedBox(
               width: double.infinity,
               height: 52,
               child: OutlinedButton(
                 onPressed: () {
                   final authState = context.read<AuthBloc>().state;
-                  if (authState is AuthAuthenticated && authState.selectedProfile != null) {
+                  if (authState is AuthAuthenticated &&
+                      authState.selectedProfile != null) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
