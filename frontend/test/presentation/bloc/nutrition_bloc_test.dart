@@ -32,6 +32,14 @@ MealLogEntry _fakeMeal({double? bolus}) => MealLogEntry(
 void main() {
   late MockNutritionApiClient mockClient;
 
+  setUpAll(() {
+    registerFallbackValue(BolusCalculationRequest(
+      currentGlucose: 0,
+      targetGlucose: 0,
+      ingredients: [],
+    ));
+  });
+
   setUp(() {
     mockClient = MockNutritionApiClient();
   });
@@ -168,6 +176,80 @@ void main() {
         isA<NutritionLoading>(),
         isA<NutritionError>(),
       ],
+    );
+  });
+
+  group('NutritionBloc — CalculateBolus uses profile params', () {
+    final fakeIngredient = Ingredient(
+      id: 1,
+      name: 'Arroz',
+      glycemicIndex: 70,
+      carbs: 28.0,
+    );
+
+    blocTest<NutritionBloc, NutritionState>(
+      'sends real icr/isf/targetGlucose from event to the API',
+      build: () {
+        when(
+          () => mockClient.calculateBolus(any()),
+        ).thenAnswer((_) async => BolusCalculationResponse(
+              totalCarbsGrams: 56.0,
+              recommendedBolusUnits: 3.1,
+            ));
+        return NutritionBloc(apiClient: mockClient)
+          ..add(SelectIngredient(fakeIngredient));
+      },
+      act: (bloc) => bloc.add(const CalculateBolus(
+        grams: 200,
+        currentGlucose: 180,
+        icr: 40.0,
+        isf: 40.0,
+        targetGlucose: 110.0,
+      )),
+      expect: () => [
+        isA<NutritionLoading>(),
+        isA<BolusCalculated>(),
+      ],
+      verify: (_) {
+        final captured =
+            verify(() => mockClient.calculateBolus(captureAny())).captured;
+        final req = captured.first as BolusCalculationRequest;
+        expect(req.icr, 40.0);
+        expect(req.isf, 40.0);
+        expect(req.targetGlucose, 110.0);
+        expect(req.currentGlucose, 180.0);
+      },
+    );
+
+    blocTest<NutritionBloc, NutritionState>(
+      'falls back to defaults when profile params are not provided',
+      build: () {
+        when(
+          () => mockClient.calculateBolus(any()),
+        ).thenAnswer((_) async => BolusCalculationResponse(
+              totalCarbsGrams: 56.0,
+              recommendedBolusUnits: 2.8,
+            ));
+        return NutritionBloc(apiClient: mockClient)
+          ..add(SelectIngredient(fakeIngredient));
+      },
+      act: (bloc) => bloc.add(const CalculateBolus(
+        grams: 200,
+        currentGlucose: 180,
+        // icr, isf, targetGlucose omitted → use defaults
+      )),
+      expect: () => [
+        isA<NutritionLoading>(),
+        isA<BolusCalculated>(),
+      ],
+      verify: (_) {
+        final captured =
+            verify(() => mockClient.calculateBolus(captureAny())).captured;
+        final req = captured.first as BolusCalculationRequest;
+        expect(req.icr, 10.0);
+        expect(req.isf, 50.0);
+        expect(req.targetGlucose, 100.0);
+      },
     );
   });
 }

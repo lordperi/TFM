@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../bloc/auth/auth_bloc.dart';
+import '../../bloc/glucose/glucose_bloc.dart';
 import '../../bloc/nutrition/nutrition_bloc.dart';
 import '../../bloc/theme/theme_bloc.dart';
 
@@ -82,9 +84,25 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
 
   void _showGramsDialog(BuildContext context, dynamic ingredient, bool isAdult) {
     final gramsController = TextEditingController();
-    
-    // Select ingredient logic in bloc if needed, currently direct calculate
+
     context.read<NutritionBloc>().add(SelectIngredient(ingredient));
+
+    // Read real profile params from the active patient
+    final authState = context.read<AuthBloc>().state;
+    final profile = authState is AuthAuthenticated ? authState.selectedProfile : null;
+    final icr = profile?.carbRatio ?? 10.0;
+    final isf = profile?.insulinSensitivity ?? 50.0;
+    final targetGlucose = profile?.targetGlucose ?? 100.0;
+
+    // Read latest glucose from GlucoseBloc
+    final glucoseState = context.read<GlucoseBloc>().state;
+    int currentGlucose = 120; // fallback if no reading available
+    if (glucoseState is GlucoseLoaded && glucoseState.history.isNotEmpty) {
+      final latest = glucoseState.history.reduce(
+        (curr, next) => curr.timestamp.isAfter(next.timestamp) ? curr : next,
+      );
+      currentGlucose = latest.glucoseValue;
+    }
 
     showDialog(
       context: context,
@@ -108,10 +126,12 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
             onPressed: () {
               final grams = int.tryParse(gramsController.text) ?? 0;
               if (grams > 0) {
-                // Trigger calculation
                 context.read<NutritionBloc>().add(CalculateBolus(
                   grams: grams,
-                  currentGlucose: 120, // MOCKED: Get from real glucose stream later
+                  currentGlucose: currentGlucose,
+                  icr: icr,
+                  isf: isf,
+                  targetGlucose: targetGlucose,
                 ));
                 Navigator.pop(ctx);
               }

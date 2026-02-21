@@ -35,12 +35,21 @@ class SelectIngredient extends NutritionEvent {
 
 class CalculateBolus extends NutritionEvent {
   final int grams;
-  final int currentGlucose; // Mocked or input for now
+  final int currentGlucose;
+  final double icr;
+  final double isf;
+  final double targetGlucose;
 
-  const CalculateBolus({required this.grams, required this.currentGlucose});
+  const CalculateBolus({
+    required this.grams,
+    required this.currentGlucose,
+    this.icr = 10.0,
+    this.isf = 50.0,
+    this.targetGlucose = 100.0,
+  });
 
   @override
-  List<Object?> get props => [grams, currentGlucose];
+  List<Object?> get props => [grams, currentGlucose, icr, isf, targetGlucose];
 }
 
 class ResetNutrition extends NutritionEvent {}
@@ -232,15 +241,15 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
 
       final request = BolusCalculationRequest(
         currentGlucose: event.currentGlucose.toDouble(),
-        targetGlucose: 100.0, // Default for now
+        targetGlucose: event.targetGlucose,
         ingredients: [
           IngredientInput(
             ingredientId: _selectedIngredient!.id.toString(),
             weightGrams: event.grams.toDouble(),
           )
         ],
-        icr: 10.0,
-        isf: 50.0,
+        icr: event.icr,
+        isf: event.isf,
       );
 
       final response = await _apiClient.calculateBolus(request);
