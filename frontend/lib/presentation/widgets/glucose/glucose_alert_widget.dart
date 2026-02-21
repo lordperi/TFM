@@ -160,7 +160,7 @@ class GlucoseAlertWidget extends StatelessWidget {
               Text('Objetivo: $targetVal mg/dL'),
               const Divider(),
               Text(
-                '${response.recommendedBolusUnits.toStringAsFixed(1)} U',
+                '${response.totalBolus.toStringAsFixed(1)} U',
                 style: TextStyle(
                   fontSize: 36, 
                   fontWeight: FontWeight.bold, 
