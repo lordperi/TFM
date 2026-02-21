@@ -36,9 +36,10 @@ class GlucoseAlertWidget extends StatelessWidget {
                 final isOutdated = TimeUtils.isMoreThanFiveMinutesOld(latest.timestamp);
                 
                 return _buildAlertCard(
-                    context, 
-                    latest.glucoseValue, 
+                    context,
+                    latest.glucoseValue,
                     isOutdated,
+                    patientId: authState.selectedProfile!.id,
                     targetGlucose: double.tryParse(targetBase.toString()) ?? 100.0,
                     icr: double.tryParse(icrStr.toString()) ?? 10.0,
                     isf: double.tryParse(isfStr.toString()) ?? 50.0,
@@ -53,10 +54,13 @@ class GlucoseAlertWidget extends StatelessWidget {
   }
 
   Widget _buildAlertCard(
-      BuildContext context, 
-      int currentValue, 
-      bool isOutdated, 
-      {required double targetGlucose, required double icr, required double isf}
+      BuildContext context,
+      int currentValue,
+      bool isOutdated,
+      {required String patientId,
+      required double targetGlucose,
+      required double icr,
+      required double isf}
   ) {
     return Card(
       color: Colors.red.shade50,
@@ -97,7 +101,7 @@ class GlucoseAlertWidget extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => _calculateCorrectionBolus(context, currentValue, targetGlucose, icr, isf),
+                onPressed: () => _calculateCorrectionBolus(context, currentValue, targetGlucose, icr, isf, patientId),
                 icon: const Icon(Icons.calculate, color: Colors.white),
                 label: const Text('CALCULAR BOLUS CORRECTIVO', style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
@@ -113,11 +117,12 @@ class GlucoseAlertWidget extends StatelessWidget {
   }
 
   Future<void> _calculateCorrectionBolus(
-      BuildContext context, 
-      int currentVal, 
-      double targetVal, 
-      double icr, 
-      double isf
+      BuildContext context,
+      int currentVal,
+      double targetVal,
+      double icr,
+      double isf,
+      String patientId,
   ) async {
     // Show Loading
     showDialog(
@@ -181,9 +186,11 @@ class GlucoseAlertWidget extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                // Optionally log correction
+                context.read<NutritionBloc>().add(
+                  LogInsulinDose(patientId, response.recommendedBolusUnits),
+                );
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Dosis confirmada y registrada en el historial')),
+                  const SnackBar(content: Text('Dosis registrada en el historial')),
                 );
               },
               child: const Text('CONFIRMAR ADMINISTRACIÓN'),
