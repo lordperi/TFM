@@ -44,7 +44,7 @@ class GlucoseChart extends StatelessWidget {
             .toDouble();
 
     // Compute insulin marker spots by mapping event timestamps → x-axis indices
-    final insulinSpots = _buildInsulinSpots(sorted, chartMaxY);
+    final insulinData = _buildInsulinData(sorted, chartMaxY);
 
     return LineChart(
       LineChartData(
@@ -64,7 +64,10 @@ class GlucoseChart extends StatelessWidget {
               return touchedSpots.map((spot) {
                 // Series 0 = glucose, Series 1 = insulin markers
                 if (spot.barIndex == 1) {
-                  final units = spot.y;
+                  final idx = spot.spotIndex;
+                  final units = idx < insulinData.bolusUnits.length
+                      ? insulinData.bolusUnits[idx]
+                      : 0.0;
                   return LineTooltipItem(
                     '💉 ${units.toStringAsFixed(1)} U insulina',
                     const TextStyle(
@@ -139,9 +142,9 @@ class GlucoseChart extends StatelessWidget {
             belowBarData: BarAreaData(show: false),
           ),
           // Series 1: Insulin markers (orange triangles at chart top)
-          if (insulinSpots.isNotEmpty)
+          if (insulinData.spots.isNotEmpty)
             LineChartBarData(
-              spots: insulinSpots,
+              spots: insulinData.spots,
               isCurved: false,
               barWidth: 0,
               color: Colors.transparent,
@@ -179,17 +182,22 @@ class GlucoseChart extends StatelessWidget {
   }
 
   /// Maps insulin event timestamps to x-axis positions within the glucose chart.
-  List<FlSpot> _buildInsulinSpots(
+  /// Returns both the FlSpots (for positioning) and the real bolus units (for
+  /// tooltips). These two lists are parallel: bolusUnits[i] belongs to spots[i].
+  _InsulinChartData _buildInsulinData(
       List<GlucoseMeasurement> sorted, double chartMaxY) {
     final events = insulinEvents;
-    if (events == null || events.isEmpty || sorted.length < 2) return [];
+    if (events == null || events.isEmpty || sorted.length < 2) {
+      return _InsulinChartData(const [], const []);
+    }
 
     final firstTs = sorted.first.timestamp.millisecondsSinceEpoch.toDouble();
     final lastTs = sorted.last.timestamp.millisecondsSinceEpoch.toDouble();
     final range = lastTs - firstTs;
-    if (range <= 0) return [];
+    if (range <= 0) return _InsulinChartData(const [], const []);
 
     final spots = <FlSpot>[];
+    final units = <double>[];
     for (final entry in events) {
       final bolus = entry.bolusUnitsAdministered;
       if (bolus == null || bolus <= 0) continue;
@@ -198,15 +206,22 @@ class GlucoseChart extends StatelessWidget {
       if (ts == null) continue;
 
       final tsMs = ts.millisecondsSinceEpoch.toDouble();
-      // Clamp to visible range
       if (tsMs < firstTs || tsMs > lastTs) continue;
 
       final x = (tsMs - firstTs) / range * (sorted.length - 1);
-      // Place marker near top of chart, y encodes actual bolus units for tooltip
+      // y is chart position (near top); actual bolus stored separately
       spots.add(FlSpot(x, chartMaxY - 10));
+      units.add(bolus);
     }
-    return spots;
+    return _InsulinChartData(spots, units);
   }
+}
+
+/// Holds parallel lists for insulin marker spots and their real bolus values.
+class _InsulinChartData {
+  final List<FlSpot> spots;
+  final List<double> bolusUnits;
+  const _InsulinChartData(this.spots, this.bolusUnits);
 }
 
 /// Custom fl_chart dot painter that draws an orange upward triangle (▲).

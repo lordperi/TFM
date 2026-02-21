@@ -22,5 +22,7 @@ abstract class NutritionApiClient {
     @Query('patient_id') String patientId, {
     @Query('limit') int limit = 20,
     @Query('offset') int offset = 0,
+    @Query('start_date') String? startDate,
+    @Query('end_date') String? endDate,
   });
 }

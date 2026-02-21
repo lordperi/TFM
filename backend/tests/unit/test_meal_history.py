@@ -210,3 +210,66 @@ class TestGetMealHistory:
         )
         assert response.status_code == 200
         assert len(response.json()) == 3
+
+    def test_history_filters_by_start_date(self, client, db_session):
+        """Meals before start_date must be excluded."""
+        from datetime import datetime, timezone
+        patient_id = _create_patient(db_session)
+
+        # Create meal directly in DB with a specific timestamp
+        old_meal = MealLogModel(
+            patient_id=patient_id,
+            total_carbs_grams=10.0,
+            total_glycemic_load=5.0,
+            bolus_units_administered=1.0,
+            timestamp=datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        recent_meal = MealLogModel(
+            patient_id=patient_id,
+            total_carbs_grams=20.0,
+            total_glycemic_load=10.0,
+            bolus_units_administered=2.0,
+            timestamp=datetime(2026, 1, 15, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        db_session.add_all([old_meal, recent_meal])
+        db_session.commit()
+
+        response = client.get(
+            f"/api/v1/nutrition/meals/history?patient_id={patient_id}"
+            f"&start_date=2026-01-01T00:00:00Z"
+        )
+        assert response.status_code == 200
+        meals = response.json()
+        assert len(meals) == 1
+        assert meals[0]["bolus_units_administered"] == pytest.approx(2.0)
+
+    def test_history_filters_by_end_date(self, client, db_session):
+        """Meals after end_date must be excluded."""
+        from datetime import datetime, timezone
+        patient_id = _create_patient(db_session)
+
+        old_meal = MealLogModel(
+            patient_id=patient_id,
+            total_carbs_grams=10.0,
+            total_glycemic_load=5.0,
+            bolus_units_administered=1.0,
+            timestamp=datetime(2024, 6, 1, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        future_meal = MealLogModel(
+            patient_id=patient_id,
+            total_carbs_grams=30.0,
+            total_glycemic_load=15.0,
+            bolus_units_administered=3.0,
+            timestamp=datetime(2027, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        db_session.add_all([old_meal, future_meal])
+        db_session.commit()
+
+        response = client.get(
+            f"/api/v1/nutrition/meals/history?patient_id={patient_id}"
+            f"&end_date=2025-12-31T23:59:59Z"
+        )
+        assert response.status_code == 200
+        meals = response.json()
+        assert len(meals) == 1
+        assert meals[0]["bolus_units_administered"] == pytest.approx(1.0)

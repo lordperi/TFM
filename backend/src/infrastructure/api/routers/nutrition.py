@@ -119,10 +119,18 @@ def get_meal_history(
     patient_id: UUID = Query(...),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    start_date: Optional[datetime] = Query(None, description="Filtro fecha inicio (ISO 8601)"),
+    end_date: Optional[datetime] = Query(None, description="Filtro fecha fin (ISO 8601)"),
     repo: NutritionRepository = Depends(get_nutrition_repo)
 ):
     """Devuelve el historial de comidas registradas para un paciente, más reciente primero."""
-    meals = repo.get_meal_history(patient_id=patient_id, limit=limit, offset=offset)
+    meals = repo.get_meal_history(
+        patient_id=patient_id,
+        limit=limit,
+        offset=offset,
+        start_date=start_date,
+        end_date=end_date,
+    )
     return [
         MealLogResponse(
             id=m.id,
