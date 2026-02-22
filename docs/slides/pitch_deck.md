@@ -670,5 +670,5 @@ El mercado global de apps de gestión de diabetes supera los **6.000M€ en 2025
 
 <div class="contact">
   🌐 diabetics.jljimenez.es &nbsp;·&nbsp; ⚙️ diabetics-api.jljimenez.es/docs<br><br>
-  📩 <strong>contacto@jljimenez.es</strong>
+  📩 <strong>jose.jimenez@madic.com</strong>
 </div>
