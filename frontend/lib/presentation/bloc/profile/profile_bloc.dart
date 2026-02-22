@@ -140,6 +140,26 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     try {
       final user = await repository.getProfile(event.token);
       emit(ProfileLoaded(user: user));
+
+      // Cargar XP y logros en paralelo después del primer emit.
+      // No se usan eventos separados para evitar la race condition donde
+      // LoadXPSummary llega antes de que ProfileLoaded sea el estado actual.
+      final results = await Future.wait([
+        repository
+            .getXPSummary(event.token)
+            .then<UserXPSummary?>((v) => v)
+            .catchError((_) => null),
+        repository
+            .getAchievements(event.token)
+            .then<AchievementsResponse?>((v) => v)
+            .catchError((_) => null),
+      ]);
+
+      emit(ProfileLoaded(
+        user: user,
+        xpSummary: results[0] as UserXPSummary?,
+        achievements: results[1] as AchievementsResponse?,
+      ));
     } catch (e) {
       emit(ProfileError(e.toString()));
     }

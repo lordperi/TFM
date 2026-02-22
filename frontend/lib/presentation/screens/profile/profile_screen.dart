@@ -28,9 +28,9 @@ class ProfileScreen extends StatelessWidget {
             create: (context) {
               final bloc = ProfileBloc(repository: ProfileRepository());
               if (authState is AuthAuthenticated) {
+                // LoadProfile carga XP y logros internamente — no se disparan
+                // eventos separados para evitar la race condition del transformer.
                 bloc.add(LoadProfile(authState.accessToken));
-                bloc.add(LoadXPSummary(authState.accessToken));
-                bloc.add(LoadAchievements(authState.accessToken));
               }
               return bloc;
             },
@@ -49,12 +49,6 @@ class ProfileScreen extends StatelessWidget {
                     return Center(
                       child: Text('Error: ${profileState.message}'),
                     );
-                  }
-                  // Esperar a que xpSummary cargue (viene de LoadXPSummary,
-                  // que puede completarse después de LoadProfile).
-                  if (profileState is ProfileLoaded &&
-                      profileState.xpSummary == null) {
-                    return const Center(child: CircularProgressIndicator());
                   }
                   return const ChildProfileScreen();
                 },
