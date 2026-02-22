@@ -391,7 +391,7 @@ style: |
   <div class="card">
     <span class="icon">🧮</span>
     <div class="card-title">4–6 cálculos al día</div>
-    <div class="card-body">Un paciente con T1D calcula su dosis de insulina varias veces al día, todos los días del año, sin descanso ni margen de error.</div>
+    <div class="card-body">Un paciente con Diabetes Tipo 1 calcula su dosis de insulina varias veces al día, todos los días del año, sin descanso ni margen de error.</div>
   </div>
   <div class="card">
     <span class="icon">👨‍👩‍👧</span>
@@ -405,7 +405,7 @@ style: |
   </div>
 </div>
 
-<blockquote>8,4 millones de personas con T1D en el mundo. Ninguna tiene un páncreas que funcione. Todas necesitan una solución.</blockquote>
+<blockquote>8,4 millones de personas con Diabetes Tipo 1 en el mundo. Ninguna tiene un páncreas que funcione. Todas necesitan una solución.</blockquote>
 
 ---
 
@@ -473,11 +473,11 @@ style: |
 <div class="stats-row">
   <div class="stat-box">
     <div class="stat-num">8,4M</div>
-    <div class="stat-label">pacientes T1D en el mundo</div>
+    <div class="stat-label">pacientes con Diabetes Tipo 1 en el mundo</div>
   </div>
   <div class="stat-box">
     <div class="stat-num">1,2M</div>
-    <div class="stat-label">pacientes T1D en Europa</div>
+    <div class="stat-label">pacientes con Diabetes Tipo 1 en Europa</div>
   </div>
   <div class="stat-box">
     <div class="stat-num">+9%</div>
@@ -487,7 +487,7 @@ style: |
 
 <br>
 
-El mercado global de apps de gestión de diabetes supera los **6.000M€ en 2025** y proyecta alcanzar los **12.000M€ en 2030**. T1D es el segmento de mayor adherencia digital: los pacientes interactúan con la app varias veces al día, generando datos de alto valor clínico y comercial.
+El mercado global de apps de gestión de diabetes supera los **6.000M€ en 2025** y proyecta alcanzar los **12.000M€ en 2030**. La Diabetes Tipo 1 es el segmento de mayor adherencia digital: los pacientes interactúan con la app varias veces al día, generando datos de alto valor clínico y comercial.
 
 <br>
 
