@@ -131,3 +131,31 @@ class MealLogEntry {
       _$MealLogEntryFromJson(json);
   Map<String, dynamic> toJson() => _$MealLogEntryToJson(this);
 }
+
+// ==========================================
+// MEAL TRAY (multi-ingrediente, solo UI)
+// ==========================================
+
+/// Representa un ingrediente con su cantidad dentro de la bandeja activa.
+/// No necesita serialización JSON — es estado efímero de UI/BLoC.
+class TrayItem {
+  final Ingredient ingredient;
+  final double grams;
+
+  const TrayItem(this.ingredient, this.grams);
+
+  /// Carbohidratos netos según los gramos indicados
+  double get carbs => (ingredient.carbs * grams) / 100;
+
+  /// Carga glucémica = (IG × CHO) / 100
+  double get glycemicLoad => (ingredient.glycemicIndex * carbs) / 100;
+
+  @override
+  bool operator ==(Object other) =>
+      other is TrayItem &&
+      other.ingredient.id == ingredient.id &&
+      other.grams == grams;
+
+  @override
+  int get hashCode => Object.hash(ingredient.id, grams);
+}
