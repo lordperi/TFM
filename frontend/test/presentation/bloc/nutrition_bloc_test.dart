@@ -181,7 +181,7 @@ void main() {
 
   group('NutritionBloc — CalculateBolus uses profile params', () {
     final fakeIngredient = Ingredient(
-      id: 1,
+      id: 'uuid-arroz-1',
       name: 'Arroz',
       glycemicIndex: 70,
       carbs: 28.0,

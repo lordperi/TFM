@@ -7,7 +7,7 @@ part of 'nutrition_models.dart';
 // **************************************************************************
 
 Ingredient _$IngredientFromJson(Map<String, dynamic> json) => Ingredient(
-      id: (json['id'] as num).toInt(),
+      id: json['id'] as String,
       name: json['name'] as String,
       glycemicIndex: (json['glycemic_index'] as num).toInt(),
       carbs: (json['carbs'] as num).toDouble(),

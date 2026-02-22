@@ -19,13 +19,27 @@ def get_nutrition_repo(db: Session = Depends(get_db)) -> NutritionRepository:
 
 # --- Pydantic Schemas (DTOS) ---
 class IngredientResponse(BaseModel):
-    id: UUID
+    id: str   # UUID como string para compatibilidad Flutter
+    name: str
+    glycemic_index: int
+    carbs: float         # alias de carbs_per_100g — nombre esperado por el frontend
+    fiber_per_100g: float
+
+    @classmethod
+    def from_model(cls, m) -> "IngredientResponse":
+        return cls(
+            id=str(m.id),
+            name=m.name,
+            glycemic_index=m.glycemic_index,
+            carbs=m.carbs_per_100g,
+            fiber_per_100g=m.fiber_per_100g,
+        )
+
+class IngredientCreateRequest(BaseModel):
     name: str
     glycemic_index: int
     carbs_per_100g: float
-    fiber_per_100g: float
-    
-    model_config = {"from_attributes": True}
+    fiber_per_100g: float = 0.0
 
 class IngredientInput(BaseModel):
     ingredient_id: UUID
@@ -68,7 +82,64 @@ def search_ingredients(
 ):
     """Búsqueda por nombre de ingredientes."""
     results = execute_search(query=q, repo=repo, limit=limit)
-    return results
+    return [IngredientResponse.from_model(r) for r in results]
+
+
+@router.post("/ingredients", response_model=IngredientResponse, status_code=status.HTTP_201_CREATED)
+def create_ingredient(
+    payload: IngredientCreateRequest,
+    repo: NutritionRepository = Depends(get_nutrition_repo),
+):
+    """Crea un nuevo ingrediente en la base de datos."""
+    try:
+        ingredient = repo.create_ingredient(
+            name=payload.name,
+            glycemic_index=payload.glycemic_index,
+            carbs_per_100g=payload.carbs_per_100g,
+            fiber_per_100g=payload.fiber_per_100g,
+        )
+        return IngredientResponse.from_model(ingredient)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+
+
+# Lista curada de alimentos comunes para el seed inicial
+_SEED_INGREDIENTS = [
+    {"name": "Arroz blanco cocido",   "glycemic_index": 73, "carbs_per_100g": 28.2, "fiber_per_100g": 0.4},
+    {"name": "Arroz integral cocido", "glycemic_index": 50, "carbs_per_100g": 23.0, "fiber_per_100g": 1.8},
+    {"name": "Pan blanco",            "glycemic_index": 75, "carbs_per_100g": 49.0, "fiber_per_100g": 2.7},
+    {"name": "Pan integral",          "glycemic_index": 51, "carbs_per_100g": 41.0, "fiber_per_100g": 6.0},
+    {"name": "Pasta cocida",          "glycemic_index": 55, "carbs_per_100g": 25.0, "fiber_per_100g": 1.8},
+    {"name": "Patata cocida",         "glycemic_index": 78, "carbs_per_100g": 17.0, "fiber_per_100g": 1.3},
+    {"name": "Patata frita",          "glycemic_index": 63, "carbs_per_100g": 35.0, "fiber_per_100g": 3.4},
+    {"name": "Manzana",               "glycemic_index": 36, "carbs_per_100g": 13.8, "fiber_per_100g": 2.4},
+    {"name": "Plátano",               "glycemic_index": 51, "carbs_per_100g": 22.8, "fiber_per_100g": 2.6},
+    {"name": "Naranja",               "glycemic_index": 43, "carbs_per_100g": 11.8, "fiber_per_100g": 2.4},
+    {"name": "Uvas",                  "glycemic_index": 59, "carbs_per_100g": 17.2, "fiber_per_100g": 0.9},
+    {"name": "Sandía",                "glycemic_index": 72, "carbs_per_100g": 7.6,  "fiber_per_100g": 0.4},
+    {"name": "Fresas",                "glycemic_index": 40, "carbs_per_100g": 7.7,  "fiber_per_100g": 2.0},
+    {"name": "Lentejas cocidas",      "glycemic_index": 32, "carbs_per_100g": 20.1, "fiber_per_100g": 7.9},
+    {"name": "Garbanzos cocidos",     "glycemic_index": 28, "carbs_per_100g": 27.4, "fiber_per_100g": 7.6},
+    {"name": "Leche entera",          "glycemic_index": 31, "carbs_per_100g": 4.8,  "fiber_per_100g": 0.0},
+    {"name": "Yogur natural",         "glycemic_index": 35, "carbs_per_100g": 6.0,  "fiber_per_100g": 0.0},
+    {"name": "Zumo de naranja",       "glycemic_index": 50, "carbs_per_100g": 10.4, "fiber_per_100g": 0.2},
+    {"name": "Coca-Cola 33cl",        "glycemic_index": 63, "carbs_per_100g": 10.6, "fiber_per_100g": 0.0},
+    {"name": "Chocolate negro 70%",   "glycemic_index": 23, "carbs_per_100g": 44.0, "fiber_per_100g": 10.9},
+    {"name": "Galletas tipo María",   "glycemic_index": 70, "carbs_per_100g": 74.4, "fiber_per_100g": 2.0},
+    {"name": "Copos de avena",        "glycemic_index": 55, "carbs_per_100g": 58.7, "fiber_per_100g": 10.1},
+    {"name": "Maíz dulce",            "glycemic_index": 52, "carbs_per_100g": 18.7, "fiber_per_100g": 2.7},
+    {"name": "Zanahoria cruda",       "glycemic_index": 16, "carbs_per_100g": 9.6,  "fiber_per_100g": 2.8},
+    {"name": "Tomate",                "glycemic_index": 15, "carbs_per_100g": 3.9,  "fiber_per_100g": 1.2},
+]
+
+
+@router.post("/ingredients/seed", response_model=dict)
+def seed_ingredients(
+    repo: NutritionRepository = Depends(get_nutrition_repo),
+):
+    """Puebla la base de datos con ingredientes comunes si aún no existen."""
+    inserted = repo.bulk_create_ingredients(_SEED_INGREDIENTS)
+    return {"inserted": inserted, "total_available": len(_SEED_INGREDIENTS)}
 
 @router.post("/bolus/calculate", response_model=BolusCalcResponse)
 def calculate_bolus(

@@ -1,353 +1,215 @@
-# 📋 Plan de Desarrollo - DiaBeaty Mobile
+# 📋 Arquitectura Frontend — DiaBeaty Mobile
 
-## 🎯 Objetivo del Proyecto
+> Última actualización: 2026-02-22 · Flutter 3.19 · 36 tests ✅
 
-Aplicación móvil multiplataforma para gestión de diabetes con **Dual UX** (Modo Adulto/Modo Niño) integrada con backend FastAPI.
+## 🎯 Objetivo
+
+Aplicación web/móvil multiplataforma para gestión de diabetes con **Dual UX** (Modo Adulto/Modo Niño), integrada con el backend FastAPI mediante Clean Architecture y BLoC pattern.
 
 ---
 
-## 🏗️ Arquitectura Técnica
+## 🏗️ Clean Architecture — 3 Capas
 
-### Clean Architecture - 3 Capas
-
-#### 1️⃣ **Presentation Layer** (UI + State)
+### 1. Presentation Layer (UI + State)
 
 ```
 presentation/
 ├── bloc/
-│   ├── auth/           # AuthBloc (Login, Register, Logout)
-│   ├── theme/          # ThemeBloc (Dual UX Toggle)
-│   ├── bolus/          # BolusBloc (Cálculo de insulina)
-│   └── nutrition/      # NutritionBloc (Búsqueda de ingredientes)
+│   ├── auth/         # AuthBloc: Login, Register, SwitchProfile, RefreshSelectedProfile
+│   ├── theme/        # ThemeBloc: SwitchTheme (Adult↔Child automático por perfil)
+│   ├── profile/      # ProfileBloc: XP, achievements, nivel gamificado
+│   └── nutrition/    # NutritionBloc: tray, bolus, historial, búsqueda
 ├── screens/
-│   ├── auth/           # Login, Register
-│   ├── home/           # Dashboard principal
-│   ├── bolus/          # Calculadora de bolus
-│   └── profile/        # Perfil de usuario
+│   ├── auth/         # login_screen.dart
+│   ├── dashboard/    # dashboard_screen.dart (Dual UX)
+│   ├── glucose/      # add_glucose_screen.dart, glucose_history_screen.dart
+│   ├── nutrition/    # nutrition_hub_screen.dart, log_meal_screen.dart, meal_history_screen.dart
+│   └── profile/      # profile_screen.dart, adult/child_profile_screen.dart, edit_patient_screen.dart
 └── widgets/
-    ├── dual_ux/        # Componentes que cambian según UiMode
-    └── common/         # Componentes compartidos
+    ├── glucose_chart.dart              # Gráfica con marcadores de insulina ▲
+    ├── conditional_medical_fields.dart  # ISF/ICR condicionales por tipo de terapia
+    └── basal_insulin_fields.dart        # Insulina basal (tipo, unidades, hora)
 ```
 
-#### 2️⃣ **Domain Layer** (Business Logic)
+### 2. Domain Layer (Business Logic)
 
 ```
 domain/
-├── entities/
-│   ├── user.dart
-│   ├── bolus_calculation.dart
-│   └── ingredient.dart
-└── repositories/
-    ├── auth_repository.dart
-    └── nutrition_repository.dart
+├── entities/         # Entidades puras (User, Ingredient, BolusCal...)
+└── repositories/     # Interfaces abstractas
 ```
 
-#### 3️⃣ **Data Layer** (API + Storage)
+### 3. Data Layer (API + Storage)
 
 ```
 data/
 ├── models/
-│   ├── auth_models.dart        # LoginRequest, UserPublic
-│   ├── bolus_models.dart       # BolusRequest, BolusResponse
-│   └── nutrition_models.dart   # Ingredient
+│   ├── auth_models.dart          # LoginRequest, UserPublicResponse, PatientProfile
+│   ├── auth_models.g.dart        # (generado)
+│   ├── nutrition_models.dart     # Ingredient(id:String), TrayItem, MealLogEntry
+│   └── nutrition_models.g.dart   # (generado)
 ├── datasources/
-│   ├── auth_api_client.dart    # Retrofit API
-│   └── nutrition_api_client.dart
+│   ├── auth_api_client.dart      # Retrofit: Auth + Family endpoints
+│   └── nutrition_api_client.dart # Retrofit: Nutrition endpoints
 └── repositories/
-    └── auth_repository_impl.dart
+    └── family_repository.dart    # getProfiles, getProfileDetails, updateProfile
 ```
 
 ---
 
 ## 🎨 Sistema de Dual UX
 
-### Modo Adulto 🧑‍⚕️
+### Modo Adulto (Técnico) 🧑‍⚕️
 
-**Filosofía**: Eficiencia, datos, control médico
-
-| Elemento | Diseño |
-|----------|--------|
+| Elemento | Valor |
+|----------|-------|
 | **Colores** | Azul #2563EB, Violeta #7C3AED, Verde #059669 |
-| **Tipografía** | Sans-serif, 14-16px, peso normal |
-| **Componentes** | Cards planas, bordes sutiles (8px) |
-| **Dashboard** | Gráficos de línea, métricas numéricas |
-| **Navegación** | Bottom Nav clásico |
+| **Tipografía** | Sans-serif, 14–16px, peso normal |
+| **Componentes** | Cards planas, bordes 8px radius |
+| **Dashboard** | Gráficos de glucosa, métricas numéricas, ICR/ISF explícitos |
+| **Bolus** | Color verde ≤2U · naranja 2–5U · rojo >5U |
 
-### Modo Niño 🎮
+### Modo Niño (Gamificado) 🎮
 
-**Filosofía**: Gamificación, aventura, recompensas
-
-| Elemento | Diseño |
-|----------|--------|
+| Elemento | Valor |
+|----------|-------|
 | **Colores** | Rosa #EC4899, Ámbar #F59E0B, Violeta #8B5CF6 |
-| **Tipografía** | Redondeada, 18-20px, peso bold |
-| **Componentes** | Cards elevadas (24px radius), sombras |
-| **Dashboard** | Barras de progreso, avatares, medallas |
-| **Navegación** | Iconos grandes con animaciones |
+| **Tipografía** | Redondeada, 18–20px, peso bold |
+| **Componentes** | Cards elevadas, radius 24px, sombras |
+| **Dashboard** | Avatar, barra de salud, medallas, nivel XP |
+| **Bolus** | "¡Lista tu poción!" con colores de rareza |
+
+**El `ThemeBloc` escucha al `AuthBloc`**: al hacer `SwitchProfile`, el tema cambia automáticamente según `patientProfile.themePreference` (`adult` | `child`).
 
 ---
 
-## 🔐 Flujo de Autenticación
+## 🔐 Flujo de Autenticación y Perfiles
 
 ```
-┌─────────────┐
-│ LoginScreen │
-└──────┬──────┘
-       │
-       ├─► AuthBloc.LoginRequested(email, password)
-       │
-       ├─► AuthApiClient.login() → POST /api/v1/auth/login
-       │
-       ├─► Response: { access_token, token_type }
-       │
-       ├─► FlutterSecureStorage.write('access_token', token)
-       │
-       └─► AuthBloc.emit(AuthAuthenticated)
-           │
-           └─► Navigate to HomeScreen
+LoginScreen
+  └─► AuthBloc.LoginRequested(email, password)
+        └─► POST /api/v1/auth/login → JWT
+              └─► GET /api/v1/family/profiles → List<PatientProfile>
+                    └─► ProfileSelectionScreen
+                          └─► AuthBloc.SwitchProfile(profile)
+                                └─► AuthAuthenticated(user, selectedProfile)
+                                      └─► ThemeBloc.SwitchTheme(profile.theme)
+                                            └─► DashboardScreen (Adult|Child)
 ```
 
-### Interceptor JWT Automático
+### RefreshSelectedProfile
 
-```dart
-// DioClient añade automáticamente:
-headers['Authorization'] = 'Bearer <token>'
-
-// Solo en rutas protegidas:
-- /api/v1/nutrition/*
-- /api/v1/users/me
-```
+Después de guardar datos del perfil (`AdultProfileScreen`), se dispara `RefreshSelectedProfile` para que `AuthBloc` recargue los datos médicos del perfil activo (ICR/ISF/rangos) sin necesidad de cerrar sesión.
 
 ---
 
-## 📊 Pantallas Principales
+## 🍎 Hub Nutricional (NutritionBloc)
 
-### 1. Login Screen ✅ (Implementado)
+El `NutritionBloc` gestiona una **bandeja multi-ingrediente** con el estado `MealTrayUpdated`:
 
-- Dual UX completo
-- Validación de formularios
-- Manejo de errores
-- Toggle de modo
-
-### 2. Home Screen (Próximo)
-
-**Modo Adulto**:
-
-- Gráfico de glucosa (últimas 24h)
-- Última medición destacada
-- Acceso rápido a Bolus Calculator
-- Historial de comidas
-
-**Modo Niño**:
-
-- Avatar con barra de salud
-- Quest del día: "Registra 3 comidas"
-- Medallas ganadas
-- Botón grande: "¡Calcular Insulina!"
-
-### 3. Bolus Calculator
-
-**Endpoint**: `POST /api/v1/nutrition/calculate-bolus`
-
-**Request**:
-
-```json
-{
-  "total_carbs": 45.5,
-  "current_glucose": 180
+```
+MealTrayUpdated {
+  tray: List<TrayItem>        // ingredientes añadidos
+  searchResults: List<Ingredient>  // resultados búsqueda activos
 }
 ```
 
-**Response**:
+**Invariante clave**: Cuando el usuario busca mientras tiene ingredientes en la bandeja, el bloc emite `copyWith(searchResults: results)` — preservando la bandeja. Esto evita resetear el estado de la bandeja por una búsqueda.
 
-```json
-{
-  "units": 3.5,
-  "breakdown": {
-    "carb_insulin": 2.0,
-    "correction_insulin": 1.5
-  }
-}
+### Flujo completo (LogMealScreen)
+
 ```
-
-### 4. Ingredient Search
-
-**Endpoint**: `GET /api/v1/nutrition/ingredients?q=arroz`
-
-**Modo Adulto**: Lista con tabla nutricional
-**Modo Niño**: Cards con iconos de comida
-
----
-
-## 🧪 Testing Strategy
-
-### Unit Tests
-
-```dart
-test/
-├── bloc/
-│   ├── auth_bloc_test.dart
-│   └── theme_bloc_test.dart
-├── models/
-│   └── auth_models_test.dart
-└── repositories/
-    └── auth_repository_test.dart
-```
-
-### Widget Tests
-
-```dart
-test/
-└── screens/
-    ├── login_screen_test.dart
-    └── home_screen_test.dart
-```
-
-### Integration Tests
-
-```dart
-integration_test/
-└── app_test.dart  # Flujo completo: Login → Home → Bolus
+Buscar ingrediente
+  └─► SearchIngredients → MealTrayUpdated(tray, searchResults)
+        └─► AddIngredientToTray → MealTrayUpdated(tray+1, results)
+              └─► CalculateBolusForTray → TrayBolusCalculated(result, tray)
+                    └─► (usuario ajusta dosis)
+                          └─► CommitMealFromTray → MealHistoryLoaded
 ```
 
 ---
 
-## 📦 Generación de Código
+## 📱 Pantallas Implementadas
 
-### Comandos Necesarios
+### Dashboard (`dashboard_screen.dart`)
+
+| Sección | Adulto | Niño |
+|---------|--------|------|
+| Gráfica glucosa | Línea con rangos color | Barra de "salud" |
+| Lectura actual | Número + color rango | Estado del avatar |
+| Nav inferior | Inicio · Comidas · Glucosa · Perfil | Mismos, iconos grandes |
+| Insulina history | Botón "Historial Insulina" | Botón "Mis Dosis" |
+
+### NutritionHubScreen
+
+5 secciones accesibles desde el botón "Comidas":
+1. **Resumen del día** — CHO total, carga glucémica, insulina administrada
+2. **Hero "Registrar Comida"** — abre LogMealScreen (bandeja multi-ingrediente)
+3. **Dosis rápida de insulina** — log directo sin comida
+4. **Guía de Índice Glucémico** — tabla de referencia (ExpansionTile)
+5. **Comidas recientes** — las últimas 5 del historial
+
+### LogMealScreen
+
+Flujo completo de registro de comida:
+- Búsqueda incremental con debounce 500ms
+- Bandeja con remove y totales en tiempo real
+- FAB "Calcular bolus (N)" habilitado solo con bandeja no vacía
+- Vista de resultado con desglose por ingrediente
+- Campo editable de dosis administrada
+- Botón "Registrar Comida" → CommitMealFromTray
+
+### AdultProfileScreen
+
+Replica exacta de `EditPatientScreen` (vista del perfil desde el miembro seleccionado):
+- Carga `getProfileDetails()` en init para obtener campos médicos cifrados
+- Formulario: tipo diabetes, tipo terapia, ISF, ICR, glucosa objetivo, rangos bajo/alto, insulina basal
+- Oculta "Cambiar Contraseña" para perfiles DEPENDENT
+- Al guardar: `updateProfile()` + `RefreshSelectedProfile`
+
+---
+
+## 🧪 Testing
 
 ```bash
-# Generar modelos JSON
-flutter pub run build_runner build --delete-conflicting-outputs
-
-# Archivos generados:
-# - auth_models.g.dart
-# - bolus_models.g.dart
-# - nutrition_models.g.dart
-# - auth_api_client.g.dart
+cd frontend && flutter test
 ```
+
+| Test File | Tests | Descripción |
+|-----------|-------|-------------|
+| `auth_bloc_test.dart` | 9 | Login, logout, switch profile |
+| `nutrition_bloc_test.dart` | 8 | Búsqueda, bolus, perfil params |
+| `nutrition_tray_bloc_test.dart` | 6 | Bandeja multi-ingrediente |
+| `member_profile_view_test.dart` | 6 | Vista perfil miembro activo |
+| `conditional_medical_fields_test.dart` | 7 | Campos condicionales por terapia |
+| **Total** | **36** | ✅ All passing |
 
 ---
 
-## 🚀 Roadmap de Desarrollo
+## 🛠️ Code Generation
 
-### Sprint 1: Fundamentos ✅
+El proyecto usa `json_serializable` y `retrofit` para generar código boilerplate:
 
-- [x] Estructura Clean Architecture
-- [x] Sistema de Temas Duales
-- [x] BLoC de Autenticación
-- [x] Login Screen con Dual UX
-- [x] Cliente HTTP con JWT
+```bash
+cd frontend
+dart run build_runner build --delete-conflicting-outputs
+```
 
-### Sprint 2: Dashboard (2 semanas)
-
-- [ ] Home Screen Dual UX
-- [ ] Gráficos de glucosa (fl_chart)
-- [ ] Widget de última medición
-- [ ] Navegación entre pantallas
-
-### Sprint 3: Bolus Calculator (1 semana)
-
-- [ ] Pantalla de cálculo
-- [ ] Integración con API
-- [ ] Historial de cálculos
-- [ ] Modo Niño: "Misión Insulina"
-
-### Sprint 4: Nutrition (2 semanas)
-
-- [ ] Búsqueda de ingredientes
-- [ ] Registro de comidas
-- [ ] Scanner de códigos de barras
-- [ ] Base de datos local (Hive)
-
-### Sprint 5: Gamificación (1 semana)
-
-- [ ] Sistema de Quests
-- [ ] Logros y medallas
-- [ ] Avatar personalizable
-- [ ] Animaciones Lottie
-
-### Sprint 6: Polish & Deploy (1 semana)
-
-- [ ] Testing completo
-- [ ] Optimización de rendimiento
-- [ ] Build para Android/iOS/Web
-- [ ] Documentación final
+Archivos generados (no editar manualmente):
+- `lib/data/models/*.g.dart`
+- `lib/data/datasources/*.g.dart`
 
 ---
 
-## 🔧 Configuración de Entorno
+## 📦 Dependencias Clave
 
-### Requisitos
-
-- Flutter SDK >= 3.2.0
-- Dart SDK >= 3.0.0
-- Android Studio / Xcode
-- VS Code con extensiones Flutter
-
-### Variables de Entorno
-
-```dart
-// lib/core/constants/app_constants.dart
-static const String baseUrl = 'https://diabetics-api.jljimenez.es';
-```
-
-### Configuración de Plataformas
-
-#### Android (`android/app/build.gradle`)
-
-```gradle
-minSdkVersion 21
-targetSdkVersion 34
-```
-
-#### iOS (`ios/Podfile`)
-
-```ruby
-platform :ios, '12.0'
-```
-
-#### Web (`web/index.html`)
-
-```html
-<meta name="description" content="DiaBeaty - Gestión de Diabetes">
-```
-
----
-
-## 📚 Recursos de Referencia
-
-### Documentación
-
-- [Flutter Docs](https://docs.flutter.dev/)
-- [BLoC Pattern](https://bloclibrary.dev/)
-- [Retrofit](https://pub.dev/packages/retrofit)
-
-### API Backend
-
-- Swagger: `docs/swagger.json`
-- Base URL: <https://diabetics-api.jljimenez.es>
-
-### Diseño
-
-- Paletas de colores: Tailwind CSS
-- Iconos: Material Icons
-- Animaciones: Lottie Files
-
----
-
-## 🤝 Contribución
-
-### Flujo de Trabajo
-
-1. Crear branch: `feature/nombre-feature`
-2. Implementar según Clean Architecture
-3. Escribir tests
-4. Pull Request con descripción detallada
-
-### Convenciones de Código
-
-- Nombres en inglés (código)
-- Comentarios en español (documentación)
-- Usar `const` siempre que sea posible
-- Trailing commas en listas
+| Paquete | Versión | Uso |
+|---------|---------|-----|
+| `flutter_bloc` | ^8.1 | BLoC pattern |
+| `dio` | ^5.0 | HTTP client |
+| `retrofit` | ^4.0 | Type-safe API client |
+| `json_annotation` | ^4.8 | JSON serialization |
+| `flutter_secure_storage` | ^9.0 | Token storage |
+| `fl_chart` | ^0.68 | Gráficas de glucosa |
+| `equatable` | ^2.0 | Estado BLoC equality |
+| `rxdart` | ^0.27 | debounceTime para búsqueda |

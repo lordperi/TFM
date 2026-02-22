@@ -1,489 +1,2700 @@
 {
-    "openapi": "3.1.0",
-    "info": {
-        "title": "Diabetics Platform API",
-        "version": "0.1.0",
-        "description": "API para gestión de diabetes con cálculo de bolus, registro de comidas y análisis nutricional."
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Diabetics Platform API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "servers": [
-        {
-            "url": "https://diabetics-api.jljimenez.es",
-            "description": "Production Server"
+    "/api/v1/users/register": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Register User",
+        "description": "Register a new user with their medical profile.\nPasswords are hashed (Bcrypt).\nSensitive Health Data is encrypted (Fernet).",
+        "operationId": "register_user_api_v1_users_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
         },
-        {
-            "url": "http://localhost:8000",
-            "description": "Local Development"
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
         }
-    ],
-    "paths": {
-        "/health": {
-            "get": {
-                "tags": [
-                    "Health"
-                ],
-                "summary": "Health Check",
-                "description": "Verifica el estado del sistema y la conexión a la base de datos",
-                "operationId": "health_check",
-                "responses": {
-                    "200": {
-                        "description": "Sistema operativo",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "status": {
-                                            "type": "string"
-                                        },
-                                        "database": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/users/register": {
-            "post": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Register User",
-                "description": "Registra un nuevo usuario con su perfil de salud cifrado",
-                "operationId": "register_user",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UserCreate"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Usuario creado exitosamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/UserPublic"
-                                }
-                            }
-                        }
-                    },
-                    "409": {
-                        "description": "Email ya registrado"
-                    }
-                }
-            }
-        },
-        "/api/v1/auth/login": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Login",
-                "description": "Autenticación de usuario y obtención de token JWT",
-                "operationId": "login",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "username": {
-                                        "type": "string",
-                                        "format": "email"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password"
-                                    }
-                                },
-                                "required": [
-                                    "username",
-                                    "password"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Login exitoso",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "access_token": {
-                                            "type": "string"
-                                        },
-                                        "token_type": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Credenciales incorrectas"
-                    }
-                }
-            }
-        },
-        "/api/v1/nutrition/calculate-bolus": {
-            "post": {
-                "tags": [
-                    "Nutrition"
-                ],
-                "summary": "Calculate Bolus",
-                "description": "Calcula la dosis de insulina recomendada basada en carbohidratos y glucosa actual",
-                "operationId": "calculate_bolus",
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/BolusRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Cálculo exitoso",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/BolusResponse"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "No autenticado"
-                    },
-                    "404": {
-                        "description": "Usuario no encontrado"
-                    }
-                }
-            }
-        },
-        "/api/v1/nutrition/ingredients": {
-            "post": {
-                "tags": [
-                    "Nutrition"
-                ],
-                "summary": "Create Ingredient",
-                "description": "Añade un nuevo ingrediente a la base de datos nutricional",
-                "operationId": "create_ingredient",
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/IngredientCreate"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Ingrediente creado",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/IngredientResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "get": {
-                "tags": [
-                    "Nutrition"
-                ],
-                "summary": "Search Ingredients",
-                "description": "Busca ingredientes por nombre",
-                "operationId": "search_ingredients",
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "q",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        },
-                        "description": "Término de búsqueda"
-                    },
-                    {
-                        "name": "skip",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "default": 0
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "default": 10
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Lista de ingredientes",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/IngredientResponse"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+      }
     },
-    "components": {
-        "schemas": {
-            "UserCreate": {
-                "type": "object",
-                "required": [
-                    "email",
-                    "password",
-                    "health_profile"
-                ],
-                "properties": {
-                    "email": {
-                        "type": "string",
-                        "format": "email"
-                    },
-                    "password": {
-                        "type": "string",
-                        "minLength": 8
-                    },
-                    "full_name": {
-                        "type": "string"
-                    },
-                    "health_profile": {
-                        "$ref": "#/components/schemas/HealthProfileCreate"
-                    }
+    "/api/v1/users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get Current User Profile",
+        "description": "Get current authenticated user's profile including health data.",
+        "operationId": "get_current_user_profile_api_v1_users_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
                 }
-            },
-            "UserPublic": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email"
-                    },
-                    "full_name": {
-                        "type": "string"
-                    },
-                    "is_active": {
-                        "type": "boolean"
-                    },
-                    "health_profile": {
-                        "$ref": "#/components/schemas/HealthProfile"
-                    }
-                }
-            },
-            "HealthProfileCreate": {
-                "type": "object",
-                "required": [
-                    "diabetes_type",
-                    "insulin_sensitivity",
-                    "carb_ratio"
-                ],
-                "properties": {
-                    "diabetes_type": {
-                        "type": "string",
-                        "enum": [
-                            "type_1",
-                            "type_2",
-                            "gestational",
-                            "lada",
-                            "mody"
-                        ]
-                    },
-                    "insulin_sensitivity": {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 500,
-                        "description": "Caída de glucosa (mg/dL) por 1 unidad de insulina"
-                    },
-                    "carb_ratio": {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 150,
-                        "description": "Gramos de carbohidratos cubiertos por 1 unidad"
-                    },
-                    "target_glucose": {
-                        "type": "integer",
-                        "minimum": 70,
-                        "maximum": 180,
-                        "default": 100,
-                        "description": "Objetivo glucémico (mg/dL)"
-                    }
-                }
-            },
-            "HealthProfile": {
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/HealthProfileCreate"
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "user_id": {
-                                "type": "string",
-                                "format": "uuid"
-                            }
-                        }
-                    }
-                ]
-            },
-            "BolusRequest": {
-                "type": "object",
-                "required": [
-                    "total_carbs",
-                    "current_glucose"
-                ],
-                "properties": {
-                    "total_carbs": {
-                        "type": "number",
-                        "minimum": 0,
-                        "description": "Total de carbohidratos en gramos"
-                    },
-                    "current_glucose": {
-                        "type": "number",
-                        "minimum": 0,
-                        "description": "Glucosa actual en mg/dL"
-                    },
-                    "target_glucose": {
-                        "type": "number",
-                        "minimum": 70,
-                        "default": 100,
-                        "description": "Objetivo de glucosa (override)"
-                    },
-                    "icr": {
-                        "type": "number",
-                        "minimum": 0,
-                        "description": "Insulin-to-Carb Ratio (override)"
-                    },
-                    "isf": {
-                        "type": "number",
-                        "minimum": 0,
-                        "description": "Insulin Sensitivity Factor (override)"
-                    }
-                }
-            },
-            "BolusResponse": {
-                "type": "object",
-                "properties": {
-                    "units": {
-                        "type": "number",
-                        "description": "Unidades totales de insulina recomendadas"
-                    },
-                    "breakdown": {
-                        "type": "object",
-                        "properties": {
-                            "carb_insulin": {
-                                "type": "number"
-                            },
-                            "correction_insulin": {
-                                "type": "number"
-                            }
-                        }
-                    }
-                }
-            },
-            "IngredientCreate": {
-                "type": "object",
-                "required": [
-                    "name",
-                    "glycemic_index",
-                    "carbs_per_100g"
-                ],
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "glycemic_index": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 100
-                    },
-                    "carbs_per_100g": {
-                        "type": "number",
-                        "minimum": 0
-                    },
-                    "fiber_per_100g": {
-                        "type": "number",
-                        "minimum": 0,
-                        "default": 0
-                    },
-                    "barcode": {
-                        "type": "string"
-                    }
-                }
-            },
-            "IngredientResponse": {
-                "allOf": [
-                    {
-                        "$ref": "#/components/schemas/IngredientCreate"
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "id": {
-                                "type": "string",
-                                "format": "uuid"
-                            }
-                        }
-                    }
-                ]
+              }
             }
+          }
         },
-        "securitySchemes": {
-            "BearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT"
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/health-profile": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update Health Profile",
+        "description": "Update current user's health profile.\nAll fields are optional - only provided fields will be updated.",
+        "operationId": "update_health_profile_api_v1_users_me_health_profile_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HealthProfileUpdate"
+              }
             }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/change-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Change Password",
+        "description": "Change current user's password.\nRequires old password for verification.",
+        "operationId": "change_password_api_v1_users_me_change_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/xp-history": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get Xp History",
+        "description": "Get current user's XP transaction history.\nReturns recent XP gains/losses with descriptions.",
+        "operationId": "get_xp_history_api_v1_users_me_xp_history_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/XPTransaction"
+                  },
+                  "title": "Response Get Xp History Api V1 Users Me Xp History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
         }
+      }
+    },
+    "/api/v1/users/me/xp-summary": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get Xp Summary",
+        "description": "Get current user's XP summary including:\n- Total XP\n- Current level\n- XP needed for next level\n- Progress percentage\n- Recent transactions",
+        "operationId": "get_xp_summary_api_v1_users_me_xp_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserXPSummary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/achievements": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get User Achievements",
+        "description": "Get user's achievements status.\nReturns both unlocked and locked achievements.",
+        "operationId": "get_user_achievements_api_v1_users_me_achievements_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login For Access Token",
+        "operationId": "login_for_access_token_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_for_access_token_api_v1_auth_login_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/nutrition/ingredients": {
+      "get": {
+        "tags": [
+          "Nutrition Engine"
+        ],
+        "summary": "Search Ingredients",
+        "description": "Búsqueda por nombre de ingredientes.",
+        "operationId": "search_ingredients_api_v1_nutrition_ingredients_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "description": "Nombre del alimento a buscar",
+              "title": "Q"
+            },
+            "description": "Nombre del alimento a buscar"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IngredientResponse"
+                  },
+                  "title": "Response Search Ingredients Api V1 Nutrition Ingredients Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Nutrition Engine"
+        ],
+        "summary": "Create Ingredient",
+        "description": "Crea un nuevo ingrediente en la base de datos.",
+        "operationId": "create_ingredient_api_v1_nutrition_ingredients_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngredientCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/nutrition/ingredients/seed": {
+      "post": {
+        "tags": [
+          "Nutrition Engine"
+        ],
+        "summary": "Seed Ingredients",
+        "description": "Puebla la base de datos con ingredientes comunes si aún no existen.",
+        "operationId": "seed_ingredients_api_v1_nutrition_ingredients_seed_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Seed Ingredients Api V1 Nutrition Ingredients Seed Post"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/nutrition/bolus/calculate": {
+      "post": {
+        "tags": [
+          "Nutrition Engine"
+        ],
+        "summary": "Calculate Bolus",
+        "description": "Calcula el bolus de insulina basado en carbohidratos, glucemia actual y objetivos.",
+        "operationId": "calculate_bolus_api_v1_nutrition_bolus_calculate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BolusCalcRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BolusCalcResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/nutrition/meals": {
+      "post": {
+        "tags": [
+          "Nutrition Engine"
+        ],
+        "summary": "Log Meal",
+        "description": "Registra una ingesta en el historial del paciente, encriptando notas (PHI).",
+        "operationId": "log_meal_api_v1_nutrition_meals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogMealRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MealLogResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/nutrition/meals/history": {
+      "get": {
+        "tags": [
+          "Nutrition Engine"
+        ],
+        "summary": "Get Meal History",
+        "description": "Devuelve el historial de comidas registradas para un paciente, más reciente primero.",
+        "operationId": "get_meal_history_api_v1_nutrition_meals_history_get",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Patient Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtro fecha inicio (ISO 8601)",
+              "title": "Start Date"
+            },
+            "description": "Filtro fecha inicio (ISO 8601)"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtro fecha fin (ISO 8601)",
+              "title": "End Date"
+            },
+            "description": "Filtro fecha fin (ISO 8601)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MealLogResponse"
+                  },
+                  "title": "Response Get Meal History Api V1 Nutrition Meals History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/family/members": {
+      "get": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Get Family Members",
+        "operationId": "get_family_members_api_v1_family_members_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PatientResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Family Members Api V1 Family Members Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Create Patient Profile",
+        "operationId": "create_patient_profile_api_v1_family_members_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/family/members/{patient_id}/verify-pin": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Verify Patient Pin",
+        "operationId": "verify_patient_pin_api_v1_family_members__patient_id__verify_pin_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinVerificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/family/members/{patient_id}": {
+      "get": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Get Patient Details",
+        "operationId": "get_patient_details_api_v1_family_members__patient_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Update Patient Profile",
+        "operationId": "update_patient_profile_api_v1_family_members__patient_id__patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/family/device-link": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Generate Device Link Code",
+        "operationId": "generate_device_link_code_api_v1_family_device_link_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/glucose/": {
+      "post": {
+        "tags": [
+          "glucose"
+        ],
+        "summary": "Create Glucose Measurement",
+        "description": "Register a new glucose measurement.\nVerifies that the user is the guardian of the patient.",
+        "operationId": "create_glucose_measurement_api_v1_glucose__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Patient Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GlucoseCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlucoseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/glucose/history": {
+      "get": {
+        "tags": [
+          "glucose"
+        ],
+        "summary": "Get Glucose History",
+        "description": "Get glucose history for a patient.",
+        "operationId": "get_glucose_history_api_v1_glucose_history_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Patient Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "title": "End Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GlucoseResponse"
+                  },
+                  "title": "Response Get Glucose History Api V1 Glucose History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
+  },
+  "components": {
+    "schemas": {
+      "BasalInsulinInfo": {
+        "properties": {
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type",
+            "description": "Tipo de insulina basal: Lantus, Levemir, Tresiba, Toujeo"
+          },
+          "units": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units",
+            "description": "Unidades por dosis (0-100)"
+          },
+          "administration_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Administration Time",
+            "description": "Hora de administración en formato HH:MM (ej: 22:00)"
+          }
+        },
+        "type": "object",
+        "title": "BasalInsulinInfo",
+        "description": "Información sobre insulina basal de acción prolongada.\nEjemplos: Lantus, Levemir, Tresiba, Toujeo."
+      },
+      "Body_login_for_access_token_api_v1_auth_login_post": {
+        "properties": {
+          "grant_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^password$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grant Type"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "title": "Password"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": ""
+          },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "password",
+            "title": "Client Secret"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_login_for_access_token_api_v1_auth_login_post"
+      },
+      "BolusCalcRequest": {
+        "properties": {
+          "current_glucose": {
+            "type": "number",
+            "title": "Current Glucose"
+          },
+          "target_glucose": {
+            "type": "number",
+            "title": "Target Glucose"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientInput"
+            },
+            "type": "array",
+            "title": "Ingredients"
+          },
+          "icr": {
+            "type": "number",
+            "title": "Icr",
+            "default": 10.0
+          },
+          "isf": {
+            "type": "number",
+            "title": "Isf",
+            "default": 50.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_glucose",
+          "target_glucose",
+          "ingredients"
+        ],
+        "title": "BolusCalcRequest"
+      },
+      "BolusCalcResponse": {
+        "properties": {
+          "total_carbs_grams": {
+            "type": "number",
+            "title": "Total Carbs Grams"
+          },
+          "recommended_bolus_units": {
+            "type": "number",
+            "title": "Recommended Bolus Units"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_carbs_grams",
+          "recommended_bolus_units"
+        ],
+        "title": "BolusCalcResponse"
+      },
+      "DiabetesType": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "T1",
+          "T2"
+        ],
+        "title": "DiabetesType",
+        "description": "Tipos de diabetes"
+      },
+      "GlucoseCreateRequest": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "maximum": 600.0,
+            "minimum": 20.0,
+            "title": "Value",
+            "description": "Glucose value in mg/dL"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "measurement_type": {
+            "$ref": "#/components/schemas/GlucoseType",
+            "default": "FINGER"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "title": "GlucoseCreateRequest"
+      },
+      "GlucoseResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "patient_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Patient Id"
+          },
+          "glucose_value": {
+            "type": "integer",
+            "title": "Glucose Value"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "measurement_type": {
+            "$ref": "#/components/schemas/GlucoseType"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "patient_id",
+          "glucose_value",
+          "timestamp",
+          "measurement_type"
+        ],
+        "title": "GlucoseResponse"
+      },
+      "GlucoseType": {
+        "type": "string",
+        "enum": [
+          "FINGER",
+          "CGM",
+          "MANUAL"
+        ],
+        "title": "GlucoseType"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthProfile": {
+        "properties": {
+          "diabetes_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiabetesType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "therapy_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TherapyType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Tipo de tratamiento"
+          },
+          "insulin_sensitivity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 500.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insulin Sensitivity",
+            "description": "Caída de glucosa (mg/dL) por 1 unidad de insulina"
+          },
+          "carb_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 150.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carb Ratio",
+            "description": "Gramos de carbohidratos cubiertos por 1 unidad"
+          },
+          "target_glucose": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 180.0,
+                "minimum": 70.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Glucose",
+            "description": "Objetivo glucémico (mg/dL)"
+          },
+          "target_range_low": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 50.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Range Low",
+            "description": "Límite inferior del rango objetivo (e.g. 70)"
+          },
+          "target_range_high": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 300.0,
+                "minimum": 120.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Range High",
+            "description": "Límite superior del rango objetivo (e.g. 180)"
+          },
+          "basal_insulin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BasalInsulinInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "HealthProfile"
+      },
+      "HealthProfileCreate": {
+        "properties": {
+          "diabetes_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiabetesType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "therapy_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TherapyType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Tipo de tratamiento"
+          },
+          "insulin_sensitivity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 500.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insulin Sensitivity",
+            "description": "Caída de glucosa (mg/dL) por 1 unidad de insulina"
+          },
+          "carb_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 150.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carb Ratio",
+            "description": "Gramos de carbohidratos cubiertos por 1 unidad"
+          },
+          "target_glucose": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 180.0,
+                "minimum": 70.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Glucose",
+            "description": "Objetivo glucémico (mg/dL)"
+          },
+          "target_range_low": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 50.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Range Low",
+            "description": "Límite inferior del rango objetivo (e.g. 70)"
+          },
+          "target_range_high": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 300.0,
+                "minimum": 120.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Range High",
+            "description": "Límite superior del rango objetivo (e.g. 180)"
+          },
+          "basal_insulin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BasalInsulinInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "HealthProfileCreate"
+      },
+      "HealthProfileUpdate": {
+        "properties": {
+          "diabetes_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiabetesType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "therapy_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TherapyType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "insulin_sensitivity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 500.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insulin Sensitivity"
+          },
+          "carb_ratio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 150.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carb Ratio"
+          },
+          "target_glucose": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 180.0,
+                "minimum": 70.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Glucose"
+          },
+          "basal_insulin_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Type"
+          },
+          "basal_insulin_units": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Units"
+          },
+          "basal_insulin_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Time"
+          }
+        },
+        "type": "object",
+        "title": "HealthProfileUpdate",
+        "description": "Model for updating health profile (all fields optional)"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "HealthResponse"
+      },
+      "IngredientCreateRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "glycemic_index": {
+            "type": "integer",
+            "title": "Glycemic Index"
+          },
+          "carbs_per_100g": {
+            "type": "number",
+            "title": "Carbs Per 100G"
+          },
+          "fiber_per_100g": {
+            "type": "number",
+            "title": "Fiber Per 100G",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "glycemic_index",
+          "carbs_per_100g"
+        ],
+        "title": "IngredientCreateRequest"
+      },
+      "IngredientInput": {
+        "properties": {
+          "ingredient_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ingredient Id"
+          },
+          "weight_grams": {
+            "type": "number",
+            "title": "Weight Grams"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ingredient_id",
+          "weight_grams"
+        ],
+        "title": "IngredientInput"
+      },
+      "IngredientResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "glycemic_index": {
+            "type": "integer",
+            "title": "Glycemic Index"
+          },
+          "carbs": {
+            "type": "number",
+            "title": "Carbs"
+          },
+          "fiber_per_100g": {
+            "type": "number",
+            "title": "Fiber Per 100G"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "glycemic_index",
+          "carbs",
+          "fiber_per_100g"
+        ],
+        "title": "IngredientResponse"
+      },
+      "LogMealRequest": {
+        "properties": {
+          "patient_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Patient Id"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientInput"
+            },
+            "type": "array",
+            "title": "Ingredients"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "bolus_units_administered": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bolus Units Administered"
+          }
+        },
+        "type": "object",
+        "required": [
+          "patient_id",
+          "ingredients"
+        ],
+        "title": "LogMealRequest"
+      },
+      "MealLogResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "patient_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Patient Id"
+          },
+          "total_carbs_grams": {
+            "type": "number",
+            "title": "Total Carbs Grams"
+          },
+          "total_glycemic_load": {
+            "type": "number",
+            "title": "Total Glycemic Load"
+          },
+          "bolus_units_administered": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bolus Units Administered"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "patient_id",
+          "total_carbs_grams",
+          "total_glycemic_load"
+        ],
+        "title": "MealLogResponse"
+      },
+      "PasswordChange": {
+        "properties": {
+          "old_password": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Old Password",
+            "description": "Current password"
+          },
+          "new_password": {
+            "type": "string",
+            "minLength": 8,
+            "title": "New Password",
+            "description": "New password (min 8 characters)"
+          },
+          "confirm_password": {
+            "type": "string",
+            "minLength": 8,
+            "title": "Confirm Password",
+            "description": "Confirm new password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "old_password",
+          "new_password",
+          "confirm_password"
+        ],
+        "title": "PasswordChange",
+        "description": "Model for password change requests"
+      },
+      "PatientCreateRequest": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "theme_preference": {
+            "type": "string",
+            "title": "Theme Preference",
+            "default": "adult"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "default": "DEPENDENT"
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "pin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pin"
+          },
+          "diabetes_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiabetesType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "therapy_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TherapyType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "insulin_sensitivity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insulin Sensitivity"
+          },
+          "carb_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carb Ratio"
+          },
+          "target_glucose": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Glucose"
+          },
+          "target_range_low": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Range Low"
+          },
+          "target_range_high": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Range High"
+          },
+          "basal_insulin_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Type"
+          },
+          "basal_insulin_units": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Units"
+          },
+          "basal_insulin_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "display_name"
+        ],
+        "title": "PatientCreateRequest"
+      },
+      "PatientDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "theme_preference": {
+            "type": "string",
+            "title": "Theme Preference"
+          },
+          "login_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Login Code"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "is_protected": {
+            "type": "boolean",
+            "title": "Is Protected"
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "diabetes_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diabetes Type"
+          },
+          "therapy_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Therapy Type"
+          },
+          "insulin_sensitivity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insulin Sensitivity"
+          },
+          "carb_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carb Ratio"
+          },
+          "target_glucose": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Glucose"
+          },
+          "target_range_low": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Range Low"
+          },
+          "target_range_high": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Range High"
+          },
+          "basal_insulin_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Type"
+          },
+          "basal_insulin_units": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Units"
+          },
+          "basal_insulin_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "display_name",
+          "theme_preference",
+          "role",
+          "is_protected"
+        ],
+        "title": "PatientDetailResponse"
+      },
+      "PatientResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "theme_preference": {
+            "type": "string",
+            "title": "Theme Preference"
+          },
+          "login_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Login Code"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "is_protected": {
+            "type": "boolean",
+            "title": "Is Protected"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "display_name",
+          "theme_preference",
+          "role",
+          "is_protected"
+        ],
+        "title": "PatientResponse"
+      },
+      "PatientUpdateRequest": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "theme_preference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Theme Preference"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "birth_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Date"
+          },
+          "pin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pin"
+          },
+          "diabetes_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiabetesType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "therapy_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TherapyType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "insulin_sensitivity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insulin Sensitivity"
+          },
+          "carb_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carb Ratio"
+          },
+          "target_glucose": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Glucose"
+          },
+          "target_range_low": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Range Low"
+          },
+          "target_range_high": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Range High"
+          },
+          "basal_insulin_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Type"
+          },
+          "basal_insulin_units": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Units"
+          },
+          "basal_insulin_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basal Insulin Time"
+          }
+        },
+        "type": "object",
+        "title": "PatientUpdateRequest"
+      },
+      "PinVerificationRequest": {
+        "properties": {
+          "pin": {
+            "type": "string",
+            "title": "Pin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pin"
+        ],
+        "title": "PinVerificationRequest"
+      },
+      "TherapyType": {
+        "type": "string",
+        "enum": [
+          "INSULIN",
+          "ORAL_MEDICATION",
+          "MIXED",
+          "NONE"
+        ],
+        "title": "TherapyType",
+        "description": "Tipos de tratamiento para diabetes"
+      },
+      "Token": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type"
+        ],
+        "title": "Token"
+      },
+      "UserCreate": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "title": "Password",
+            "description": "Plain password to be hashed"
+          },
+          "health_profile": {
+            "$ref": "#/components/schemas/HealthProfileCreate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password",
+          "health_profile"
+        ],
+        "title": "UserCreate"
+      },
+      "UserPublic": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "health_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HealthProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "id",
+          "is_active"
+        ],
+        "title": "UserPublic"
+      },
+      "UserXPSummary": {
+        "properties": {
+          "total_xp": {
+            "type": "integer",
+            "title": "Total Xp"
+          },
+          "current_level": {
+            "type": "integer",
+            "title": "Current Level"
+          },
+          "xp_to_next_level": {
+            "type": "integer",
+            "title": "Xp To Next Level"
+          },
+          "progress_percentage": {
+            "type": "number",
+            "title": "Progress Percentage"
+          },
+          "recent_transactions": {
+            "items": {
+              "$ref": "#/components/schemas/XPTransaction"
+            },
+            "type": "array",
+            "title": "Recent Transactions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_xp",
+          "current_level",
+          "xp_to_next_level",
+          "progress_percentage"
+        ],
+        "title": "UserXPSummary",
+        "description": "Summary of user's XP status"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "XPReason": {
+        "type": "string",
+        "enum": [
+          "meal_logged",
+          "bolus_calculated",
+          "daily_login",
+          "perfect_glucose",
+          "week_streak",
+          "achievement_unlocked",
+          "manual_adjustment"
+        ],
+        "title": "XPReason",
+        "description": "Reasons for XP transactions"
+      },
+      "XPTransaction": {
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "title": "Amount",
+            "description": "XP amount (positive for gains, negative for losses)"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/XPReason"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Description",
+            "description": "Human-readable description"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount",
+          "reason",
+          "description",
+          "user_id"
+        ],
+        "title": "XPTransaction",
+        "description": "Complete XP transaction with metadata"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/api/v1/auth/login"
+          }
+        }
+      }
+    }
+  }
 }

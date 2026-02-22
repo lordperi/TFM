@@ -8,11 +8,11 @@ part 'nutrition_models.g.dart';
 
 @JsonSerializable()
 class Ingredient {
-  final int id;
+  final String id; // UUID string — el backend devuelve UUID como string
   final String name;
   @JsonKey(name: 'glycemic_index')
   final int glycemicIndex;
-  final double carbs; // Carbs per 100g
+  final double carbs; // Carbs per 100g (campo 'carbs' en la API)
 
   Ingredient({
     required this.id,
