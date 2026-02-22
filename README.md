@@ -2,7 +2,7 @@
 
 > Trabajo Fin de Máster · Ingeniería y Arquitectura de Software con Inteligencia Artificial · 2024–2026
 
-![Status](https://img.shields.io/badge/Estado-Producción_95%25-success?style=for-the-badge)
+![Status](https://img.shields.io/badge/Estado-Producción_100%25-success?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Flutter](https://img.shields.io/badge/Flutter-3.19-02569B?style=for-the-badge&logo=flutter&logoColor=white)
@@ -738,7 +738,7 @@ El endpoint es idempotente: si los alimentos ya existen (por nombre), no se dupl
 
 ## Estado del proyecto y hitos
 
-`[█████████░] 95% Completado`
+`[██████████] 100% Completado`
 
 | Hito | Estado | Completitud | Detalles |
 |:-----|:-------|:------------|:---------|
@@ -746,10 +746,10 @@ El endpoint es idempotente: si los alimentos ya existen (por nombre), no se dupl
 | **II. Base de datos** | Completado | 100% | PostgreSQL 16, 13 migraciones Alembic versionadas, 10 modelos ORM |
 | **III. Seguridad** | Completado | 100% | JWT HS256, Bcrypt cost-12, Fernet AES-128-CBC PHI, PIN parental |
 | **IV. Motor nutricional** | Completado | 100% | 165 alimentos, CRUD ingredientes, calculo bolus multi-ingrediente, CG |
-| **V. Aplicacion movil** | Completado | 95% | Dual UX, Hub Nutricional, bandeja multi-ingrediente, graficas glucosa |
+| **V. Aplicacion movil** | Completado | 100% | Dual UX, Hub Nutricional, bandeja multi-ingrediente, graficas glucosa |
 | **VI. Gestion de usuarios** | Completado | 100% | Guardianes, dependientes, PIN granular, cambio de contrasena |
 | **VII. Sistema XP** | Completado | 100% | Niveles, transacciones, logros, progreso |
-| **VIII. Monitoring glucosa** | Completado | 90% | Registro, historial, graficas, tipos de medicion |
+| **VIII. Monitoring glucosa** | Completado | 100% | Registro, historial, graficas, tipos de medicion |
 
 ### Tests
 
