@@ -5,6 +5,7 @@ import '../../bloc/theme/theme_bloc.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../screens/nutrition/food_search_screen.dart';
 import '../../screens/nutrition/meal_history_screen.dart';
+import '../../screens/nutrition/nutrition_hub_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../bloc/glucose/glucose_bloc.dart';
 import '../../bloc/nutrition/nutrition_bloc.dart';
@@ -140,7 +141,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
               selectedItemColor: Theme.of(context).primaryColor,
               currentIndex: 0,
               onTap: (index) {
-                if (index == 2) {
+                if (index == 1) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<NutritionBloc>(),
+                        child: const NutritionHubScreen(),
+                      ),
+                    ),
+                  );
+                } else if (index == 2) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const ProfileScreen()),
