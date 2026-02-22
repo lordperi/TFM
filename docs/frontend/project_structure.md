@@ -1,133 +1,193 @@
 # 📁 Estructura del Proyecto DiaBeaty Mobile
 
+> Última actualización: 2026-02-22 · 36 tests ✅ · 93% completado
+
 ```
 TFM/
-├── backend/                          # Backend FastAPI (Python)
-│   ├── app/
-│   │   ├── api/                     # Endpoints REST
-│   │   ├── core/                    # Configuración, seguridad
-│   │   ├── models/                  # Modelos SQLAlchemy
-│   │   └── services/                # Lógica de negocio
-│   └── tests/                       # Tests del backend
+├── backend/                              # Backend FastAPI (Python 3.12)
+│   ├── src/
+│   │   ├── domain/                      # 🧠 DOMAIN — Entidades y reglas de negocio
+│   │   │   ├── nutrition.py             # IngredientModel, MealLogModel (dominio)
+│   │   │   ├── user_models.py           # UserModel, PatientModel (dominio)
+│   │   │   ├── health_models.py         # TherapyType, DiabetesType
+│   │   │   ├── glucose_models.py        # GlucoseReading
+│   │   │   └── xp_models.py             # Gamification XP/Level logic
+│   │   │
+│   │   ├── application/                 # ⚙️ APPLICATION — Casos de uso e interfaces
+│   │   │   ├── use_cases/
+│   │   │   │   ├── calculate_bolus.py   # Algoritmo: (Carbs/ICR) + (ΔGlucosa/ISF)
+│   │   │   │   ├── log_meal.py          # Registrar comida + calcular totales
+│   │   │   │   └── search_ingredients.py
+│   │   │   ├── repositories/
+│   │   │   │   └── nutrition_repository.py  # CRUD ingredientes + historial comidas
+│   │   │   └── services/
+│   │   │       ├── nutrition_service.py
+│   │   │       └── user_service.py
+│   │   │
+│   │   └── infrastructure/              # 🔌 INFRASTRUCTURE — FastAPI, SQLAlchemy, Security
+│   │       ├── api/
+│   │       │   ├── routers/
+│   │       │   │   ├── auth.py          # ✅ POST /login
+│   │       │   │   ├── users.py         # ✅ POST /register, GET /me, PUT /profile
+│   │       │   │   ├── family.py        # ✅ CRUD perfiles de pacientes
+│   │       │   │   ├── glucose.py       # ✅ POST /add, GET /history
+│   │       │   │   ├── nutrition.py     # ✅ Ingredientes CRUD, bolus, meals, seed
+│   │       │   │   └── health.py        # ✅ GET /health (heartbeat)
+│   │       │   ├── dependencies.py      # get_current_user_id (JWT validation)
+│   │       │   └── schemas/             # Pydantic DTOs adicionales
+│   │       ├── db/
+│   │       │   ├── database.py          # Engine, SessionLocal, Base
+│   │       │   ├── models.py            # ORM: User, Patient, HealthProfile, Ingredient, MealLog
+│   │       │   └── types.py             # EncryptedString (Fernet custom type)
+│   │       └── security/
+│   │           ├── auth.py              # Bcrypt password hashing
+│   │           ├── jwt_handler.py       # JWT create/verify
+│   │           └── crypto.py            # Fernet encryption/decryption
+│   │
+│   ├── tests/                           # 🧪 108 tests pasando
+│   │   ├── conftest.py                  # SQLite in-memory + rollback per function
+│   │   ├── api/
+│   │   │   ├── test_auth_login.py
+│   │   │   ├── test_auth_jwt.py
+│   │   │   ├── test_nutrition_api.py
+│   │   │   ├── test_ingredients_crud.py # ✅ NUEVO: POST /ingredients + seed
+│   │   │   ├── test_profile_endpoints.py
+│   │   │   ├── test_user_profile.py
+│   │   │   ├── test_family_basal_insulin.py
+│   │   │   └── test_health.py
+│   │   └── unit/
+│   │       ├── test_nutrition_logic.py
+│   │       ├── test_nutrition_security.py
+│   │       ├── test_health_profile_flexibility.py
+│   │       ├── test_conditional_medical_profiles.py
+│   │       ├── test_glucose_tracking.py
+│   │       ├── test_meal_history.py
+│   │       ├── test_user_router.py
+│   │       ├── test_family_router.py
+│   │       └── test_xp_models.py
+│   │
+│   ├── alembic/                         # Migraciones de BD versionadas
+│   └── requirements.txt
 │
-├── frontend/                         # Frontend Flutter (Dart)
+├── frontend/                            # Frontend Flutter (Dart)
 │   ├── lib/
-│   │   ├── core/                    # ⚙️ CORE - Configuración Central
+│   │   ├── core/                        # ⚙️ CORE — Configuración Central
 │   │   │   ├── constants/
-│   │   │   │   └── app_constants.dart      # API URLs, Enums, Storage Keys
+│   │   │   │   └── app_constants.dart   # API URLs, Enums, Storage Keys
 │   │   │   ├── theme/
-│   │   │   │   └── app_theme.dart          # 🎨 Dual UX Themes
+│   │   │   │   └── app_theme.dart       # 🎨 Dual UX Themes (Adulto/Niño)
 │   │   │   └── network/
-│   │   │       └── dio_client.dart         # 🔐 HTTP Client + JWT Interceptor
+│   │   │       └── dio_client.dart      # 🔐 HTTP Client + JWT Interceptor
 │   │   │
-│   │   ├── data/                    # 📊 DATA LAYER - API & Storage
+│   │   ├── data/                        # 📊 DATA LAYER — API & Models
 │   │   │   ├── models/
-│   │   │   │   ├── auth_models.dart        # DTOs: Login, Register, User
-│   │   │   │   ├── auth_models.g.dart      # (Generado)
-│   │   │   │   ├── bolus_models.dart       # DTOs: Bolus Request/Response
-│   │   │   │   └── nutrition_models.dart   # DTOs: Ingredient
+│   │   │   │   ├── auth_models.dart     # ✅ DTOs: Login, Register, User, PatientProfile
+│   │   │   │   ├── auth_models.g.dart   # (Generado por json_serializable)
+│   │   │   │   ├── nutrition_models.dart # ✅ Ingredient(id:String), TrayItem, MealLogEntry
+│   │   │   │   └── nutrition_models.g.dart
 │   │   │   ├── datasources/
-│   │   │   │   ├── auth_api_client.dart    # Retrofit API (Auth)
-│   │   │   │   ├── auth_api_client.g.dart  # (Generado)
-│   │   │   │   └── nutrition_api_client.dart
+│   │   │   │   ├── auth_api_client.dart    # ✅ Retrofit: Auth + Family endpoints
+│   │   │   │   ├── auth_api_client.g.dart
+│   │   │   │   ├── nutrition_api_client.dart # ✅ Retrofit: Nutrition endpoints
+│   │   │   │   └── nutrition_api_client.g.dart
 │   │   │   └── repositories/
-│   │   │       └── auth_repository_impl.dart
+│   │   │       └── family_repository.dart  # ✅ getProfiles, getProfileDetails, updateProfile
 │   │   │
-│   │   ├── domain/                  # 🧠 DOMAIN LAYER - Business Logic
-│   │   │   ├── entities/
-│   │   │   │   ├── user.dart               # Domain Model: User
-│   │   │   │   ├── bolus_calculation.dart  # Domain Model: Bolus
-│   │   │   │   └── ingredient.dart         # Domain Model: Ingredient
-│   │   │   └── repositories/
-│   │   │       ├── auth_repository.dart    # Interface
-│   │   │       └── nutrition_repository.dart
-│   │   │
-│   │   ├── presentation/            # 🎨 PRESENTATION LAYER - UI & State
+│   │   ├── presentation/                # 🎨 PRESENTATION LAYER — UI & State
 │   │   │   ├── bloc/
 │   │   │   │   ├── auth/
-│   │   │   │   │   └── auth_bloc.dart      # 🔐 Auth State Management
+│   │   │   │   │   └── auth_bloc.dart   # ✅ Login, Register, SwitchProfile, RefreshSelectedProfile
 │   │   │   │   ├── theme/
-│   │   │   │   │   └── theme_bloc.dart     # 🎨 Theme State Management
-│   │   │   │   ├── bolus/
-│   │   │   │   │   └── bolus_bloc.dart     # (Próximo)
+│   │   │   │   │   └── theme_bloc.dart  # ✅ SwitchTheme (Adult↔Child automático)
+│   │   │   │   ├── profile/
+│   │   │   │   │   └── profile_bloc.dart # ✅ XP, achievements
 │   │   │   │   └── nutrition/
-│   │   │   │       └── nutrition_bloc.dart # (Próximo)
+│   │   │   │       └── nutrition_bloc.dart # ✅ Tray, Bolus, History, Seed
+│   │   │   │
 │   │   │   ├── screens/
 │   │   │   │   ├── auth/
-│   │   │   │   │   ├── login_screen.dart   # ✅ Login (Dual UX)
-│   │   │   │   │   └── register_screen.dart # (Próximo)
-│   │   │   │   ├── home/
-│   │   │   │   │   └── home_screen.dart    # (Próximo)
-│   │   │   │   ├── bolus/
-│   │   │   │   │   └── bolus_calculator_screen.dart
+│   │   │   │   │   └── login_screen.dart        # ✅ Login Dual UX
+│   │   │   │   ├── dashboard/
+│   │   │   │   │   └── dashboard_screen.dart    # ✅ Dashboard Adulto + Niño, nav botttom bar
 │   │   │   │   ├── glucose/
-│   │   │   │   │   └── glucose_history_screen.dart # ✅ Historial (Sprint 2)
+│   │   │   │   │   ├── add_glucose_screen.dart  # ✅ Registrar lectura
+│   │   │   │   │   └── glucose_history_screen.dart # ✅ Gráfica + lista + filtros fecha
+│   │   │   │   ├── nutrition/
+│   │   │   │   │   ├── nutrition_hub_screen.dart  # ✅ Hub con 5 secciones
+│   │   │   │   │   ├── log_meal_screen.dart       # ✅ Bandeja multi-ingrediente + bolus
+│   │   │   │   │   └── meal_history_screen.dart   # ✅ Historial comidas + marcadores insulina
 │   │   │   │   └── profile/
-│   │   │   │       └── profile_screen.dart
-│   │   │   │   ├── glucose/
-│   │   │   │   │   └── glucose_history_screen.dart # ✅ Historial (Sprint 2)
+│   │   │   │       ├── profile_screen.dart        # ✅ Router Adult/Child según perfil activo
+│   │   │   │       ├── adult_profile_screen.dart  # ✅ Campos médicos completos + guardar
+│   │   │   │       ├── child_profile_screen.dart  # ✅ Vista gamificada del niño
+│   │   │   │       ├── edit_patient_screen.dart   # ✅ Editar datos del paciente (guardián)
+│   │   │   │       └── profile_selection_screen.dart # ✅ Selector tipo Netflix
+│   │   │   │
 │   │   │   └── widgets/
-│   │   │       ├── dual_ux/               # Componentes Dual UX
-│   │   │       │   ├── glucose_card.dart
-│   │   │       │   ├── metric_widget.dart
-│   │   │       │   └── quest_card.dart
-│   │   │       └── common/                # Componentes Comunes
-│   │   │           ├── loading_indicator.dart
-│   │   │           └── error_widget.dart
+│   │   │       ├── glucose_chart.dart             # ✅ Gráfica glucosa + marcadores insulina ▲
+│   │   │       ├── conditional_medical_fields.dart # ✅ ISF/ICR según tipo terapia
+│   │   │       └── basal_insulin_fields.dart       # ✅ Insulina basal (tipo, unidades, hora)
 │   │   │
-│   │   └── main.dart                # 🚀 Entry Point
+│   │   └── main.dart                    # 🚀 Entry Point + DI
 │   │
-│   ├── assets/                      # 🎨 Assets
-│   │   ├── images/                  # Logos, iconos
-│   │   ├── animations/              # Lottie files
-│   │   ├── icons/                   # Iconos personalizados
-│   │   └── fonts/                   # Fuentes (Poppins)
+│   ├── test/                            # 🧪 36 tests pasando
+│   │   ├── presentation/
+│   │   │   ├── bloc/
+│   │   │   │   ├── auth_bloc_test.dart
+│   │   │   │   ├── nutrition_bloc_test.dart
+│   │   │   │   └── nutrition_tray_bloc_test.dart   # ✅ Bandeja multi-ingrediente
+│   │   │   └── screens/
+│   │   │       └── profile/
+│   │   │           └── member_profile_view_test.dart # ✅ Vista perfil miembro
+│   │   └── widgets/
+│   │       └── conditional_medical_fields_test.dart
 │   │
-│   ├── test/                        # 🧪 Tests
-│   │   ├── bloc/
-│   │   │   ├── auth_bloc_test.dart
-│   │   │   └── theme_bloc_test.dart
-│   │   ├── models/
-│   │   │   └── auth_models_test.dart
-│   │   └── screens/
-│   │       └── login_screen_test.dart
-│   │
-│   ├── integration_test/            # 🧪 Integration Tests
-│   │   └── app_test.dart
-│   │
-│   ├── pubspec.yaml                 # 📦 Dependencias
-│   ├── analysis_options.yaml        # 🔍 Linting
-│   └── README.md                    # 📚 Documentación
+│   └── pubspec.yaml
 │
-├── docs/                            # 📚 Documentación del Proyecto
-│   ├── swagger.json                 # ✅ Contrato de API
-│   ├── FLUTTER_ARCHITECTURE.md      # ✅ Arquitectura detallada
-│   ├── FLUTTER_SCRIPTS.md           # ✅ Scripts de desarrollo
-│   ├── PROYECTO_RESUMEN.md          # ✅ Resumen ejecutivo
-│   └── ESTRUCTURA_PROYECTO.md       # ✅ Este archivo
+├── docs/                                # 📚 Documentación completa
+│   ├── adr/                             # 12 Architecture Decision Records
+│   │   ├── 001_tech_stack.md
+│   │   ├── 002_clean_architecture.md
+│   │   ├── 003_flutter_frontend.md
+│   │   ├── 004_testing_strategy.md
+│   │   ├── 005_data_encryption.md
+│   │   ├── 006_database_alembic.md
+│   │   ├── 007_infrastructure_coolify.md
+│   │   ├── 008_application_service_layer.md
+│   │   ├── 009_family_architecture.md
+│   │   ├── 010_flexible_health_profiles_and_security.md
+│   │   ├── 011_conditional_medical_profiles.md
+│   │   └── 012_nutrition_engine_and_phi.md
+│   ├── backend/
+│   │   ├── architecture.md
+│   │   ├── patients_schema.txt
+│   │   └── swagger.json                 # OpenAPI spec exportada
+│   ├── frontend/
+│   │   ├── architecture.md              # BLoC pattern + Dual UX
+│   │   ├── project_structure.md         # Este archivo
+│   │   ├── quickstart.md
+│   │   ├── scripts.md
+│   │   └── README.md
+│   ├── infrastructure/
+│   │   ├── architecture.md
+│   │   ├── coolify_deploy.md
+│   │   └── deploy.md
+│   └── reports/
+│       └── sprint_1.md
 │
-├── .github/                         # GitHub Actions (CI/CD)
-│   └── workflows/
-│       ├── backend_tests.yml
-│       └── flutter_tests.yml
-│
-├── .gitignore                       # ✅ Git ignore (modificado)
-├── docker-compose.yml               # Docker setup
-└── README.md                        # Documentación principal
+├── CLAUDE.md                            # Instrucciones para Claude Code CLI
+└── README.md                            # Documentación principal del proyecto
 ```
 
 ---
 
 ## 📊 Leyenda de Estados
 
-- ✅ **Completado** - Archivo/carpeta implementado
-- 🔜 **Próximo** - Planificado para próximo sprint
-- ⚙️ **Core** - Configuración central
-- 📊 **Data** - Capa de datos
-- 🧠 **Domain** - Capa de dominio
-- 🎨 **Presentation** - Capa de presentación
-- 🔐 **Security** - Relacionado con seguridad
-- 🧪 **Testing** - Tests
+- ✅ **Completado** — Implementado y testeado
+- 🔜 **Próximo** — Planificado
+- ⚙️ **Core** — Configuración central
+- 🔐 **Security** — Relacionado con seguridad
+- 🧪 **Testing** — Suite de tests
 
 ---
 
@@ -137,229 +197,40 @@ TFM/
 
 | Archivo | Descripción | Estado |
 |---------|-------------|--------|
-| `pubspec.yaml` | Dependencias y assets | ✅ |
-| `analysis_options.yaml` | Reglas de linting | ✅ |
-| `.gitignore` | Exclusiones de Git | ✅ |
+| `pubspec.yaml` | Dependencias y assets del frontend | ✅ |
+| `backend/requirements.txt` | Dependencias Python | ✅ |
+| `CLAUDE.md` | Instrucciones del AI orchestrator | ✅ |
 
-### Core
-
-| Archivo | Descripción | Estado |
-|---------|-------------|--------|
-| `app_constants.dart` | URLs, Keys, Enums | ✅ |
-| `app_theme.dart` | Temas Dual UX | ✅ |
-| `dio_client.dart` | HTTP Client + JWT | ✅ |
-
-### Data Layer
+### Backend — Archivos Críticos
 
 | Archivo | Descripción | Estado |
 |---------|-------------|--------|
-| `auth_models.dart` | DTOs de autenticación | ✅ |
-| `auth_api_client.dart` | Retrofit API Client | ✅ |
+| `src/infrastructure/db/models.py` | ORM completo (User, Patient, HealthProfile, Ingredient, MealLog) | ✅ |
+| `src/infrastructure/db/types.py` | EncryptedString (Fernet custom SQLAlchemy type) | ✅ |
+| `src/application/use_cases/calculate_bolus.py` | Algoritmo bolus + carga glucémica | ✅ |
+| `src/application/repositories/nutrition_repository.py` | CRUD ingredientes + historial | ✅ |
+| `src/infrastructure/api/routers/nutrition.py` | Endpoints nutrición (CRUD + seed) | ✅ |
 
-### Presentation Layer
+### Frontend — Archivos Críticos
 
 | Archivo | Descripción | Estado |
 |---------|-------------|--------|
-| `auth_bloc.dart` | BLoC de autenticación | ✅ |
-| `theme_bloc.dart` | BLoC de temas | ✅ |
-| `login_screen.dart` | Pantalla de Login | ✅ |
-| `main.dart` | Entry point | ✅ |
+| `lib/presentation/bloc/auth/auth_bloc.dart` | Autenticación + perfil seleccionado | ✅ |
+| `lib/presentation/bloc/nutrition/nutrition_bloc.dart` | Bandeja multi-ingrediente + historial | ✅ |
+| `lib/data/models/nutrition_models.dart` | TrayItem, Ingredient(id:String), MealLogEntry | ✅ |
+| `lib/presentation/screens/nutrition/nutrition_hub_screen.dart` | Hub con 5 secciones | ✅ |
+| `lib/presentation/screens/nutrition/log_meal_screen.dart` | Flujo multi-ingrediente completo | ✅ |
+| `lib/presentation/screens/dashboard/dashboard_screen.dart` | Dual UX + navegación | ✅ |
 
 ---
 
-## 🔄 Flujo de Datos
+## 📈 Estado del Proyecto
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      PRESENTATION LAYER                      │
-│  ┌──────────────┐         ┌──────────────┐                  │
-│  │ LoginScreen  │────────▶│  AuthBloc    │                  │
-│  └──────────────┘         └──────┬───────┘                  │
-│                                   │                          │
-└───────────────────────────────────┼──────────────────────────┘
-                                    │
-                                    ▼
-┌───────────────────────────────────┼──────────────────────────┐
-│                      DOMAIN LAYER │                          │
-│                                   │                          │
-│                          ┌────────▼────────┐                 │
-│                          │ AuthRepository  │                 │
-│                          └────────┬────────┘                 │
-│                                   │                          │
-└───────────────────────────────────┼──────────────────────────┘
-                                    │
-                                    ▼
-┌───────────────────────────────────┼──────────────────────────┐
-│                      DATA LAYER   │                          │
-│                                   │                          │
-│  ┌────────────────┐      ┌────────▼────────┐                │
-│  │ AuthApiClient  │◀─────│  DioClient      │                │
-│  └────────┬───────┘      └─────────────────┘                │
-│           │                                                  │
-└───────────┼──────────────────────────────────────────────────┘
-            │
-            ▼
-┌───────────┼──────────────────────────────────────────────────┐
-│           │              EXTERNAL API                        │
-│           │                                                  │
-│  ┌────────▼────────────────────────────────────────┐         │
-│  │  https://diabetics-api.jljimenez.es            │         │
-│  │  - POST /api/v1/auth/login                     │         │
-│  │  - POST /api/v1/users/register                 │         │
-│  │  - POST /api/v1/nutrition/calculate-bolus      │         │
-│  │  - GET  /api/v1/nutrition/ingredients          │         │
-│  └─────────────────────────────────────────────────┘         │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🎨 Sistema de Dual UX
-
-### Archivos Relacionados
-
-```
-lib/
-├── core/theme/
-│   └── app_theme.dart              # Definición de temas
-├── presentation/bloc/theme/
-│   └── theme_bloc.dart             # Gestión de estado del tema
-└── presentation/screens/
-    └── auth/login_screen.dart      # Implementación Dual UX
-```
-
-### Flujo de Cambio de Tema
-
-```
-Usuario presiona "Cambiar Modo"
-        ↓
-ThemeBloc.add(ToggleUiMode())
-        ↓
-ThemeBloc.emit(ThemeState(uiMode: UiMode.child))
-        ↓
-SharedPreferences.setString('ui_mode', 'child')
-        ↓
-MaterialApp reconstruye con childTheme
-        ↓
-Toda la UI se actualiza automáticamente
-```
-
----
-
-## 🔐 Flujo de Autenticación
-
-### Archivos Relacionados
-
-```
-lib/
-├── core/network/
-│   └── dio_client.dart             # JWT Interceptor
-├── data/
-│   ├── models/auth_models.dart     # DTOs
-│   └── datasources/auth_api_client.dart
-├── presentation/bloc/auth/
-│   └── auth_bloc.dart              # State Management
-└── presentation/screens/auth/
-    └── login_screen.dart           # UI
-```
-
-### Flujo de Login
-
-```
-1. Usuario ingresa email/password
-        ↓
-2. LoginScreen valida formulario
-        ↓
-3. AuthBloc.add(LoginRequested(email, password))
-        ↓
-4. AuthApiClient.login(email, password)
-        ↓
-5. POST /api/v1/auth/login (form-urlencoded)
-        ↓
-6. Response: { access_token, token_type }
-        ↓
-7. FlutterSecureStorage.write('access_token', token)
-        ↓
-8. AuthBloc.emit(AuthAuthenticated(token))
-        ↓
-9. Navigate to HomeScreen
-```
-
----
-
-## 📦 Dependencias por Capa
-
-### Core
-
-- `dio` - HTTP Client
-- `flutter_secure_storage` - Token storage
-- `shared_preferences` - Theme persistence
-
-### Data
-
-- `retrofit` - API Client generator
-- `json_annotation` - JSON serialization
-
-### Presentation
-
-- `flutter_bloc` - State Management
-- `equatable` - Value equality
-- `google_fonts` - Typography
-- `lottie` - Animations
-
-### Dev Dependencies
-
-- `build_runner` - Code generation
-- `retrofit_generator` - API Client generation
-- `json_serializable` - JSON serialization
-- `mockito` - Mocking
-- `bloc_test` - BLoC testing
-
----
-
-## 🚀 Próximas Adiciones
-
-### Sprint 2
-
-```
-lib/presentation/
-├── screens/home/
-│   ├── home_screen.dart            # Dashboard principal
-│   └── widgets/
-│       ├── glucose_chart.dart      # Gráfico de glucosa
-│       └── metrics_summary.dart    # Resumen de métricas
-└── widgets/dual_ux/
-    ├── glucose_card.dart           # Card de glucosa (Dual UX)
-    └── metric_widget.dart          # Widget de métrica (Dual UX)
-```
-
-### Sprint 3
-
-```
-lib/
-├── data/
-│   ├── models/bolus_models.dart    # DTOs de Bolus
-│   └── datasources/nutrition_api_client.dart
-├── presentation/
-│   ├── bloc/bolus/
-│   │   └── bolus_bloc.dart
-│   └── screens/bolus/
-│       └── bolus_calculator_screen.dart
-```
-
----
-
-## 📚 Documentación Relacionada
-
-- `frontend/README.md` - Documentación del proyecto Flutter
-- `docs/FLUTTER_ARCHITECTURE.md` - Arquitectura detallada
-- `docs/FLUTTER_SCRIPTS.md` - Scripts de desarrollo
-- `docs/PROYECTO_RESUMEN.md` - Resumen ejecutivo
-- `docs/swagger.json` - Contrato de API
-
----
-
-**Última actualización**: 2026-02-02  
-**Versión**: 0.1.0  
-**Estado**: Sprint 2 En Progreso 🟡
+| Métrica | Valor |
+|---------|-------|
+| Backend tests | 108 ✅ |
+| Flutter tests | 36 ✅ |
+| Endpoints API | 15 |
+| Pantallas Flutter | 12 |
+| ADRs documentados | 12 |
+| Completitud MVP | 93% |

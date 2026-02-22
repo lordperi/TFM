@@ -1,13 +1,14 @@
-# � DiaBeaty (TFM - Advanced Agentic Project)
+# 🩺 DiaBeaty (TFM — Arquitectura de Software con IA)
 
 > **Plataforma de Nutrición de Precisión y Monitorización de Salud** para Pacientes Diabéticos.
 > *Empoderando familias con cálculos nutricionales asistidos por IA y una interfaz Dual-UX (Adulto/Niño).*
 
-![Status](https://img.shields.io/badge/Status-Access_Early_Access-success?style=for-the-badge&logo=statuspage)
+![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge&logo=statuspage)
 ![Backend](https://img.shields.io/badge/Backend-Python_3.12_%7C_FastAPI-blue?style=for-the-badge&logo=python)
 ![Frontend](https://img.shields.io/badge/Frontend-Flutter_3.19-02569B?style=for-the-badge&logo=flutter)
 ![Infra](https://img.shields.io/badge/Infra-Coolify_v4_%7C_Docker-336791?style=for-the-badge&logo=docker)
-![Coverage](https://img.shields.io/badge/Testing-Pytest_%7C_Coverage_High-green?style=for-the-badge&logo=pytest)
+![Backend Tests](https://img.shields.io/badge/Backend_Tests-108_✅-brightgreen?style=for-the-badge&logo=pytest)
+![Flutter Tests](https://img.shields.io/badge/Flutter_Tests-36_✅-brightgreen?style=for-the-badge&logo=flutter)
 ![Security](https://img.shields.io/badge/Security-AES_256_%7C_OWASP-red?style=for-the-badge&logo=lock)
 
 ---
@@ -19,175 +20,267 @@
 **Nuestra Solución**: *DiaBeaty* actúa como un **Páncreas Digital Auxiliar**. No solo registra datos; procesa información nutricional para sugerir dosis precisas, adaptando la interfaz al usuario:
 
 1. **Modo Tutor (Adulto)**: Dashboard técnico, gestión de ratios y métricas avanzadas.
-2. **Modo Héroe (Niño)**: Gamificación terapéutica donde el control glucémico se traduce en la salud de un avatar virtual.
+2. **Modo Héroe (Niño)**: Gamificación terapéutica donde el control glucémico se convierte en una aventura.
 
 ---
 
-## 📶 Milestone Tracking (MVP Status)
+## 📶 Milestone Tracking (Estado MVP)
 
-`[████████░░] 78% Completado`
+`[█████████░] 93% Completado`
 
 | Hito | Estado | Detalles Técnicos |
 | :--- | :--- | :--- |
-| **I. Infraestructura** | ✅ 100% | VPS propio, Coolify v4, Registro Privado, HTTPS Strict. |
-| **II. Database Core** | ✅ 100% | PostgreSQL 16, Migraciones Alembic, Modelado Relacional. |
-| **III. Seguridad** | ✅ 100% | Auth JWT (HS256), Hash Bcrypt, Cifrado AES-256 (PHI). |
-| **IV. Motor Metabólico** | 🔄 40% | Modelado de Alimentos, Algoritmo de Carga Glucémica, Registro de Insulina (bolus_units_administered), Historial de Comidas con GET /meals/history. |
-| **V. Mobile App** | 🔄 65% | **Dual UX** (Adulto/Niño), Gestión de Estado BLoC, MealHistoryScreen con indicadores de color, marcadores de insulina en GlucoseChart (triángulos naranja ▲), botones "Historial Insulina" y "Mis Dosis" en Dashboard. |
-| **VI. Gestión de Usuarios** | ✅ 100% | Perfiles Flexibles (Guardián/Niño), Protección PIN granular, UI Bloqueada. [Ref ADR 010](docs/adr/010_flexible_health_profiles_and_security.md) |
+| **I. Infraestructura** | ✅ 100% | VPS propio, Coolify v4, Registro Docker Privado, HTTPS Full-Strict. |
+| **II. Database Core** | ✅ 100% | PostgreSQL 16, Migraciones Alembic versionadas, Modelado Relacional completo. |
+| **III. Seguridad** | ✅ 100% | Auth JWT (HS256), Hash Bcrypt, Cifrado AES-256 Fernet (PHI), PIN de control parental. |
+| **IV. Motor Metabólico** | ✅ 90% | BD de ingredientes CRUD + seed 25 alimentos, Bolus multi-ingrediente, Historial con filtros de fecha, Carga Glucémica. |
+| **V. Mobile App** | ✅ 90% | Dual UX completa, Hub Nutricional, Bandeja multi-ingrediente, Perfiles de familia, Gráfica de glucosa con marcadores de insulina. |
+| **VI. Gestión de Usuarios** | ✅ 100% | Perfiles Flexibles (Guardián/Dependiente), PIN granular, Vista de perfil por miembro. |
 
 ---
 
-## �️ Roadmap Estratégico
+## 🗺️ Roadmap Estratégico
 
-### 🏛️ Fase 1: The Foundation (Semanas 1-3) - *En Desarrollo*
-
-El objetivo es establecer un núcleo seguro y operativo.
+### 🏛️ Fase 1: The Foundation — *Completada*
 
 - [x] **Arquitectura Hexagonal**: Desacoplamiento total de lógica de negocio y frameworks.
-- [x] **Zero-Trust Security**: Cifrado de datos sensibles (Ratios, Notas médicas) en reposo.
-- [x] **Perfiles Flexibles**: Soporte para Guardianes (sin datos médicos) y Niños (UI Protegida).
-- [ ] **Motor Nutricional**: Base de datos de ingredientes con IG (Índice Glucémico) y Fibra.
+- [x] **Zero-Trust Security**: Cifrado de datos sensibles (Ratios, Notas médicas) en reposo con Fernet.
+- [x] **Perfiles Flexibles**: Soporte para Guardianes (sin datos médicos) y Pacientes (UI Protegida).
+- [x] **Motor Nutricional**: BD de ingredientes con IG, endpoint CRUD y seed de 25 alimentos base.
+- [x] **Dual UX**: Dashboard adulto (técnico) y niño (gamificado) con tema dinámico.
 
-### 👁️ Fase 2: AI Vision (Milestone Post-TFM)
+### 👁️ Fase 2: AI Vision (Post-TFM)
 
-Eliminar la fricción de la entrada manual de datos.
-
-- [ ] **OCR de Menús**: Extracción de platos y precios desde fotos de cartas de restaurantes.
+- [ ] **OCR de Menús**: Extracción de platos desde fotos de cartas de restaurantes.
 - [ ] **Estimación Visual**: Deep Learning para estimar gramos de carbohidratos por foto del plato.
 
 ### 🎥 Fase 3: Social & Video AI
 
-- [ ] **Video-to-Recipe**: Pipeline que transforma TikToks de cocina en recetas estructuradas y calculadas para diabéticos.
+- [ ] **Video-to-Recipe**: Pipeline que transforma vídeos de cocina en recetas calculadas para diabéticos.
 
 ### 🌐 Fase 4: Ecosistema IoT
 
 - [ ] **CGM Direct Link**: Conexión con sensores Dexcom/Libre en tiempo real.
 
-El proyecto sigue una **Arquitectura Hexagonal (Clean Architecture)**, asegurando que la lógica nutricional sea independiente de la base de datos o el framework web.
+---
 
 ## 🛠️ Stack Tecnológico
 
-| Area | Tenologías | Justificación Arquitectónica (ADR) |
+| Área | Tecnologías | ADR |
 | :--- | :--- | :--- |
-| **Lenguaje Core** | **Python 3.12** | Tipado fuerte, rendimiento asíncrono y ecosistema nativo de IA. |
-| **API Framework** | **FastAPI** | Validación automática Pydantic v2 y documentación OpenAPI. |
-| **Datos** | **PostgreSQL 16** | Integridad ACID robusta y soporte JSONB para flexibilidad. |
-| **ORM / Migraciones** | **SQLAlchemy 2.0 / Alembic** | Abstracción de DB y control de versiones del esquema. |
-| **Mobile** | **Flutter 3.19** | Código único (Dart) para iOS/Android y motor gráfico Skia para gamificación. |
-| **CD / Orquestación** | **Coolify v4** | Deployments automáticos (Push-to-Deploy) y soberanía de datos. [Ver detalles](docs/infrastructure/coolify.md) |
+| **Lenguaje Core** | Python 3.12 | [ADR-001](docs/adr/001_tech_stack.md) |
+| **API Framework** | FastAPI + Pydantic v2 | [ADR-001](docs/adr/001_tech_stack.md) |
+| **Datos** | PostgreSQL 16 + SQLAlchemy 2.0 | [ADR-006](docs/adr/006_database_alembic.md) |
+| **Migraciones** | Alembic | [ADR-006](docs/adr/006_database_alembic.md) |
+| **Mobile** | Flutter 3.19 + Dart | [ADR-003](docs/adr/003_flutter_frontend.md) |
+| **Estado (Frontend)** | flutter_bloc + BLoC Pattern | [ADR-002](docs/adr/002_clean_architecture.md) |
+| **API Client** | Retrofit + Dio + JWT Interceptor | — |
+| **CD / Orquestación** | Coolify v4 + Docker | [ADR-007](docs/adr/007_infrastructure_coolify.md) |
+| **Seguridad** | Fernet (AES-128-CBC + HMAC) + Bcrypt | [ADR-005](docs/adr/005_data_encryption.md) |
 
 ---
 
-## 🔌 Catálogo de Endpoints (API V1)
+## 🔌 Catálogo de Endpoints (API v1)
 
-Actualmente documentados en `/docs` (Swagger UI) al desplegar.
+La documentación interactiva completa está disponible en `https://diabetics-api.jljimenez.es/docs`.
 
 ### Authentication (`/api/v1/auth`)
 
-- `POST /login`: Intercambia credenciales por **Access Token** (JWT Bearer).
-
-- `POST /refresh`: (Planeado) Rotación de tokens de sesión.
+| Método | Ruta | Descripción | Auth |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/login` | Intercambia credenciales por JWT Bearer Token | — |
 
 ### Users & Health (`/api/v1/users`)
 
-- `POST /register`: Creación de cuenta y **Perfil de Salud Inicial** (Ratios, Tipo Diabetes).
-
-- `GET /me`: Obtiene datos del usuario descifrados en tiempo real (requiere Auth).
-
-### Nutrition (`/api/v1/nutrition`) - *Coming Soon*
-
-- `GET /ingredients/search`: Búsqueda full-text de alimentos.
-
-- `POST /bolus/calculate`: Algoritmo complejo: $Bolus = \frac{Carbs}{ICR} + \frac{Gluc_{actual} - Gluc_{target}}{ISF}$.
-
-1. `feature/XXX` -> 2. Atomic Commits -> 3. PR Review -> 4. Automated Tests -> 5. Merge -> 6. Auto-Deploy.
-
-### 🔌 Catálogo de Endpoints (v1.0)
-
-| Método | Ruta | Descripción | Estado |
+| Método | Ruta | Descripción | Auth |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/auth/login` | Intercambio de credenciales por Token JWT | ✅ |
-| `POST` | `/users/register` | Registro de usuario y perfil médico cifrado | ✅ |
-| `POST` | `/nutrition/calc` | Cálculo de Bolus e Insulina (Wizard) | ✅ |
-| `POST` | `/nutrition/meals` | Registrar comida con bolus administrado | ✅ |
-| `GET` | `/nutrition/meals/history` | Historial de comidas/insulina por paciente | ✅ |
-| `GET` | `/health` | Heartbeat del sistema y la base de datos | ✅ |
+| `POST` | `/register` | Registro de cuenta + perfil médico cifrado | — |
+| `GET` | `/me` | Perfil del usuario autenticado (descifrado en runtime) | 🔒 |
+| `PUT` | `/profile` | Actualiza perfil de salud del usuario | 🔒 |
+
+### Family (`/api/v1/family`)
+
+| Método | Ruta | Descripción | Auth |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/profiles` | Lista perfiles de pacientes del guardián | 🔒 |
+| `GET` | `/profiles/{id}` | Detalle completo del perfil (campos médicos cifrados) | 🔒 |
+| `POST` | `/profiles` | Crea un nuevo perfil de paciente | 🔒 |
+| `PUT` | `/profiles/{id}` | Actualiza datos médicos del paciente | 🔒 |
+
+### Glucose (`/api/v1/glucose`)
+
+| Método | Ruta | Descripción | Auth |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/add` | Registra una lectura de glucosa | 🔒 |
+| `GET` | `/history` | Historial de lecturas por paciente con filtros | 🔒 |
+
+### Nutrition Engine (`/api/v1/nutrition`)
+
+| Método | Ruta | Descripción | Auth |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/ingredients` | Búsqueda full-text de ingredientes (`?q=`) | — |
+| `POST` | `/ingredients` | Crea un nuevo ingrediente en la BD | — |
+| `POST` | `/ingredients/seed` | Puebla 25 alimentos comunes (idempotente) | — |
+| `POST` | `/bolus/calculate` | Calcula bolus multi-ingrediente con ICR/ISF | — |
+| `POST` | `/meals` | Registra comida con dosis de insulina administrada | — |
+| `GET` | `/meals/history` | Historial de comidas con filtros de fecha | — |
+
+### System (`/api/v1`)
+
+| Método | Ruta | Descripción |
+| :--- | :--- | :--- |
+| `GET` | `/health` | Heartbeat + estado de la BD |
 
 ---
 
-## 🛡️ Stack Tecnológico de Élite
+## 🧮 Lógica de Negocio Core
 
-- **Backend**: Python 3.12 + FastAPI (Asíncrono y optimizado para IA).
-- **Frontend**: Flutter Web (WASM/JS) + Nginx Alpine (SPA Routing & Security Hardening).
-- **Data**: PostgreSQL 16 + Alembic (Gestión de migraciones de grado de producción).
-- **Seguridad**: Fernet (Cifrado de datos de salud) + Bcrypt (Hashing) + CSP Headers.
-- **Infra**: Docker + Coolify v4 + Cloudflare (Proxy SSL Full Strict).
+### Algoritmo de Bolus de Insulina
 
-## 🚀 Despliegue Frontend (Flutter Web)
-
-El frontend utiliza una estrategia híbrida para optimizar recursos en el servidor:
-
-1. **Compilación Automatizada**: Docker utiliza un *Multi-stage Build* para descargar Flutter y compilar el código.
-2. **Containerización Optimizada**: La imagen final solo contiene Nginx y los estáticos (Alpine Linux), descartando el SDK de Flutter.
-3. **Despliegue Continuo**: Coolify detecta cambios en `main`, construye la imagen Docker y despliega sin intervención manual.
-
-- **Documentación Completa**: [Ver Guía de Despliegue](docs/infrastructure/deploy.md)
-- **URL Producción**: `https://diabetics.jljimenez.es`
-- **Seguridad**: Nginx con CSP estricto y bloqueo de iframes (`X-Frame-Options: DENY`).
-
----
-
-## 📖 Glosario Metabólico (Reference)
-
-- **IG (Índice Glucémico)**: Velocidad con la que un alimento aumenta la glucosa.
-- **CG (Carga Glucémica)**: Impacto real basado en el IG y la cantidad de carbohidratos netos.
-- **ICR (Carb Ratio)**: Gramos de carbohidratos cubiertos por 1 unidad de insulina.
-- **ISF (Sensitivity Factor)**: Cuánto baja la glucosa 1 unidad de insulina.
-
-## ⚙️ Metodología de Desarrollo & CI/CD
-
-El equipo sigue un flujo estricto de **Trunk-Based Development** adaptado.
-
-1. **Feature Branches**: Todo desarrollo ocurre en `feature/nombre-tarea`.
-2. **Pull Requests**: Revisión de código obligatoria.
-3. **Pipeline Gates (Manual/Automated)**:
-    - Linting (Ruff/Black).
-    - **Testing Coverage > 80%** (Pytest).
-    - Validación de Seguridad (OWASP).
-4. **Despliegue Automático**: Al hacer merge a `main`, el webhook de Coolify:
-    - Construye la imagen Docker.
-    - Ejecuta Migraciones de DB (`alembic upgrade head`).
-    - Despliega en Producción sin downtime.
-
-## 📦 Data Seeding (Operación Semilla)
-
-Para poblar la base de datos de producción con alimentos validados (15 items iniciales):
-
-```bash
-# Requiere Python 3.10+ y requests
-python backend/scripts/remote_seed_v2.py
+```
+Bolus = (CarbosNetos / ICR) + ((GlucosaActual - GlucosaObjetivo) / ISF)
+Bolus = max(0, Bolus)  # nunca negativo
 ```
 
-Esto inyectará alimentos como Arroz, Pollo, Manzana, etc., necesarios para el funcionamiento del Frontend.
+Donde:
+- **ICR** (Insulin-to-Carb Ratio): gramos de carbohidratos cubiertos por 1 unidad.
+- **ISF** (Insulin Sensitivity Factor): cuánto baja la glucosa 1 unidad de insulina.
 
-**Verificación:**
+### Carga Glucémica
 
-```bash
-python backend/scripts/verify_seeding.py
+```
+CG = (IG × CarbosNetos) / 100
 ```
 
-**Gestión de Secretos**: Las variables (`ENCRYPTION_KEY`, `SECRET_KEY`, `DB_URL`) se inyectan exclusivamente a través de la UI de Coolify, nunca en el repositorio.
+### Rangos de Color (UI)
+
+| Bolus | Color | Lectura glucosa |
+| :--- | :--- | :--- |
+| ≤ 2 U | 🟢 Verde | Dentro de rango objetivo |
+| 2–5 U | 🟠 Naranja | Límite superior / alerta |
+| > 5 U | 🔴 Rojo | Hipoglucemia / urgencia |
 
 ---
 
-## � Glosario Médico (TFM Context)
+## 🏗️ Arquitectura Clean (Backend)
 
-- **IG (Índice Glucémico)**: Velocidad a la que un alimento eleva la glucosa (0-100).
-- **CG (Carga Glucémica)**: Impacto real en sangre. $CG = (IG \times Carbos_{netos}) / 100$.
-- **ICR (Insulin-to-Carb Ratio)**: Cuántos gramos de carbohidratos cubre 1 unidad de insulina.
-- **ISF (Insulin Sensitivity Factor)**: Cuánto baja la glucosa 1 unidad de insulina.
-- **PHI (Protected Health Information)**: Datos médicos sensibles que deben ser cifrados por ley (GDPR/HIPAA).
+```
+src/
+├── domain/          # Entidades puras + reglas de negocio (sin dependencias)
+├── application/
+│   ├── use_cases/   # Casos de uso: calculate_bolus, log_meal, search_ingredients
+│   └── repositories/# Interfaces de repositorios
+└── infrastructure/
+    ├── api/         # Routers FastAPI + Pydantic DTOs
+    ├── db/          # Modelos SQLAlchemy + tipos cifrados
+    └── security/    # JWT, Bcrypt, Fernet
+```
+
+**Flujo**: Router → Use Case → Repository → ORM. Los casos de uso no conocen FastAPI ni SQLAlchemy.
 
 ---
-*DiaBeaty TFM - Ingeniería y Arquitectura de Software con IA*
+
+## 📱 Arquitectura Frontend (Flutter)
+
+```
+lib/
+├── core/            # Constants, themes, DI, HTTP client
+├── data/
+│   ├── models/      # DTOs con json_serializable
+│   └── datasources/ # Retrofit API clients (code-gen)
+├── domain/          # Entities, Repository interfaces
+└── presentation/
+    ├── bloc/        # AuthBloc, ThemeBloc, NutritionBloc, ProfileBloc
+    └── screens/     # Login, Dashboard, Glucose, Nutrition Hub, Profile
+```
+
+**Dual UX**: El `ThemeBloc` cambia automáticamente entre tema Adulto (azules, técnico) y Niño (rosas, gamificado) según el perfil activo. Ver [ADR-003](docs/adr/003_flutter_frontend.md).
+
+---
+
+## 🧪 Testing
+
+| Suite | Nº Tests | Estado |
+| :--- | :--- | :--- |
+| **Backend (pytest)** | 108 | ✅ All passing |
+| **Frontend (flutter test)** | 36 | ✅ All passing |
+
+**Estrategia TDD**: Red → Green → Refactor en cada feature. Ver [ADR-004](docs/adr/004_testing_strategy.md).
+
+**Backend**: SQLite in-memory con StaticPool y rollback por función para aislamiento total.
+
+```bash
+# Backend
+cd backend && pytest tests/ -v
+
+# Frontend
+cd frontend && flutter test
+```
+
+---
+
+## 🚀 Despliegue
+
+### Stack de Producción
+
+- **Backend API**: `https://diabetics-api.jljimenez.es` (FastAPI + PostgreSQL)
+- **Frontend Web**: `https://diabetics.jljimenez.es` (Flutter Web + Nginx Alpine)
+
+### CI/CD
+
+1. `git push origin main` → Webhook → Coolify detecta cambio
+2. Docker Multi-stage Build (compile Flutter, copy to Nginx)
+3. `alembic upgrade head` automático en cada deploy
+4. Zero-downtime deploy
+
+### Variables de entorno (nunca en repo, solo en Coolify UI)
+
+```
+ENCRYPTION_KEY  # Fernet key para PHI
+SECRET_KEY      # JWT signing key
+DATABASE_URL    # PostgreSQL connection string
+```
+
+---
+
+## 🌱 Seed de Base de Datos
+
+La BD de producción se puebla con el endpoint idempotente:
+
+```bash
+curl -X POST https://diabetics-api.jljimenez.es/api/v1/nutrition/ingredients/seed
+# → {"inserted": 25, "total_available": 25}
+```
+
+Incluye: arroz, pasta, patatas, frutas (manzana, plátano, naranja, uvas, sandía, fresas), legumbres (lentejas, garbanzos), lácteos, bebidas, chocolate, avena, pan, maíz, verduras.
+
+---
+
+## 📚 Documentación
+
+| Documento | Descripción |
+| :--- | :--- |
+| [Backend Architecture](docs/backend/architecture.md) | Clean Architecture layers, patrones, decisiones |
+| [Frontend Architecture](docs/frontend/architecture.md) | BLoC pattern, Dual UX, estructura de pantallas |
+| [Project Structure](docs/frontend/project_structure.md) | Árbol completo de ficheros con estados |
+| [ADR Index](docs/adr/) | 12 Architecture Decision Records |
+| [Deploy Guide](docs/infrastructure/deploy.md) | Docker, Coolify, Nginx config |
+| [Sprint 1 Report](docs/reports/sprint_1.md) | Retrospectiva Sprint 1 |
+| [Swagger JSON](docs/backend/swagger.json) | OpenAPI spec exportada |
+
+---
+
+## 📖 Glosario Médico
+
+- **IG (Índice Glucémico)**: Velocidad a la que un alimento eleva la glucosa (0–100).
+- **CG (Carga Glucémica)**: Impacto real en sangre. `CG = (IG × Carbos_netos) / 100`.
+- **ICR (Insulin-to-Carb Ratio)**: Gramos de carbohidratos cubiertos por 1 unidad de insulina.
+- **ISF (Insulin Sensitivity Factor)**: Cuánto baja la glucosa (mg/dL) 1 unidad de insulina.
+- **PHI (Protected Health Information)**: Datos médicos sensibles cifrados por GDPR/HIPAA.
+- **T1D**: Diabetes Tipo 1 (autoinmune, insulinodependiente).
+- **Bolus**: Dosis rápida de insulina para cubrir una comida.
+- **Basal**: Dosis de insulina de acción lenta (una vez al día).
+
+---
+
+*DiaBeaty TFM — Ingeniería y Arquitectura de Software con IA · 2024–2025*
