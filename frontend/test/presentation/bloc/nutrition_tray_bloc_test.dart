@@ -9,8 +9,8 @@ class MockNutritionApiClient extends Mock implements NutritionApiClient {}
 class FakeBolusCalculationRequest extends Fake implements BolusCalculationRequest {}
 
 // ── Datos de test ──────────────────────────────────────────────────────────
-final _arroz = Ingredient(id: 1, name: 'Arroz', glycemicIndex: 70, carbs: 28.0);
-final _manzana = Ingredient(id: 2, name: 'Manzana', glycemicIndex: 38, carbs: 14.0);
+final _arroz = Ingredient(id: 'uuid-arroz-1', name: 'Arroz', glycemicIndex: 70, carbs: 28.0);
+final _manzana = Ingredient(id: 'uuid-manzana-2', name: 'Manzana', glycemicIndex: 38, carbs: 14.0);
 
 final _bolusResponse = BolusCalculationResponse(
   totalCarbsGrams: 52.0,

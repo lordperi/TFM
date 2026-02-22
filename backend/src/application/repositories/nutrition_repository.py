@@ -32,6 +32,37 @@ class NutritionRepository:
         self.db.refresh(meal)
         return meal
 
+    def create_ingredient(self, name: str, glycemic_index: int, carbs_per_100g: float, fiber_per_100g: float = 0.0) -> IngredientModel:
+        """Crea un nuevo ingrediente. Lanza ValueError si el nombre ya existe."""
+        existing = self.db.query(IngredientModel).filter(
+            IngredientModel.name.ilike(name)
+        ).first()
+        if existing:
+            raise ValueError(f"El ingrediente '{name}' ya existe")
+        ingredient = IngredientModel(
+            name=name,
+            glycemic_index=glycemic_index,
+            carbs_per_100g=carbs_per_100g,
+            fiber_per_100g=fiber_per_100g,
+        )
+        self.db.add(ingredient)
+        self.db.commit()
+        self.db.refresh(ingredient)
+        return ingredient
+
+    def bulk_create_ingredients(self, items: list[dict]) -> int:
+        """Inserta ingredientes que no existan aún. Devuelve el número insertado."""
+        inserted = 0
+        for item in items:
+            exists = self.db.query(IngredientModel).filter(
+                IngredientModel.name.ilike(item["name"])
+            ).first()
+            if not exists:
+                self.db.add(IngredientModel(**item))
+                inserted += 1
+        self.db.commit()
+        return inserted
+
     def get_meal_history(
         self,
         patient_id: UUID,
