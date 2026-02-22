@@ -12,18 +12,20 @@ from sqlalchemy import inspect as sa_inspect
 from src.infrastructure.db.models import (
     UserModel, PatientModel, HealthProfileModel, IngredientModel, MealLogModel
 )
+from src.infrastructure.security.auth import get_password_hash
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _create_patient(db_session):
-    """Create a minimal user + patient and return the patient id."""
+def _create_user_and_patient(db_session, password="pass1234"):
+    """Create a user + patient and return (user, patient_id)."""
     user = UserModel(
         email=f"test_{uuid4().hex[:6]}@example.com",
-        hashed_password="hashed",
+        hashed_password=get_password_hash(password),
         full_name="Test User",
+        is_active=True,
     )
     db_session.add(user)
     db_session.flush()
@@ -35,7 +37,23 @@ def _create_patient(db_session):
     )
     db_session.add(patient)
     db_session.flush()
-    return patient.id
+    return user, patient.id
+
+
+def _create_patient(db_session):
+    """Create a minimal user + patient and return the patient id."""
+    _, patient_id = _create_user_and_patient(db_session)
+    return patient_id
+
+
+def _get_auth_headers(client, user, password="pass1234"):
+    """Login and return Authorization headers."""
+    resp = client.post(
+        "/api/v1/auth/login",
+        data={"username": user.email, "password": password},
+    )
+    token = resp.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
 
 
 def _create_ingredient(db_session, name="Arroz"):
@@ -113,8 +131,9 @@ class TestLogMealWithBolus:
 
     def test_log_meal_stores_bolus_units(self, client, db_session):
         """Logging a meal with bolus_units_administered stores the value."""
-        patient_id = _create_patient(db_session)
+        user, patient_id = _create_user_and_patient(db_session)
         ingredient = _create_ingredient(db_session, "Pollo")
+        headers = _get_auth_headers(client, user)
 
         payload = {
             "patient_id": str(patient_id),
@@ -124,7 +143,7 @@ class TestLogMealWithBolus:
             "bolus_units_administered": 2.5,
         }
 
-        response = client.post("/api/v1/nutrition/meals", json=payload)
+        response = client.post("/api/v1/nutrition/meals", json=payload, headers=headers)
         assert response.status_code == 200, response.text
 
         data = response.json()
@@ -133,8 +152,9 @@ class TestLogMealWithBolus:
 
     def test_log_meal_without_bolus_units_defaults_null(self, client, db_session):
         """Logging a meal without bolus_units_administered should return None/null."""
-        patient_id = _create_patient(db_session)
+        user, patient_id = _create_user_and_patient(db_session)
         ingredient = _create_ingredient(db_session, "Manzana")
+        headers = _get_auth_headers(client, user)
 
         payload = {
             "patient_id": str(patient_id),
@@ -143,7 +163,7 @@ class TestLogMealWithBolus:
             ],
         }
 
-        response = client.post("/api/v1/nutrition/meals", json=payload)
+        response = client.post("/api/v1/nutrition/meals", json=payload, headers=headers)
         assert response.status_code == 200, response.text
 
         data = response.json()
@@ -163,8 +183,9 @@ class TestGetMealHistory:
 
     def test_returns_logged_meals_in_order(self, client, db_session):
         """Meals are returned most-recent first with bolus_units_administered included."""
-        patient_id = _create_patient(db_session)
+        user, patient_id = _create_user_and_patient(db_session)
         ingredient = _create_ingredient(db_session, "Pan")
+        headers = _get_auth_headers(client, user)
 
         payload_1 = {
             "patient_id": str(patient_id),
@@ -177,8 +198,8 @@ class TestGetMealHistory:
             "bolus_units_administered": 2.0,
         }
 
-        client.post("/api/v1/nutrition/meals", json=payload_1)
-        client.post("/api/v1/nutrition/meals", json=payload_2)
+        client.post("/api/v1/nutrition/meals", json=payload_1, headers=headers)
+        client.post("/api/v1/nutrition/meals", json=payload_2, headers=headers)
 
         response = client.get(
             f"/api/v1/nutrition/meals/history?patient_id={patient_id}&limit=20&offset=0"
@@ -196,14 +217,15 @@ class TestGetMealHistory:
 
     def test_history_respects_limit(self, client, db_session):
         """The limit query parameter caps the number of results."""
-        patient_id = _create_patient(db_session)
+        user, patient_id = _create_user_and_patient(db_session)
         ingredient = _create_ingredient(db_session, "Pasta")
+        headers = _get_auth_headers(client, user)
 
         for _ in range(5):
             client.post("/api/v1/nutrition/meals", json={
                 "patient_id": str(patient_id),
                 "ingredients": [{"ingredient_id": str(ingredient.id), "weight_grams": 80}],
-            })
+            }, headers=headers)
 
         response = client.get(
             f"/api/v1/nutrition/meals/history?patient_id={patient_id}&limit=3&offset=0"

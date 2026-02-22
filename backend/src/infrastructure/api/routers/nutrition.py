@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from src.infrastructure.db.database import get_db
 from src.infrastructure.api.dependencies import get_current_user_id
+from src.infrastructure.db.xp_repository import XPRepository
 from src.application.repositories.nutrition_repository import NutritionRepository
 from src.application.use_cases.search_ingredients import execute_search
 from src.application.use_cases.calculate_bolus import execute_calculate_bolus
@@ -349,9 +350,14 @@ def calculate_bolus(
 @router.post("/meals", response_model=MealLogResponse)
 def log_meal(
     payload: LogMealRequest,
-    repo: NutritionRepository = Depends(get_nutrition_repo)
+    repo: NutritionRepository = Depends(get_nutrition_repo),
+    current_user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
 ):
-    """Registra una ingesta en el historial del paciente, encriptando notas (PHI)."""
+    """Registra una ingesta en el historial del paciente, encriptando notas (PHI).
+
+    Otorga 10 XP al usuario autenticado por cada comida registrada.
+    """
     ing_dicts = [{"ingredient_id": i.ingredient_id, "weight_grams": i.weight_grams} for i in payload.ingredients]
     try:
         meal = execute_log_meal(
@@ -361,6 +367,19 @@ def log_meal(
             bolus_units_administered=payload.bolus_units_administered,
             repo=repo
         )
+
+        # Otorgar XP al usuario que registra la comida
+        try:
+            xp_repo = XPRepository(db)
+            xp_repo.add_xp(
+                user_id=UUID(current_user_id),
+                amount=10,
+                reason="meal_logged",
+                description="Comida registrada ✅",
+            )
+        except Exception:
+            pass  # El XP es opcional — no debe bloquear el registro de la comida
+
         return MealLogResponse(
             id=meal.id,
             patient_id=meal.patient_id,

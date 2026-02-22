@@ -50,6 +50,12 @@ class ProfileScreen extends StatelessWidget {
                       child: Text('Error: ${profileState.message}'),
                     );
                   }
+                  // Esperar a que xpSummary cargue (viene de LoadXPSummary,
+                  // que puede completarse después de LoadProfile).
+                  if (profileState is ProfileLoaded &&
+                      profileState.xpSummary == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
                   return const ChildProfileScreen();
                 },
               ),
