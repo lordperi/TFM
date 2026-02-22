@@ -647,7 +647,7 @@ El mercado global de apps de gestión de diabetes supera los **6.000M€ en 2025
   <div class="card" style="padding:28px 26px;">
     <span class="icon">👨‍💻</span>
     <div class="card-title" style="font-size:17px;">José Luis Jiménez</div>
-    <div class="card-body">Fullstack Engineer · Máster en Ingeniería y Arquitectura de Software con IA<br><br>
+    <div class="card-body">Fullstack Engineer · Máster en Desarrollo con IA – (FD) · 1ª Edición<br><br>
     Backend · Mobile · DevOps<br>
     Clean Architecture · TDD · Privacy by Design</div>
   </div>

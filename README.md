@@ -1,6 +1,6 @@
 # DiaBeaty — Plataforma de Nutrición de Precisión para Diabetes
 
-> Trabajo Fin de Máster · Ingeniería y Arquitectura de Software con Inteligencia Artificial · 2024–2026
+> Trabajo Fin de Máster · Máster en Desarrollo con IA – (FD) · 1ª Edición · Octubre 2025 – Marzo 2026
 
 ![Status](https://img.shields.io/badge/Estado-Producción_100%25-success?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
@@ -830,4 +830,4 @@ MIT License — Ver archivo `LICENSE` para detalles completos.
 
 ---
 
-*DiaBeaty TFM — Ingenieria y Arquitectura de Software con Inteligencia Artificial · Jose Luis Jimenez · 2024–2026*
+*DiaBeaty TFM — Máster en Desarrollo con IA – (FD) · 1ª Edición · Jose Luis Jimenez · Octubre 2025 – Marzo 2026*

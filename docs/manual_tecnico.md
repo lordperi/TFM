@@ -1,7 +1,7 @@
 # Manual Técnico — DiaBeaty
 
 > **Plataforma de Nutrición de Precisión para Diabetes Tipo 1**
-> Trabajo Fin de Máster · Ingeniería y Arquitectura de Software con Inteligencia Artificial · 2024–2026
+> Trabajo Fin de Máster · Máster en Desarrollo con IA – (FD) · 1ª Edición · Octubre 2025 – Marzo 2026
 >
 > **Autores**: José Luis Jiménez
 > **Versión**: 1.0 · Febrero 2026
