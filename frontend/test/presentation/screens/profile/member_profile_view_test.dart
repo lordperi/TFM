@@ -1,4 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:diabeaty_mobile/core/constants/diabetes_type.dart';
+import 'package:diabeaty_mobile/core/constants/therapy_type.dart';
 import 'package:diabeaty_mobile/data/models/auth_models.dart';
 import 'package:diabeaty_mobile/data/models/family_models.dart';
 import 'package:diabeaty_mobile/data/repositories/family_repository.dart';
@@ -36,7 +38,17 @@ final _guardianProfile = PatientProfile(
   themePreference: 'adult',
   role: 'GUARDIAN',
   isProtected: false,
-  diabetesType: 'type_1',
+);
+
+// Perfil detallado devuelto por getProfileDetails()
+final _guardianDetails = PatientProfile(
+  id: 'profile-guardian',
+  displayName: 'Papa Guardian',
+  themePreference: 'adult',
+  role: 'GUARDIAN',
+  isProtected: false,
+  diabetesType: DiabetesType.type1.value,
+  therapyType: TherapyType.insulin.value,
   insulinSensitivity: 40.0,
   carbRatio: 10.0,
   targetGlucose: 100.0,
@@ -50,7 +62,16 @@ final _dependentProfile = PatientProfile(
   themePreference: 'child',
   role: 'DEPENDENT',
   isProtected: false,
-  diabetesType: 'type_1',
+);
+
+final _dependentDetails = PatientProfile(
+  id: 'profile-child',
+  displayName: 'Niño Dependiente',
+  themePreference: 'child',
+  role: 'DEPENDENT',
+  isProtected: false,
+  diabetesType: DiabetesType.type1.value,
+  therapyType: TherapyType.insulin.value,
   insulinSensitivity: 35.0,
   carbRatio: 8.0,
   targetGlucose: 90.0,
@@ -58,7 +79,7 @@ final _dependentProfile = PatientProfile(
   targetRangeHigh: 160,
 );
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+// ── Helper ─────────────────────────────────────────────────────────────────
 Widget _buildAdultScreen({
   required MockAuthBloc authBloc,
   required MockFamilyRepository familyRepo,
@@ -117,25 +138,25 @@ void main() {
     mockAuthBloc = MockAuthBloc();
     mockProfileBloc = MockProfileBloc();
     mockFamilyRepo = MockFamilyRepository();
+    when(() => mockAuthBloc.stream).thenAnswer((_) => const Stream.empty());
   });
 
-  group('AdultProfileScreen - muestra datos del miembro activo', () {
+  group('AdultProfileScreen — muestra datos del miembro activo', () {
     testWidgets(
         'muestra el displayName del selectedProfile, NO el fullName del usuario principal',
         (tester) async {
-      // Arrange – guardian profile activo
       when(() => mockAuthBloc.state).thenReturn(AuthAuthenticated(
         accessToken: 'token',
         user: _mainUser,
         selectedProfile: _guardianProfile,
       ));
+      when(() => mockFamilyRepo.getProfileDetails('profile-guardian'))
+          .thenAnswer((_) async => _guardianDetails);
 
-      // Act
       await tester.pumpWidget(
           _buildAdultScreen(authBloc: mockAuthBloc, familyRepo: mockFamilyRepo));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      // Assert
       expect(find.text('Papa Guardian'), findsAtLeastNWidgets(1),
           reason: 'Debe mostrar el displayName del perfil activo');
       expect(find.text('Main User Full Name'), findsNothing,
@@ -150,10 +171,12 @@ void main() {
         user: _mainUser,
         selectedProfile: _guardianProfile,
       ));
+      when(() => mockFamilyRepo.getProfileDetails('profile-guardian'))
+          .thenAnswer((_) async => _guardianDetails);
 
       await tester.pumpWidget(
           _buildAdultScreen(authBloc: mockAuthBloc, familyRepo: mockFamilyRepo));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.text('Cambiar Contraseña'), findsOneWidget,
           reason: 'El tutor SÍ puede cambiar la contraseña');
@@ -162,40 +185,63 @@ void main() {
     testWidgets(
         'oculta botón "Cambiar Contraseña" cuando el perfil es DEPENDENT',
         (tester) async {
-      // Arrange – perfil dependiente (niño con tema adulto)
       when(() => mockAuthBloc.state).thenReturn(AuthAuthenticated(
         accessToken: 'token',
         user: _mainUser,
         selectedProfile: _dependentProfile,
       ));
+      when(() => mockFamilyRepo.getProfileDetails('profile-child'))
+          .thenAnswer((_) async => _dependentDetails);
 
       await tester.pumpWidget(
           _buildAdultScreen(authBloc: mockAuthBloc, familyRepo: mockFamilyRepo));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.text('Cambiar Contraseña'), findsNothing,
           reason: 'El dependiente NO puede cambiar la contraseña');
     });
 
-    testWidgets('pre-rellena el campo ISF con el valor del selectedProfile',
+    testWidgets(
+        'pre-rellena el campo ISF con el valor cargado desde getProfileDetails',
         (tester) async {
       when(() => mockAuthBloc.state).thenReturn(AuthAuthenticated(
         accessToken: 'token',
         user: _mainUser,
         selectedProfile: _guardianProfile,
       ));
+      when(() => mockFamilyRepo.getProfileDetails('profile-guardian'))
+          .thenAnswer((_) async => _guardianDetails);
 
       await tester.pumpWidget(
           _buildAdultScreen(authBloc: mockAuthBloc, familyRepo: mockFamilyRepo));
-      await tester.pump();
+      // pumpAndSettle espera a que el Future de _loadDetails() complete
+      await tester.pumpAndSettle();
 
-      // ISF = 40.0 del guardianProfile
       expect(find.text('40.0'), findsAtLeastNWidgets(1),
-          reason: 'El ISF debe pre-rellenarse desde el perfil activo');
+          reason: 'ISF debe pre-rellenarse con el valor del perfil (40.0)');
+    });
+
+    testWidgets(
+        'muestra los campos condicionales de insulina cuando therapyType es INSULIN',
+        (tester) async {
+      when(() => mockAuthBloc.state).thenReturn(AuthAuthenticated(
+        accessToken: 'token',
+        user: _mainUser,
+        selectedProfile: _guardianProfile,
+      ));
+      when(() => mockFamilyRepo.getProfileDetails('profile-guardian'))
+          .thenAnswer((_) async => _guardianDetails);
+
+      await tester.pumpWidget(
+          _buildAdultScreen(authBloc: mockAuthBloc, familyRepo: mockFamilyRepo));
+      await tester.pumpAndSettle();
+
+      // Cuando therapyType es INSULIN, ConditionalMedicalFields muestra ISF/ICR/Target
+      expect(find.text('Factor de Sensibilidad a la Insulina (ISF)'), findsOneWidget);
     });
   });
 
-  group('ChildProfileScreen - muestra nombre del miembro activo', () {
+  group('ChildProfileScreen — muestra nombre del miembro activo', () {
     testWidgets(
         'muestra el displayName del selectedProfile como saludo',
         (tester) async {
@@ -207,13 +253,15 @@ void main() {
       when(() => mockProfileBloc.state).thenReturn(ProfileLoaded(
         user: _mainUser,
       ));
+      when(() => mockProfileBloc.stream)
+          .thenAnswer((_) => const Stream.empty());
 
       await tester.pumpWidget(
           _buildChildScreen(authBloc: mockAuthBloc, profileBloc: mockProfileBloc));
       await tester.pump();
 
       expect(find.textContaining('Niño Dependiente'), findsAtLeastNWidgets(1),
-          reason: 'Debe mostrar el nombre del miembro, no el del usuario principal');
+          reason: 'Debe mostrar el nombre del miembro, no el del usuario');
       expect(find.textContaining('Main User Full Name'), findsNothing,
           reason: 'NO debe mostrar el fullName del usuario principal');
     });
