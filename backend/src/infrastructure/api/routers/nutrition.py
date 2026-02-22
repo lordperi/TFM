@@ -1,9 +1,12 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 from src.infrastructure.db.database import get_db
 from src.infrastructure.api.dependencies import get_current_user_id
@@ -375,10 +378,10 @@ def log_meal(
                 user_id=UUID(current_user_id),
                 amount=10,
                 reason="meal_logged",
-                description="Comida registrada ✅",
+                description="Comida registrada",
             )
-        except Exception:
-            pass  # El XP es opcional — no debe bloquear el registro de la comida
+        except Exception as xp_err:
+            logger.error("Error awarding XP for meal_logged [user=%s]: %s", current_user_id, xp_err)
 
         return MealLogResponse(
             id=meal.id,
