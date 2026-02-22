@@ -9,6 +9,8 @@ import '../../screens/nutrition/nutrition_hub_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../bloc/glucose/glucose_bloc.dart';
 import '../../bloc/nutrition/nutrition_bloc.dart';
+import '../../bloc/profile/profile_bloc.dart';
+import '../../../data/repositories/profile_repository.dart';
 import '../../screens/glucose/add_glucose_screen.dart';
 import '../../widgets/glucose/glucose_chart.dart';
 import '../../widgets/glucose/glucose_alert_widget.dart';
@@ -122,7 +124,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             body: isAdult
                 ? _AdultDashboard(insulinEvents: _insulinEvents)
-                : const _ChildDashboard(),
+                : BlocProvider(
+                    create: (ctx) {
+                      final auth = ctx.read<AuthBloc>().state;
+                      final bloc =
+                          ProfileBloc(repository: ProfileRepository());
+                      if (auth is AuthAuthenticated) {
+                        bloc.add(LoadProfile(auth.accessToken));
+                        bloc.add(LoadXPSummary(auth.accessToken));
+                      }
+                      return bloc;
+                    },
+                    child: const _ChildDashboard(),
+                  ),
             bottomNavigationBar: BottomNavigationBar(
               items: [
                 BottomNavigationBarItem(
@@ -385,199 +399,329 @@ class _AdultDashboard extends StatelessWidget {
 class _ChildDashboard extends StatelessWidget {
   const _ChildDashboard();
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Theme.of(context).colorScheme.surface,
-            Colors.white,
-          ],
+  static String _levelTitle(int level) {
+    if (level <= 2) return 'Explorador';
+    if (level <= 4) return 'Aventurero';
+    if (level <= 6) return 'Guerrero';
+    if (level <= 8) return 'Héroe';
+    if (level <= 10) return 'Campeón';
+    return 'Leyenda';
+  }
+
+  void _onLogComida(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<NutritionBloc>(),
+          child: const NutritionHubScreen(),
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const GlucoseAlertWidget(),
-            const SizedBox(height: 8),
-            Stack(
-              alignment: Alignment.bottomCenter,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    final childName = (authState is AuthAuthenticated &&
+            authState.selectedProfile != null)
+        ? authState.selectedProfile!.displayName
+        : 'Héroe';
+
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, profileState) {
+        final xp = profileState is ProfileLoaded ? profileState.xpSummary : null;
+        final level = xp?.currentLevel ?? 1;
+        final totalXp = xp?.totalXp ?? 0;
+        final xpToNext = xp?.xpToNextLevel ?? 100;
+        final progress = xp?.progressPercentage.clamp(0.0, 1.0) ?? 0.0;
+
+        return Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF4C1D95), Color(0xFF7C3AED)],
+            ),
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            child: Column(
               children: [
-                const CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Color(0xFFEC4899),
-                  child: Icon(Icons.face, size: 80, color: Colors.white),
-                ),
-                Positioned(
-                  bottom: 0,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Text(
-                      'NVL 5',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Text(
-              '¡Hola, Campeón!',
-              style: Theme.of(context)
-                  .textTheme
-                  .displayMedium
-                  ?.copyWith(fontSize: 28),
-            ),
-            const SizedBox(height: 32),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Experiencia',
-                          style: Theme.of(context).textTheme.labelLarge),
-                      Text('450 / 500 XP',
-                          style: Theme.of(context).textTheme.labelLarge),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: LinearProgressIndicator(
-                      value: 0.9,
-                      minHeight: 20,
-                      backgroundColor: Colors.grey.shade200,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF10B981)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF7C3AED),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                const GlucoseAlertWidget(),
+                const SizedBox(height: 16),
+
+                // ── Avatar + nivel ──────────────────────────────────────────
+                Stack(
+                  alignment: Alignment.bottomCenter,
                   children: [
-                    Icon(Icons.gamepad),
-                    SizedBox(width: 8),
-                    Text('JUGAR MINIJUEGO'),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () {
-                  final authState = context.read<AuthBloc>().state;
-                  if (authState is AuthAuthenticated &&
-                      authState.selectedProfile != null) {
-                    _showManualInsulinDialog(
-                      context,
-                      authState.selectedProfile!.id,
-                      false,
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_circle),
-                    SizedBox(width: 8),
-                    Text('AÑADIR DOSIS', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: OutlinedButton(
-                onPressed: () {
-                  final authState = context.read<AuthBloc>().state;
-                  if (authState is AuthAuthenticated &&
-                      authState.selectedProfile != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BlocProvider.value(
-                          value: context.read<NutritionBloc>(),
-                          child: MealHistoryScreen(
-                            patientId: authState.selectedProfile!.id,
+                    Container(
+                      width: 124,
+                      height: 124,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: Colors.amber.shade300, width: 4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.amber.withOpacity(0.4),
+                            blurRadius: 20,
+                            spreadRadius: 4,
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 58,
+                        backgroundColor: const Color(0xFFEC4899),
+                        child: Text(
+                          childName.substring(0, 1).toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 52,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
                       ),
-                    );
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.orange, width: 2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.vaccines, color: Colors.orange),
-                    SizedBox(width: 8),
-                    Text(
-                      'MIS DOSIS',
-                      style: TextStyle(
-                          color: Colors.orange, fontWeight: FontWeight.bold),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 4),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFF59E0B), Color(0xFFEF4444)],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white, width: 2.5),
+                        ),
+                        child: Text(
+                          '⭐ NVL $level',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
+
+                const SizedBox(height: 16),
+
+                // ── Saludo ─────────────────────────────────────────────────
+                Text(
+                  '¡Hola, $childName!',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _levelTitle(level),
+                  style: TextStyle(
+                    color: Colors.amber.shade300,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ── Barra XP ───────────────────────────────────────────────
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                        color: Colors.white.withOpacity(0.3), width: 1),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('⚡ Experiencia',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
+                          Text(
+                            '$totalXp XP  •  Faltan $xpToNext',
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Stack(
+                        children: [
+                          Container(
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          if (progress > 0)
+                            FractionallySizedBox(
+                              widthFactor: progress.clamp(0.04, 1.0),
+                              child: Container(
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFFBBF24),
+                                      Color(0xFFFFD700)
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.amber.withOpacity(0.6),
+                                      blurRadius: 8,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // ── Botón principal: Registrar Comida ──────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  height: 64,
+                  child: ElevatedButton(
+                    onPressed: () => _onLogComida(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      elevation: 6,
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('🍽️', style: TextStyle(fontSize: 26)),
+                        SizedBox(width: 10),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('¡REGISTRAR COMIDA!',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 15)),
+                            Text('Gana XP por cada comida',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.white70)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ── Botón: Añadir Dosis ────────────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (authState is AuthAuthenticated &&
+                          authState.selectedProfile != null) {
+                        _showManualInsulinDialog(
+                          context,
+                          authState.selectedProfile!.id,
+                          false,
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add_circle),
+                        SizedBox(width: 8),
+                        Text('AÑADIR DOSIS',
+                            style:
+                                TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ── Botón: Mis Dosis ───────────────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      if (authState is AuthAuthenticated &&
+                          authState.selectedProfile != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider.value(
+                              value: context.read<NutritionBloc>(),
+                              child: MealHistoryScreen(
+                                patientId:
+                                    authState.selectedProfile!.id,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white54, width: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.vaccines),
+                        SizedBox(width: 8),
+                        Text('MIS DOSIS',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+              ],
             ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
